@@ -22,9 +22,7 @@ import com.moe.socialnetwork.auth.dtos.RQRegisterDTO;
 import com.moe.socialnetwork.auth.dtos.RPUserRegisterDTO;
 import com.moe.socialnetwork.auth.services.IAuthService;
 import com.moe.socialnetwork.auth.services.ITokenService;
-import com.moe.socialnetwork.jpa.ContactJPA;
 import com.moe.socialnetwork.jpa.UserJPA;
-import com.moe.socialnetwork.models.Contact;
 import com.moe.socialnetwork.models.User;
 import com.moe.socialnetwork.exception.AppException;
 import com.moe.socialnetwork.util.AuthorityUtil;
@@ -42,14 +40,12 @@ public class AuthServiceImpl implements IAuthService {
     private final ITokenService tokenService;
     @Value("${google.client.id}")
     private String googleClientId;
-    private final ContactJPA contactJPA;
 
-    public AuthServiceImpl(UserJPA userJpa, PasswordEncoder passwordEncoder, ITokenService tokenService,
-            ContactJPA contactJPA) {
+    public AuthServiceImpl(UserJPA userJpa, PasswordEncoder passwordEncoder, ITokenService tokenService) {
         this.userJpa = userJpa;
         this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;
-        this.contactJPA = contactJPA;
+
     }
 
     @Transactional
@@ -74,12 +70,6 @@ public class AuthServiceImpl implements IAuthService {
 
         try {
             User savedUser = userJpa.save(user);
-
-            Contact contact = new Contact();
-            contact.setUser(savedUser);
-            contact.setContactUser(savedUser);
-            contactJPA.save(contact);
-
             return buildUserRegisterResponse(savedUser);
         } catch (DataIntegrityViolationException e) {
             throw new AppException("Database constraint error: " + e.getMessage(), HttpStatus.CONFLICT.value());

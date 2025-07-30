@@ -64,18 +64,12 @@ public class User implements UserDetails {
 
 	@Column(name = "display_name", length = 100)
 	private String displayName;
-
-	@Column(name = "background_image", length = 255)
-	private String backgroundImage;
-
+	
 	@Column(length = 255)
 	private String bio;
 
 	@Column(name = "provider")
 	private String provider;
-
-	@Column(length = 100)
-	private String location;
 
 	@Column(length = 255)
 	private String avatar;
@@ -125,62 +119,6 @@ public class User implements UserDetails {
 	@Column(name = "password_reset_expires")
 	private LocalDateTime passwordResetExpires;
 
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference
-	private List<Post> posts;
-
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference
-	private List<Comment> postComments;
-
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference
-	private List<Like> postLikes;
-
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference
-	private List<ActivityLog> activityLogs;
-
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference
-	private List<Feedback> feedbacks;
-
-	@OneToMany(mappedBy = "follower", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference
-	private List<Follower> followers;
-
-	@OneToMany(mappedBy = "followed", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference
-	private List<Follower> followeds;
-
-	@OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference
-	private List<Message> senders;
-
-	@OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference
-	private List<Message> receivers;
-
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference
-	private List<Notification> notifications;
-
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference
-	private List<Report> reports;
-
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference
-	private List<UserPlaylist> userPlaylists;
-
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference
-	private List<View> views;
-
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference
-	private List<CommentLike> commentLikes;
-
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	@JsonManagedReference
 	private List<RolePermission> rolePermissions;
@@ -204,7 +142,7 @@ public class User implements UserDetails {
 		if (this.provider == null || this.provider.isEmpty()) {
 			this.provider = "NORMAL";
 		}
-		
+
 	}
 
 	@PreUpdate

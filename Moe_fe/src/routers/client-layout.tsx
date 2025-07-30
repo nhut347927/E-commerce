@@ -1,5 +1,5 @@
 import { Toaster } from "@/components/ui/toaster";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import iconSearch from "../assets/img/icon/search.png";
 import iconHeart from "../assets/img/icon/heart.png";
 import iconCart from "../assets/img/icon/cart.png";
@@ -13,6 +13,16 @@ import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 const ClientLayout = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  // Hàm để check trang hiện tại
+  const isActive = (path: string) => {
+    if (path === "/") {
+      return currentPath === "/";
+    }
+    return currentPath === path || currentPath.startsWith(`${path}/`);
+  };
 
   const toggle = () => {
     setIsOpen(!isOpen);
@@ -69,13 +79,15 @@ const ClientLayout = () => {
                     alt="search"
                     className=" h-4 cursor-pointer"
                   />
+                 <Link to={"/wishlist"}>
                   <img
                     src={iconHeart}
                     alt="heart"
                     className=" h-4 cursor-pointer"
-                  />
+                  /></Link>
                   <div className="relative cursor-pointer">
-                    <img src={iconCart} alt="cart" className=" h-4" />
+                   <Link to={"/shopping-cart"}>
+                    <img src={iconCart} alt="cart" className=" h-4" /></Link>
                     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-4 h-5 flex items-center justify-center">
                       0
                     </span>
@@ -86,35 +98,75 @@ const ClientLayout = () => {
                 {/* Menu */}
                 <div className="mt-6">
                   <nav>
-                    <ul className="space-y-4 text-gray-700 text-base font-medium">
-                      <li className="cursor-pointer hover:text-black border-b-2 border-red-500">
-                        Home
-                      </li>
-                      <li className="cursor-pointer hover:text-black">Shop</li>
-                      <li className="relative group cursor-pointer">
+                    <ul className=" text-gray-700 text-base font-medium">
+                      <Link to="/home" className="">
+                        <li
+                          className={`mb-4 cursor-pointer hover:text-black ${
+                            isActive("/home") ? "border-b-2 border-red-500" : ""
+                          }`}
+                        >
+                          Home
+                        </li>
+                      </Link>
+                      <Link to="/shop">
+                        <li
+                          className={`mb-4 cursor-pointer hover:text-black ${
+                            isActive("/shop") ? "border-b-2 border-red-500" : ""
+                          }`}
+                        >
+                          Shop
+                        </li>
+                      </Link>
+                      <li className="mb-4 relative group cursor-pointer !mt-0">
                         <span className="hover:text-black">Pages</span>
-                        <ul className="absolute left-0 mt-2 w-40 bg-white shadow-md hidden group-hover:block text-sm text-gray-700 z-10">
-                          <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                            About Us
-                          </li>
-                          <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                            Shop Details
-                          </li>
-                          <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                            Shopping Cart
-                          </li>
-                          <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                            Check Out
-                          </li>
-                          <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                            Blog Details
-                          </li>
+                        <ul className="z-30 absolute left-0 w-40 bg-white shadow-md hidden group-hover:block text-sm text-gray-700">
+                          <Link to="/about">
+                            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                              About Us
+                            </li>
+                          </Link>
+                          <Link to="/shop-detail">
+                            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                              Shop Details
+                            </li>
+                          </Link>
+                          <Link to="/shopping-cart">
+                            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                              Shopping Cart
+                            </li>
+                          </Link>
+                          <Link to="/check-out">
+                            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                              Check Out
+                            </li>
+                          </Link>
+                          <Link to="/blog-detail">
+                            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                              Blog Details
+                            </li>
+                          </Link>
                         </ul>
                       </li>
-                      <li className="cursor-pointer hover:text-black">Blog</li>
-                      <li className="cursor-pointer hover:text-black">
-                        Contacts
-                      </li>
+                      <Link to="/blog">
+                        <li
+                          className={` mb-4 cursor-pointer hover:text-black ${
+                            isActive("/blog") ? "border-b-2 border-red-500" : ""
+                          }`}
+                        >
+                          Blog
+                        </li>
+                      </Link>
+                      <Link to="/contact">
+                        <li
+                          className={`cursor-pointer hover:text-black ${
+                            isActive("/contact")
+                              ? "border-b-2 border-red-500"
+                              : ""
+                          }`}
+                        >
+                          Contacts
+                        </li>
+                      </Link>
                     </ul>
                   </nav>
                 </div>
@@ -136,8 +188,12 @@ const ClientLayout = () => {
             </div>
             <div className="w-full flex justify-end space-x-6">
               <div className="flex space-x-4">
-                <span className="cursor-pointer hover:text-white uppercase">Sign in</span>
-                <span className="cursor-pointer hover:text-white uppercase">FAQs</span>
+                <span className="cursor-pointer hover:text-white uppercase">
+                  Sign in
+                </span>
+                <span className="cursor-pointer hover:text-white uppercase">
+                  FAQs
+                </span>
               </div>
               <div className="relative group cursor-pointer text-gray-300">
                 <span className="flex items-center uppercase">
@@ -160,43 +216,83 @@ const ClientLayout = () => {
         <div className="max-w-7xl mx-auto px-16 py-8">
           <div className="flex flex-wrap items-center justify-between">
             {/* Logo */}
-            <div className="justify-start">
-              <img src={logo} alt="logo" className="h-6" />
-            </div>
+            <Link to="/">
+              <div className="justify-start">
+                <img src={logo} alt="logo" className="h-6" />
+              </div>
+            </Link>
 
             {/* Menu */}
             <div className="w-1/2 mt-0">
               <nav>
                 <ul className="flex  justify-center space-x-10 text-gray-700 text-lg font-medium">
-                 <Link to="/client/home">
-                  <li className="cursor-pointer hover:text-black border-b-2 border-red-500">
-                    Home
-                  </li></Link>
-                 <Link to="/client/shop">
-                  <li className="cursor-pointer hover:text-black">Shop</li>
-                 </Link>
+                  <Link to="/home">
+                    <li
+                      className={`cursor-pointer hover:text-black ${
+                        isActive("/home") ? "border-b-2 border-red-500" : ""
+                      }`}
+                    >
+                      Home
+                    </li>
+                  </Link>
+                  <Link to="/shop">
+                    <li
+                      className={`cursor-pointer hover:text-black ${
+                        isActive("/shop") ? "border-b-2 border-red-500" : ""
+                      }`}
+                    >
+                      Shop
+                    </li>
+                  </Link>
                   <li className="relative group cursor-pointer">
                     <span className="hover:text-black">Pages</span>
-                    <ul className="absolute left-0 mt-2 w-40 bg-white shadow-md hidden group-hover:block text-sm text-gray-700 z-10">
-                      <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                        About Us
-                      </li>
-                      <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                        Shop Details
-                      </li>
-                      <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                        Shopping Cart
-                      </li>
-                      <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                        Check Out
-                      </li>
-                      <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                        Blog Details
-                      </li>
+                    <ul className="z-30 absolute left-0 mt-2 w-40 bg-white shadow-md hidden group-hover:block text-sm text-gray-700">
+                      <Link to="/about">
+                        <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                          About Us
+                        </li>
+                      </Link>
+                      <Link to="/shop-detail">
+                        <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                          Shop Details
+                        </li>
+                      </Link>
+                      <Link to="/shopping-cart">
+                        <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                          Shopping Cart
+                        </li>
+                      </Link>
+                      <Link to="/check-out">
+                        <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                          Check Out
+                        </li>
+                      </Link>
+                      <Link to="/blog-detail">
+                        <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                          Blog Details
+                        </li>
+                      </Link>
                     </ul>
                   </li>
-                  <li className="cursor-pointer hover:text-black">Blog</li>
-                  <li className="cursor-pointer hover:text-black">Contacts</li>
+                  <Link to="/blog">
+                    <li
+                      className={`cursor-pointer hover:text-black ${
+                        isActive("/blog") ? "border-b-2 border-red-500" : ""
+                      }`}
+                    >
+                      Blog
+                    </li>
+                  </Link>
+
+                  <Link to="/contact">
+                    <li
+                      className={`cursor-pointer hover:text-black ${
+                        isActive("/contact") ? "border-b-2 border-red-500" : ""
+                      }`}
+                    >
+                      Contacts
+                    </li>
+                  </Link>
                 </ul>
               </nav>
             </div>
@@ -208,13 +304,15 @@ const ClientLayout = () => {
                 alt="search"
                 className=" h-5 cursor-pointer"
               />
+             <Link to={"/wishlist"}>
               <img
                 src={iconHeart}
                 alt="heart"
                 className=" h-5 cursor-pointer"
-              />
+              /></Link>
               <div className="relative cursor-pointer">
-                <img src={iconCart} alt="cart" className=" h-5" />
+                <Link to={"/shopping-cart"}>
+                <img src={iconCart} alt="cart" className=" h-5" /></Link>
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                   0
                 </span>

@@ -13,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -27,22 +28,27 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "Images")
-public class Image {
-	@Id
+@Table(name = "carts")
+public class Cart {
+    @Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@Column(unique = true, nullable = false, updatable = false)
 	private UUID code;
 
-	@Column(nullable = false, length = 50)
-	private String name;
+    @Column(nullable = false)
+	private int quantity;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "product_id", updatable = false)
 	@JsonBackReference
 	private Product product;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false)
+	@JsonBackReference
+	private User user;
 
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
@@ -56,7 +62,7 @@ public class Image {
 	protected void onCreate() {
 		LocalDateTime now = LocalDateTime.now();
 		this.createdAt = now;
+	
 		this.code = UUID.randomUUID();
 	}
-
 }

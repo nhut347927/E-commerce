@@ -40,20 +40,26 @@ const Blog = () => {
                   className="h-64 bg-cover bg-center"
                   style={{ backgroundImage: `url(${blog.img})` }}
                 ></div>
-                <div className="bg-white p-6 mt-[-2rem] relative z-10">
-                  <div className="flex items-center text-sm text-gray-500 mb-2">
-                    <img src={calendarIcon} alt="calendar" className="w-4 h-4 mr-2" />
-                    {blog.date}
+             <div className="p-6  relative -mt-24 z-10">
+                  <div className="bg-white p-6 ">
+                    <div className="flex items-center text-sm text-gray-500 mb-2">
+                      <img
+                        src={calendarIcon}
+                        alt="calendar"
+                        className="w-4 h-4 mr-2"
+                      />
+                      {blog.date}
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                      {blog.title}
+                    </h3>
+                    <a
+                      href="#"
+                      className="text-sm text-black font-semibold underline underline-offset-4 hover:text-red-500 transition"
+                    >
+                      READ MORE
+                    </a>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                    {blog.title}
-                  </h3>
-                  <a
-                    href="#"
-                    className="text-sm text-black font-semibold underline underline-offset-4 hover:text-red-500 transition"
-                  >
-                    READ MORE
-                  </a>
                 </div>
               </div>
             </div>

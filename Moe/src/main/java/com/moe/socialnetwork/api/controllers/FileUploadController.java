@@ -38,30 +38,6 @@ public class FileUploadController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/videos")
-    public ResponseEntity<ResponseAPI<String>> uploadVideo(
-        @Valid @ModelAttribute RQFileUploadDTO request
-    ) throws IOException {
-        String publicId = cloudinaryService.uploadVideo(request.getFile());
-        ResponseAPI<String> response = new ResponseAPI<>();
-        response.setCode(200);
-        response.setMessage("Success");
-        response.setData(publicId);
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/audios")
-    public ResponseEntity<ResponseAPI<String>> uploadAudio(
-        @Valid @ModelAttribute RQFileUploadDTO request
-    ) throws IOException {
-        String publicId = cloudinaryService.uploadAudio(request.getFile());
-        ResponseAPI<String> response = new ResponseAPI<>();
-        response.setCode(200);
-        response.setMessage("Success");
-        response.setData(publicId);
-        return ResponseEntity.ok(response);
-    }
-
     @PostMapping("/delete")
     public ResponseEntity<ResponseAPI<String>> deleteFile(
         @RequestBody ZRQCodeAndContentDTO request

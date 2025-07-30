@@ -26,8 +26,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "Tags")
-public class Tag {
+@Table(name = "product_versions")
+public class ProductVersion {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,8 +36,23 @@ public class Tag {
 	@Column(unique = true, nullable = false, updatable = false)
 	private UUID code;
 
-	@Column(nullable = false, length = 50)
-	private String name;
+	@Column(nullable = false)
+	private int quantity;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "size_id", nullable = false)
+    @JsonBackReference
+    private Size size;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "color_id", nullable = false)
+    @JsonBackReference
+    private Color color;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    @JsonBackReference
+    private Product product;
 
 	@Column(name = "is_deleted", columnDefinition = "boolean default false")
 	private Boolean isDeleted = false;

@@ -34,7 +34,7 @@ const AppRoutes = () => {
     <Suspense fallback={<LoadingSpinner />}>
       <Routes>
         {/* CLIENT ROUTES */}
-        <Route path="/client" element={<ClientLayout />}>
+        <Route path="/" element={<ClientLayout />}>
           <Route index element={<Home />} />
           <Route
             path="home"
