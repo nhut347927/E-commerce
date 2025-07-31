@@ -22,11 +22,11 @@ import lombok.NoArgsConstructor;
 /**
  * Author: nhutnm379
  */
-@Entity
-@Table(name = "ActivityLogs")
 @Data
+@Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "activity_logs")
 public class ActivityLog {
 
 	@Id

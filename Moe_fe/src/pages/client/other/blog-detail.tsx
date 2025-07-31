@@ -145,19 +145,19 @@ const BlogDetail: React.FC = () => {
               </div>
               <div className="flex space-x-2">
                 <Link
-                  to="/client/blog?tag=fashion"
+                  to="/blog?tag=fashion"
                   className="text-black font-bold hover:underline"
                 >
                   #Fashion
                 </Link>
                 <Link
-                  to="/client/blog?tag=trending"
+                  to="/blog?tag=trending"
                   className="text-black font-bold hover:underline"
                 >
                   #Trending
                 </Link>
                 <Link
-                  to="/client/blog?tag=2020"
+                  to="/blog?tag=2020"
                   className="text-black font-bold hover:underline"
                 >
                   #2020
@@ -168,7 +168,7 @@ const BlogDetail: React.FC = () => {
             {/* Navigation */}
             {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-8">
               <Link
-                to="/client/blog/prev"
+                to="/blog/prev"
                 className="flex flex-col p-4 bg-white shadow-md rounded-lg hover:shadow-lg transition-shadow duration-200"
               >
                 <p className="text-sm text-gray-600 flex items-center">
@@ -180,7 +180,7 @@ const BlogDetail: React.FC = () => {
                 </h5>
               </Link>
               <Link
-                to="/client/blog/next"
+                to="/blog/next"
                 className="flex flex-col p-4 bg-white shadow-md rounded-lg hover:shadow-lg transition-shadow duration-200 text-right"
               >
                 <p className="text-sm text-gray-600 flex items-center justify-end">

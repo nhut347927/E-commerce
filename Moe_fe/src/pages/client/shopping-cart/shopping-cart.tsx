@@ -162,7 +162,7 @@ const ShoppingCart = () => {
             ))}
           </div>
           <div className="flex justify-between flex-wrap mt-8">
-            <Link to="/client/shop">
+            <Link to="shop">
               <Button
                 variant="outline"
                 className="h-12 px-8 rounded-none text-black font-semibold text-sm uppercase"
@@ -216,7 +216,7 @@ const ShoppingCart = () => {
                 <span>${subtotal.toFixed(2)}</span>
               </li>
             </ul>
-            <Link to="/client/checkout">
+            <Link to="/checkout">
               <Button className="h-12 w-full uppercase bg-black hover:bg-black/70 text-white rounded-none">
                 Proceed to Checkout
               </Button>

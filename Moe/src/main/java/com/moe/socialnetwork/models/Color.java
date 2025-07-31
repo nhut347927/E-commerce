@@ -27,7 +27,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "Colors")
+@Table(name = "colors")
 public class Color {
     @Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

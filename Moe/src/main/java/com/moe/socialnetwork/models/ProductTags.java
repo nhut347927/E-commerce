@@ -15,7 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -28,8 +27,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "sizes")
-public class Size {
+@Table(name = "product_tags")
+public class ProductTags {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -37,55 +36,28 @@ public class Size {
     @Column(unique = true, nullable = false, updatable = false)
     private UUID code;
 
-    @Column(nullable = false, length = 50)
-    private String name;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tag_id", nullable = false)
+    @JsonBackReference
+    private Tag tag;
 
-    @Column(name = "is_deleted", columnDefinition = "boolean default false")
-    private Boolean isDeleted = false;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    @JsonBackReference
+    private Product product;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_create", updatable = false)
     @JsonBackReference
     private User userCreate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_update", updatable = false)
-    @JsonBackReference
-    private User userUpdate;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_delete", updatable = false)
-    @JsonBackReference
-    private User userDelete;
-
-    public void softDelete() {
-        this.deletedAt = LocalDateTime.now();
-        this.isDeleted = true;
-    }
-
-    public void restore() {
-        this.isDeleted = false;
-    }
-
     @PrePersist
     protected void onCreate() {
         LocalDateTime now = LocalDateTime.now();
         this.createdAt = now;
-        this.updatedAt = now;
         this.code = UUID.randomUUID();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
     }
 }

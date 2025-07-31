@@ -162,7 +162,7 @@ export default function ResetPassword() {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full mt-8">
                   Send Reset Link
                 </Button>
               </div>

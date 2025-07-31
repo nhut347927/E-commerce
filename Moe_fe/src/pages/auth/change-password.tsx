@@ -160,7 +160,7 @@ export default function ChangePassword() {
                   )}
                 />
 
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full mt-8">
                   Change Password
                 </Button>
               </div>

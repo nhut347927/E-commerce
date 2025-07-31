@@ -95,11 +95,11 @@ const ShopDetail = () => {
           {/* Breadcrumb */}
           <div className="flex justify-center py-8">
             <div className="flex items-center space-x-2 text-gray-600 text-sm">
-              <Link to="/client/home" className="text-sm cursor-pointer">
+              <Link to="/home" className="text-sm cursor-pointer">
                 Home
               </Link>
               <span className="text-sm cursor-pointer">/</span>
-              <Link to="/client/shop" className="text-sm cursor-pointer">
+              <Link to="/shop" className="text-sm cursor-pointer">
                 Shop
               </Link>
               <span className="text-sm cursor-pointer">/</span>

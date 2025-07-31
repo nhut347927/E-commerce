@@ -63,7 +63,7 @@ export default function Login() {
         description: <p className="text-lime-500">{response.data.message}</p>,
       });
 
-      navigate("/client/home", { replace: true });
+      navigate("/home", { replace: true });
     } catch (error: any) {
       if (error.response && error.response.data) {
         toast({
@@ -93,7 +93,7 @@ export default function Login() {
         description: <p className="text-lime-500">{res.data.message}</p>,
       });
 
-      navigate("/client/home", { replace: true });
+      navigate("/home", { replace: true });
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -190,13 +190,13 @@ export default function Login() {
                 />
 
                 {/* Nút đăng nhập */}
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full mt-8">
                   Login
                 </Button>
 
                 {/* Nút đăng nhập Google */}
                 <GoogleOAuthProvider clientId={clientId}>
-                  <div className="w-full">
+                  <div className="w-full text-center">
                     <GoogleLogin
                       onSuccess={loginGoogleButton}
                       onError={handleLoginFailure}

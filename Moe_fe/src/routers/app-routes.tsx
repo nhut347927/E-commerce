@@ -107,7 +107,7 @@ const AppRoutes = () => {
         </Route>
 
         {/* REDIRECT & NOT FOUND */}
-        <Route path="/" element={<Navigate to="/client/home" />} />
+        <Route path="/" element={<Navigate to="/home" />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>

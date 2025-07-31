@@ -44,7 +44,6 @@ export default function Register() {
     try {
       // Gửi yêu cầu đăng nhập
       const response = await axiosInstance.post("auth/register", {
-        displayName: values.name,
         email: values.email,
         password: values.password,
         confirmPassword: values.confirmPassword,
@@ -183,29 +182,7 @@ export default function Register() {
                     </FormItem>
                   )}
                 />
-                {/* Name Field */}
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem className="grid gap-2">
-                      <FormLabel htmlFor="name">Display name</FormLabel>
-                      <FormControl>
-                        <Input
-                          id="name"
-                          type="text"
-                          placeholder="abc123"
-                          autoComplete="display-name"
-                          {...field}
-                        />
-                      </FormControl>
-                      {errorMessages?.displayName && (
-                        <FormMessage>{errorMessages.displayName}</FormMessage>
-                      )}
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full mt-8">
                   Register
                 </Button>
               </div>
