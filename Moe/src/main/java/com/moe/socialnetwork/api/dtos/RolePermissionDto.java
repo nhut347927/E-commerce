@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RPRolePermissionDTO {
+public class RolePermissionDto {
     private String code;
     @NotBlank(message = "User ID cannot be blank")
     private String userCode;

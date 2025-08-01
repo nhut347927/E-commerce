@@ -52,17 +52,26 @@ public class Rating {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_create", updatable = false)
     @JsonBackReference
     private User userCreate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_update", updatable = false)
+    @JoinColumn(name = "user_update")
     @JsonBackReference
     private User userUpdate;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_delete")
+    @JsonBackReference
+    private User userDelete;
+
     public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
         this.isDeleted = true;
     }
 

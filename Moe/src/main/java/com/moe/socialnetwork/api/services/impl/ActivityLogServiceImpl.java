@@ -13,10 +13,10 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 
-import com.moe.socialnetwork.api.dtos.RPActivityLogDTO;
-import com.moe.socialnetwork.api.dtos.ZRPPageDTO;
+import com.moe.socialnetwork.api.dtos.ActivityLogDto;
+import com.moe.socialnetwork.api.dtos.common.PageDto;
 import com.moe.socialnetwork.api.services.IActivityLogService;
-import com.moe.socialnetwork.jpa.ActivityLogJPA;
+import com.moe.socialnetwork.jpa.ActivityLogJpa;
 import com.moe.socialnetwork.models.ActivityLog;
 import com.moe.socialnetwork.models.User;
 import com.moe.socialnetwork.util.PaginationUtils;
@@ -32,18 +32,18 @@ public class ActivityLogServiceImpl implements IActivityLogService {
     private static final int MAX_BODY_LENGTH = 3000; // Limit request body size
     private static final String DEFAULT_RESPONSE_CODE = "200"; // Default for successful requests
 
-    private final ActivityLogJPA activityLogJPA;
+    private final ActivityLogJpa activityLogJPA;
 
-    public ActivityLogServiceImpl(ActivityLogJPA activityLogJPA) {
+    public ActivityLogServiceImpl(ActivityLogJpa activityLogJPA) {
         this.activityLogJPA = activityLogJPA;
     }
 
-    public ZRPPageDTO<RPActivityLogDTO> getLog(String query, int page, int size, String sort) {
+    public PageDto<ActivityLogDto> getLog(String query, int page, int size, String sort) {
         Pageable pageable = PaginationUtils.buildPageable(page, size, sort);
         Page<ActivityLog> searchPage = activityLogJPA.searchLogs(query, pageable);
 
-        List<RPActivityLogDTO> contents = searchPage.stream()
-                .map(s -> new RPActivityLogDTO(s.getCode(), s.getType(), s.getIp(),
+        List<ActivityLogDto> contents = searchPage.stream()
+                .map(s -> new ActivityLogDto(s.getCode(), s.getType(), s.getIp(),
                         s.getResponseCode(), s.getMessage(), s.getError(), s.getData(),
                         s.getUser() != null ? s.getUser().getCode().toString() : null,
                         s.getCreatedAt().toString()))

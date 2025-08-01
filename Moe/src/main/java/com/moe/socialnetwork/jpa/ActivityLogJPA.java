@@ -11,7 +11,7 @@ import com.moe.socialnetwork.models.ActivityLog;
 /**
  * Author: nhutnm379
  */
-public interface ActivityLogJPA extends JpaRepository<ActivityLog, Long> {
+public interface ActivityLogJpa extends JpaRepository<ActivityLog, Long> {
     @Query("""
                 SELECT a FROM ActivityLog a
                 WHERE

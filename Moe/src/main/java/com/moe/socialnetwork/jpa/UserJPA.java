@@ -14,7 +14,7 @@ import com.moe.socialnetwork.models.User;
 /**
  * Author: nhutnm379
  */
-public interface UserJPA extends JpaRepository<User, Long> {
+public interface UserJpa extends JpaRepository<User, Long> {
 	@Query("SELECT u FROM User u WHERE u.email = :email")
 	Optional<User> findByEmail(@Param("email") String email);
 

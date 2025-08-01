@@ -12,7 +12,7 @@ import com.moe.socialnetwork.models.RolePermission;
 /**
  * Author: nhutnm379
  */
-public interface RolePermissionJPA extends JpaRepository<RolePermission, Long> {
+public interface RolePermissionJpa extends JpaRepository<RolePermission, Long> {
 	@Query("SELECT rp FROM RolePermission rp JOIN rp.user u WHERE u.id = :userId")
 	List<RolePermission> findRolePermissionsByUserId(@Param("userId") Long userId);
 

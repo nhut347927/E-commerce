@@ -9,12 +9,12 @@ import ResetPassword from "@/pages/auth/reset-password";
 import Home from "@/pages/client/home/home-page";
 import KeepAlive from "react-activation";
 
-import Dashboard from "@/pages/admin/home/dashboard-page";
+import Dashboard from "@/pages/dashboard/dashboard/dashboard-page";
 import Login from "@/pages/auth/login";
 import Register from "@/pages/auth/register";
-import ActivityLogPage from "@/pages/admin/log/activitylog-page";
-import PermissionsPage from "@/pages/admin/permissions/permissions-page";
-import UserPage from "@/pages/admin/user/user-page";
+import ActivityLogPage from "@/pages/dashboard/log/activitylog-page";
+import PermissionsPage from "@/pages/dashboard/permissions/permissions-page";
+import UserPage from "@/pages/dashboard/user/user-page";
 import Shop from "@/pages/client/shop/shop";
 import ShopDetail from "@/pages/client/shop-detail/shop-detail";
 import ShoppingCart from "@/pages/client/shopping-cart/shopping-cart";
@@ -24,10 +24,12 @@ import Contact from "@/pages/client/other/contact";
 import Blog from "@/pages/client/other/blog";
 import BlogDetail from "@/pages/client/other/blog-detail";
 import Wishlist from "@/pages/client/other/wishlist";
+import ColorPage from "@/pages/dashboard/product/color";
+import SizePage from "@/pages/dashboard/product/size";
 // Lazy load layouts
 const ClientLayout = React.lazy(() => import("./client-layout"));
 const AuthLayout = React.lazy(() => import("./auth-layout"));
-const AdminLayout = React.lazy(() => import("./admin-layout"));
+const AdminLayout = React.lazy(() => import("./dashboard-layout"));
 
 const AppRoutes = () => {
   return (
@@ -57,7 +59,7 @@ const AppRoutes = () => {
         </Route>
 
         {/* ADMIN ROUTES */}
-        <Route path="/admin" element={<AdminLayout />}>
+        <Route path="/dashboard" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
           <Route
             path="home"
@@ -75,20 +77,29 @@ const AppRoutes = () => {
               </KeepAlive>
             }
           />
-          <Route
-            path="permissions"
-            element={
-              <KeepAlive id="permissions">
-                <PermissionsPage />
-              </KeepAlive>
-            }
-          />
+          <Route path="permissions" element={<PermissionsPage />} />
 
           <Route
             path="user"
             element={
               <KeepAlive id="user">
                 <UserPage />
+              </KeepAlive>
+            }
+          />
+          <Route
+            path="product/color"
+            element={
+              <KeepAlive id="color">
+                <ColorPage />
+              </KeepAlive>
+            }
+          />
+          <Route
+            path="product/size"
+            element={
+              <KeepAlive id="size">
+                <SizePage />
               </KeepAlive>
             }
           />

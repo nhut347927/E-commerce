@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RPActivityLogDTO {
+public class ActivityLogDto {
 
     private UUID code;
     private String type; // get/post/put/delete/path

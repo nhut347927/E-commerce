@@ -54,3 +54,18 @@ export interface Users {
   userDelete?: string;
   lastLogin?: string;
 }
+
+
+
+//-------------------Size----------------------
+export interface SizeAll {
+    code:string;
+    name:string;
+    createAt:string;
+    userCreateCode:string;
+    userCreateDisplayName:string;
+    updateAt:string;
+    userUpdateCode:string;
+    userUpdateDisplayName:string;
+}
+

@@ -1,10 +1,13 @@
 package com.moe.socialnetwork.util;
 
-import com.moe.socialnetwork.api.dtos.ZRPPageDTO;
 import org.springframework.data.domain.*;
 
-import java.util.List;
+import com.moe.socialnetwork.api.dtos.common.PageDto;
 
+import java.util.List;
+/**
+ * Author: nhutnm379
+ */
 public class PaginationUtils {
 
     /**
@@ -25,8 +28,8 @@ public class PaginationUtils {
      * @param contents Danh sách dữ liệu sau khi map
      * @return ZRPPageDTO<T>
      */
-    public static <T> ZRPPageDTO<T> buildPageDTO(Page<?> page, List<T> contents) {
-        ZRPPageDTO<T> dto = new ZRPPageDTO<>();
+    public static <T> PageDto<T> buildPageDTO(Page<?> page, List<T> contents) {
+        PageDto<T> dto = new PageDto<>();
         dto.setContents(contents);
         dto.setTotalElements(page.getTotalElements());
         dto.setTotalPages(page.getTotalPages());

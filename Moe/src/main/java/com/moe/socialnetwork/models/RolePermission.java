@@ -61,9 +61,7 @@ public class RolePermission {
 
 	@Column(nullable = false)
 	private Boolean canRestore = false;
-
 	
-
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
 
@@ -78,7 +76,7 @@ public class RolePermission {
 	private User userCreate;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_update", updatable = false)
+	@JoinColumn(name = "user_update")
 	@JsonBackReference
 	private User userUpdate;
 

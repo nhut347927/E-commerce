@@ -60,7 +60,7 @@ public class Setting  {
 	private User userCreate;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_update", updatable = false)
+	@JoinColumn(name = "user_update")
 	@JsonBackReference
 	private User userUpdate;
 

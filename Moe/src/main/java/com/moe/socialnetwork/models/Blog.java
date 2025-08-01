@@ -30,7 +30,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Table(name = "blogs")
 public class Blog {
-    @Id
+	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
@@ -40,11 +40,14 @@ public class Blog {
 	@Column(nullable = false, length = 100)
 	private String title;
 
-    @Column(length = 255)
+	@Column(length = 255)
 	private String image;
 
-     @Column(name = "description", columnDefinition = "TEXT", nullable = false)
-    private String description;
+	@Column(name = "description", columnDefinition = "TEXT", nullable = false)
+	private String description;
+
+	@Column(name = "is_deleted", columnDefinition = "boolean default false")
+	private Boolean isDeleted = false;
 
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
@@ -52,15 +55,28 @@ public class Blog {
 	@Column(name = "updated_at")
 	private LocalDateTime updatedAt;
 
+	@Column(name = "deleted_at")
+	private LocalDateTime deletedAt;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_create", updatable = false)
 	@JsonBackReference
 	private User userCreate;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_update", updatable = false)
+	@JoinColumn(name = "user_update")
 	@JsonBackReference
 	private User userUpdate;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_delete")
+	@JsonBackReference
+	private User userDelete;
+
+	public void softDelete() {
+		this.deletedAt = LocalDateTime.now();
+		this.isDeleted = true;
+	}
 
 	@PrePersist
 	protected void onCreate() {

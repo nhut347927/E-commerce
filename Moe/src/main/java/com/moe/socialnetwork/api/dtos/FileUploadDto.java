@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RQFileUploadDTO {
+public class FileUploadDto {
 
     @NotNull(message = "File must not be null")
     private MultipartFile file;

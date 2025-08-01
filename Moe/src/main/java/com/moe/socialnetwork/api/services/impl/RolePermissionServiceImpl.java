@@ -7,11 +7,11 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import com.moe.socialnetwork.models.Role;
-import com.moe.socialnetwork.api.dtos.RPRolePermissionDTO;
+import com.moe.socialnetwork.api.dtos.RolePermissionDto;
 import com.moe.socialnetwork.api.services.IRolePermissionService;
-import com.moe.socialnetwork.jpa.RoleJPA;
-import com.moe.socialnetwork.jpa.RolePermissionJPA;
-import com.moe.socialnetwork.jpa.UserJPA;
+import com.moe.socialnetwork.jpa.RoleJpa;
+import com.moe.socialnetwork.jpa.RolePermissionJpa;
+import com.moe.socialnetwork.jpa.UserJpa;
 import com.moe.socialnetwork.models.RolePermission;
 import com.moe.socialnetwork.models.User;
 
@@ -24,17 +24,17 @@ import com.moe.socialnetwork.exception.AppException;
  */
 @Service
 public class RolePermissionServiceImpl implements IRolePermissionService {
-    private final RolePermissionJPA rolePermissionJpa;
-    private final UserJPA userJpa;
-    private final RoleJPA roleJpa;
+    private final RolePermissionJpa rolePermissionJpa;
+    private final UserJpa userJpa;
+    private final RoleJpa roleJpa;
 
-    public RolePermissionServiceImpl(RolePermissionJPA rolePermissionJpa, UserJPA userJpa, RoleJPA roleJpa) {
+    public RolePermissionServiceImpl(RolePermissionJpa rolePermissionJpa, UserJpa userJpa, RoleJpa roleJpa) {
         this.rolePermissionJpa = rolePermissionJpa;
         this.userJpa = userJpa;
         this.roleJpa = roleJpa;
     }
 
-    public List<RPRolePermissionDTO> getPermissionsByUser(UUID userCode) {
+    public List<RolePermissionDto> getPermissionsByUser(UUID userCode) {
         List<RolePermission> rolePermissions = rolePermissionJpa.findByUserCode(userCode);
 
         // Nếu có dữ liệu, chuyển sang DTO và trả về
@@ -49,7 +49,7 @@ public class RolePermissionServiceImpl implements IRolePermissionService {
 
         return allRoles.stream()
                 .map(role -> {
-                    RPRolePermissionDTO dto = new RPRolePermissionDTO();
+                    RolePermissionDto dto = new RolePermissionDto();
                     dto.setUserCode(userCode.toString());
                     dto.setRoleCode(role.getCode().toString());
                     dto.setRoleName(role.getRoleName());
@@ -64,7 +64,7 @@ public class RolePermissionServiceImpl implements IRolePermissionService {
     }
 
  @Transactional
-    public void createOrUpdatePermission(List<RPRolePermissionDTO> rolePermissions) {
+    public void createOrUpdatePermission(List<RolePermissionDto> rolePermissions) {
         if (rolePermissions.isEmpty()) {
             throw new AppException("No permissions provided", 400);
         }
@@ -76,7 +76,7 @@ public class RolePermissionServiceImpl implements IRolePermissionService {
         List<Role> roles = roleJpa.findAll();
         List<RolePermission> result = new ArrayList<>();
 
-        for (RPRolePermissionDTO perDto : rolePermissions) {
+        for (RolePermissionDto perDto : rolePermissions) {
             Role role = roles.stream()
                     .filter(r -> r.getCode().toString().equals(perDto.getRoleCode()))
                     .findFirst()
@@ -114,8 +114,8 @@ public class RolePermissionServiceImpl implements IRolePermissionService {
         rolePermissionJpa.deleteByUserCode(UUID.fromString(code));
     }
 
-    private RPRolePermissionDTO toDTO(RolePermission entity) {
-        return new RPRolePermissionDTO(
+    private RolePermissionDto toDTO(RolePermission entity) {
+        return new RolePermissionDto(
                 entity.getCode().toString(),
                 entity.getUser().getCode().toString(),
                 entity.getRole().getCode().toString(),

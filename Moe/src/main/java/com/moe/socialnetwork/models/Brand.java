@@ -40,7 +40,7 @@ public class Brand {
 	private String name;
 
 	@Column(name = "is_deleted", columnDefinition = "boolean default false")
-	private Boolean isDeleted = false;
+    private Boolean isDeleted = false;
 
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
@@ -57,22 +57,18 @@ public class Brand {
 	private User userCreate;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_update", updatable = false)
+	@JoinColumn(name = "user_update")
 	@JsonBackReference
 	private User userUpdate;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_delete", updatable = false)
+	@JoinColumn(name = "user_delete")
 	@JsonBackReference
 	private User userDelete;
 
 	public void softDelete() {
 		this.deletedAt = LocalDateTime.now();
 		this.isDeleted = true;
-	}
-
-	public void restore() {
-		this.isDeleted = false;
 	}
 
 	@PrePersist

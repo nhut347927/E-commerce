@@ -22,7 +22,7 @@ import com.moe.socialnetwork.auth.dtos.RQRegisterDTO;
 import com.moe.socialnetwork.auth.dtos.RPUserRegisterDTO;
 import com.moe.socialnetwork.auth.services.IAuthService;
 import com.moe.socialnetwork.auth.services.ITokenService;
-import com.moe.socialnetwork.jpa.UserJPA;
+import com.moe.socialnetwork.jpa.UserJpa;
 import com.moe.socialnetwork.models.User;
 import com.moe.socialnetwork.exception.AppException;
 import com.moe.socialnetwork.util.AuthorityUtil;
@@ -35,13 +35,13 @@ import jakarta.transaction.Transactional;
 @Service
 public class AuthServiceImpl implements IAuthService {
 
-    private final UserJPA userJpa;
+    private final UserJpa userJpa;
     private final PasswordEncoder passwordEncoder;
     private final ITokenService tokenService;
     @Value("${google.client.id}")
     private String googleClientId;
 
-    public AuthServiceImpl(UserJPA userJpa, PasswordEncoder passwordEncoder, ITokenService tokenService) {
+    public AuthServiceImpl(UserJpa userJpa, PasswordEncoder passwordEncoder, ITokenService tokenService) {
         this.userJpa = userJpa;
         this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;

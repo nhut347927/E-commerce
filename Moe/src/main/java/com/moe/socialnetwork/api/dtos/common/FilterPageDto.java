@@ -1,4 +1,4 @@
-package com.moe.socialnetwork.api.dtos;
+package com.moe.socialnetwork.api.dtos.common;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
@@ -11,9 +11,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ZRQFilterPageDTO {
+public class FilterPageDto {
     private String code;
-    private String keyWord;
+    private String q;
 
     @Min(value = 0, message = "Page must be greater than or equal to 0.")
     private Integer page = 0;

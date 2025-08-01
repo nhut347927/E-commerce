@@ -1,7 +1,7 @@
 package com.moe.socialnetwork.api.controllers;
 
-import com.moe.socialnetwork.api.dtos.ZRQCodeAndContentDTO;
-import com.moe.socialnetwork.api.dtos.RQFileUploadDTO;
+import com.moe.socialnetwork.api.dtos.FileUploadDto;
+import com.moe.socialnetwork.api.dtos.common.CodeDto;
 import com.moe.socialnetwork.api.services.ICloudinaryService;
 import com.moe.socialnetwork.api.services.impl.CloudinaryServiceImpl;
 import com.moe.socialnetwork.response.ResponseAPI;
@@ -28,7 +28,7 @@ public class FileUploadController {
 
     @PostMapping("/images")
     public ResponseEntity<ResponseAPI<String>> uploadImage(
-        @Valid @ModelAttribute RQFileUploadDTO request
+        @Valid @ModelAttribute FileUploadDto request
     ) throws IOException {
         String publicId = cloudinaryService.uploadImage(request.getFile());
         ResponseAPI<String> response = new ResponseAPI<>();
@@ -40,7 +40,7 @@ public class FileUploadController {
 
     @PostMapping("/delete")
     public ResponseEntity<ResponseAPI<String>> deleteFile(
-        @RequestBody ZRQCodeAndContentDTO request
+        @RequestBody CodeDto request
     ) throws IOException {
         boolean deleted = cloudinaryService.deleteFile(request.getCode());
         ResponseAPI<String> response = new ResponseAPI<>();

@@ -3,17 +3,20 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Bell,
+  BookOpen,
   ChevronDown,
   Cloud,
   FileClock,
-  Grid,
   Home,
   Menu,
   MessageSquare,
+  Package2,
   PanelLeft,
+  Percent,
   Search,
   Settings,
   Shield,
+  ShoppingCart,
   User,
   X,
 } from "lucide-react";
@@ -45,45 +48,75 @@ const AdminLayout = () => {
   );
 
   // Mảng sidebar items (bỏ isActive cứng)
-  const sidebarItems = [
-    {
-      title: "Home",
-      icon: <Home />,
-      isActive: false,
-      path: "/admin",
-    },
-    {
-      title: "Activity Log",
-      icon: <FileClock />,
-      isActive: false,
-      path: "/admin/activity-log",
-    },
-    {
-      title: "User",
-      icon: <User />,
-      isActive: false,
-      path: "/admin/user",
-    },
-    {
-      title: "Permissions",
-      icon: <Shield />,
-      isActive: false,
-      path: "/admin/permissions",
-    },
-    {
-      title: "App (Example)",
-      icon: <Grid />,
-      badge: "2",
-      isActive: false,
-      items: [
-        { title: "All Apps", url: "/admin/app/all" },
-        { title: "Recent", url: "/admin/app/recent" },
-        { title: "Updates", url: "/admin/app/updates", badge: "2" },
-        { title: "Installed", url: "/admin/app/installed" },
-      ],
-      path: "/admin/app",
-    },
-  ];
+ const sidebarItems = [
+  {
+    title: 'Dashboard',
+    icon: <Home />,
+    isActive: false,
+    path: '/dashboard',
+  },
+  {
+    title: 'User',
+    icon: <User />,
+    isActive: false,
+    path: '/dashboard/user',
+  },
+  {
+    title: 'Permissions',
+    icon: <Shield />,
+    isActive: false,
+    path: '/dashboard/permissions',
+  },
+  {
+    title: 'Activity Log',
+    icon: <FileClock />,
+    isActive: false,
+    path: '/dashboard/activity-log',
+  },
+  {
+    title: 'Product',
+    icon: <Package2 />,
+    //badge: "2",
+    isActive: false,
+    path: '/dashboard/product',
+    items: [
+      { title: 'All Products', url: '/dashboard/product/all' },
+      { title: 'Category', url: '/dashboard/product/category' },
+      { title: 'Brand', url: '/dashboard/product/brand' },
+      { title: 'Tag', url: '/dashboard/product/tag' },
+      { title: 'Color', url: '/dashboard/product/color' },
+      {
+        title: 'Size',
+        url: '/dashboard/product/size',
+        //badge: "2"
+      },
+    ],
+  },
+  {
+    title: 'Order',
+    icon: <ShoppingCart />,
+    isActive: false,
+    path: '/dashboard/order',
+  },
+  {
+    title: 'Discount',
+    icon: <Percent />,
+    isActive: false,
+    path: '/dashboard/discount',
+  },
+  {
+    title: 'Blog',
+    icon: <BookOpen />,
+    isActive: false,
+    path: '/dashboard/blog',
+  },
+  {
+    title: 'Setting',
+    icon: <Settings />,
+    isActive: false,
+    path: '/dashboard/setting',
+  },
+];
 
   // Hàm toggle expanded menu
   const toggleExpanded = (title: string) => {
@@ -146,7 +179,7 @@ const AdminLayout = () => {
               <img className="w-9" src={logo} alt="" />
               <div>
                 <h2 className="font-semibold">MOE</h2>
-                <p className="text-xs text-muted-foreground">Social network</p>
+                <p className="text-xs text-muted-foreground">E-commerce</p>
               </div>
             </div>
             <Button
@@ -193,14 +226,14 @@ const AdminLayout = () => {
                         {item.icon}
                         <span>{item.title}</span>
                       </div>
-                      {item.badge && (
+                      {/* {item.badge && (
                         <Badge
                           variant="outline"
                           className="ml-auto rounded-full px-2 py-0.5 text-xs"
                         >
                           {item.badge}
                         </Badge>
-                      )}
+                      )} */}
                       {item.items && (
                         <ChevronDown
                           className={cn(
@@ -229,14 +262,14 @@ const AdminLayout = () => {
                               )}
                             >
                               {subItem.title}
-                              {subItem.badge && (
+                              {/* {subItem.badge && (
                                 <Badge
                                   variant="outline"
                                   className="ml-auto rounded-full px-2 py-0.5 text-xs"
                                 >
                                   {subItem.badge}
                                 </Badge>
-                              )}
+                              )} */}
                             </a>
                           );
                         })}
@@ -250,10 +283,10 @@ const AdminLayout = () => {
 
           <div className="border-t p-3">
             <div className="space-y-1">
-              <button className="flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted">
+              {/* <button className="flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted">
                 <Settings className="h-5 w-5" />
                 <span>Settings</span>
-              </button>
+              </button> */}
               <button className="flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-6 w-6">
@@ -287,7 +320,7 @@ const AdminLayout = () => {
               <img className="w-9" src={logo} alt="" />
               <div>
                 <h2 className="font-semibold">MOE</h2>
-                <p className="text-xs text-muted-foreground">Social network</p>
+                <p className="text-xs text-muted-foreground">E-commerce</p>
               </div>
             </div>
           </div>
@@ -327,14 +360,14 @@ const AdminLayout = () => {
                         {item.icon}
                         <span>{item.title}</span>
                       </div>
-                      {item.badge && (
+                      {/* {item.badge && (
                         <Badge
                           variant="outline"
                           className="ml-auto rounded-full px-2 py-0.5 text-xs"
                         >
                           {item.badge}
                         </Badge>
-                      )}
+                      )} */}
                       {item.items && (
                         <ChevronDown
                           className={cn(
@@ -363,14 +396,14 @@ const AdminLayout = () => {
                               )}
                             >
                               {subItem.title}
-                              {subItem.badge && (
+                              {/* {subItem.badge && (
                                 <Badge
                                   variant="outline"
                                   className="ml-auto rounded-full px-2 py-0.5 text-xs"
                                 >
                                   {subItem.badge}
                                 </Badge>
-                              )}
+                              )} */}
                             </a>
                           );
                         })}
@@ -384,10 +417,10 @@ const AdminLayout = () => {
 
           <div className="border-t p-3">
             <div className="space-y-1">
-              <button className="flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted">
+              {/* <button className="flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted">
                 <Settings className="h-5 w-5" />
                 <span>Settings</span>
-              </button>
+              </button> */}
               <button className="flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-6 w-6">

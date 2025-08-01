@@ -1,15 +1,17 @@
-package com.moe.socialnetwork.api.dtos;
+package com.moe.socialnetwork.api.dtos.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-
+/**
+ * Author: nhutnm379
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ZRPPageDTO<T> {
+public class PageDto<T> {
 
     private List<T> contents;          // Dữ liệu thực tế
     private long totalElements;        // Tổng số phần tử

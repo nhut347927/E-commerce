@@ -28,7 +28,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "product_tags")
-public class ProductTags {
+public class ProductTag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

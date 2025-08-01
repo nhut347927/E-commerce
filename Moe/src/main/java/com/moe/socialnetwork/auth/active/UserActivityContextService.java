@@ -8,8 +8,11 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.moe.socialnetwork.api.dtos.ZRPPageDTO;
+import com.moe.socialnetwork.api.dtos.common.PageDto;
 
+/**
+ * Author: nhutnm379
+ */
 @Service
 public class UserActivityContextService {
     private final ConcurrentHashMap<String, UserActivity> activeUsers = new ConcurrentHashMap<>();
@@ -27,7 +30,7 @@ public class UserActivityContextService {
         });
     }
 
-    public ZRPPageDTO<UserActivity> getActiveUsers(String query, int page, int size) {
+    public PageDto<UserActivity> getActiveUsers(String query, int page, int size) {
         // Input validation
         if (page < 0)
             page = 0;
@@ -61,7 +64,7 @@ public class UserActivityContextService {
                 : List.of();
 
         // Step 4: Build ZRPPageDTO
-        return new ZRPPageDTO<>(
+        return new PageDto<>(
                 contents,
                 totalElements,
                 totalPages,

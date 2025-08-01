@@ -57,22 +57,18 @@ public class Tag {
 	private User userCreate;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_update", updatable = false)
+	@JoinColumn(name = "user_update")
 	@JsonBackReference
 	private User userUpdate;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_delete", updatable = false)
+	@JoinColumn(name = "user_delete")
 	@JsonBackReference
 	private User userDelete;
 
 	public void softDelete() {
 		this.deletedAt = LocalDateTime.now();
 		this.isDeleted = true;
-	}
-
-	public void restore() {
-		this.isDeleted = false;
 	}
 
 	@PrePersist

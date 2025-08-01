@@ -2,7 +2,9 @@ package com.moe.socialnetwork.auth.active;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
+/**
+ * Author: nhutnm379
+ */
 @Component
 public class UserActivityCleanupJob {
 

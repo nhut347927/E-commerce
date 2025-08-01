@@ -6,6 +6,6 @@ import com.moe.socialnetwork.models.Image;
 /**
  * Author: nhutnm379
  */
-public interface ImageJPA extends JpaRepository<Image, Long>{
+public interface ImageJpa extends JpaRepository<Image, Long>{
     
 }

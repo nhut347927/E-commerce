@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.moe.socialnetwork.auth.services.ITokenService;
-import com.moe.socialnetwork.jpa.UserJPA;
+import com.moe.socialnetwork.jpa.UserJpa;
 import com.moe.socialnetwork.models.User;
 import com.moe.socialnetwork.exception.AppException;
 
@@ -33,7 +33,7 @@ import java.security.Key;
 public class TokenServiceImpl implements ITokenService {
 
     private final Key key;
-    private final UserJPA userJPA;
+    private final UserJpa userJPA;
 
     @Value("${app.expiration24h}")
     private Long jwtExpirationMs24h;
@@ -44,7 +44,7 @@ public class TokenServiceImpl implements ITokenService {
     @Value("${app.jwtSecret}")
     private String jwtSecret;
 
-    public TokenServiceImpl(UserJPA userJPA, @Value("${app.jwtSecret}") String jwtSecret) {
+    public TokenServiceImpl(UserJpa userJPA, @Value("${app.jwtSecret}") String jwtSecret) {
         this.userJPA = userJPA;
         if (jwtSecret == null || jwtSecret.isBlank()) {
             throw new AppException("JWT secret key must not be null or empty.",500);
