@@ -79,7 +79,7 @@ const SizePage: React.FC = () => {
   const validateCreateForm = (): boolean => {
     const errors: FormErrors = {};
     if (!createFormData.name.trim()) {
-      errors.name = "Size name is requizinc";
+      errors.name = "Size name is required";
     } else if (createFormData.name.length > 50) {
       errors.name = "Size name must not exceed 50 characters";
     }
@@ -90,10 +90,10 @@ const SizePage: React.FC = () => {
   const validateUpdateForm = (): boolean => {
     const errors: FormErrors = {};
     if (!updateFormData.code.trim()) {
-      errors.code = "Code is requizinc";
+      errors.code = "Code is required";
     }
     if (!updateFormData.name.trim()) {
-      errors.name = "Size name is requizinc";
+      errors.name = "Size name is required";
     } else if (updateFormData.name.length > 50) {
       errors.name = "Size name must not exceed 50 characters";
     }
@@ -106,7 +106,7 @@ const SizePage: React.FC = () => {
     if (!validateCreateForm()) {
       toast({
         title: "Form Error",
-        description: "Please fill out all requizinc fields correctly.",
+        description: "Please fill out all required fields correctly.",
         variant: "destructive",
       });
       return;
@@ -134,7 +134,7 @@ const SizePage: React.FC = () => {
         title: "Error",
         description:
           err.response?.data?.message ||
-          "An error occurzinc while creating size.",
+          "An error occurred while creating size.",
         variant: "destructive",
       });
     }
@@ -145,7 +145,7 @@ const SizePage: React.FC = () => {
     if (!validateUpdateForm()) {
       toast({
         title: "Form Error",
-        description: "Please fill out all requizinc fields correctly.",
+        description: "Please fill out all required fields correctly.",
         variant: "destructive",
       });
       return;
@@ -173,7 +173,7 @@ const SizePage: React.FC = () => {
         title: "Error",
         description:
           err.response?.data?.message ||
-          "An error occurzinc while updating size.",
+          "An error occurred while updating size.",
         variant: "destructive",
       });
     }
@@ -200,7 +200,7 @@ const SizePage: React.FC = () => {
         title: "Error",
         description:
           err.response?.data?.message ||
-          "An error occurzinc while deleting size.",
+          "An error occurred while deleting size.",
         variant: "destructive",
       });
     }
@@ -293,6 +293,7 @@ const SizePage: React.FC = () => {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Stt</TableHead>
               <TableHead>Size Name</TableHead>
               <TableHead>Created By</TableHead>
               <TableHead>Created At</TableHead>
@@ -315,9 +316,10 @@ const SizePage: React.FC = () => {
                 </TableCell>
               </TableRow>
             ) : data?.contents.length ? (
-              data.contents.map((size) => (
+              data.contents.map((size, index) => (
                 <TableRow key={size.code}>
-                  <TableCell>{size.name}</TableCell>
+                  <TableCell>{index+1}</TableCell>
+                  <TableCell><span className="border-2 hover:bg-black hover:text-white p-2 px-4">{size.name}</span></TableCell>
                   <TableCell>{size.userCreateDisplayName}</TableCell>
                   <TableCell>{formatDateTime(size.createAt)}</TableCell>
                   <TableCell>{size.userUpdateDisplayName || "-"}</TableCell>
@@ -359,7 +361,7 @@ const SizePage: React.FC = () => {
           <Button
             disabled={!data.hasPrevious}
             onClick={() => setPage(page - 1)}
-            className="bg-zinc-500 hover:bg-zinc-600 text-white rounded-lg"
+            className="bg-zinc-900 hover:bg-zinc-900/70 text-white rounded-lg"
           >
             Previous
           </Button>
@@ -370,7 +372,7 @@ const SizePage: React.FC = () => {
           <Button
             disabled={!data.hasNext}
             onClick={() => setPage(page + 1)}
-            className="bg-zinc-500 hover:bg-zinc-600 text-white rounded-lg"
+            className="bg-zinc-900 hover:bg-zinc-900/70 text-white rounded-lg"
           >
             Next
           </Button>

@@ -26,6 +26,10 @@ import BlogDetail from "@/pages/client/other/blog-detail";
 import Wishlist from "@/pages/client/other/wishlist";
 import ColorPage from "@/pages/dashboard/product/color";
 import SizePage from "@/pages/dashboard/product/size";
+import TagPage from "@/pages/dashboard/product/tag";
+import BrandPage from "@/pages/dashboard/product/brand";
+import CategoryPage from "@/pages/dashboard/product/category";
+import BlogPage from "@/pages/dashboard/blog/blog-page";
 // Lazy load layouts
 const ClientLayout = React.lazy(() => import("./client-layout"));
 const AuthLayout = React.lazy(() => import("./auth-layout"));
@@ -100,6 +104,38 @@ const AppRoutes = () => {
             element={
               <KeepAlive id="size">
                 <SizePage />
+              </KeepAlive>
+            }
+          />
+          <Route
+            path="product/tag"
+            element={
+              <KeepAlive id="tag">
+                <TagPage />
+              </KeepAlive>
+            }
+          />
+          <Route
+            path="product/brand"
+            element={
+              <KeepAlive id="brand">
+                <BrandPage />
+              </KeepAlive>
+            }
+          />
+           <Route
+            path="product/category"
+            element={
+              <KeepAlive id="category">
+                <CategoryPage />
+              </KeepAlive>
+            }
+          />
+            <Route
+            path="blog"
+            element={
+              <KeepAlive id="blog">
+                <BlogPage  />
               </KeepAlive>
             }
           />

@@ -3,14 +3,13 @@ package com.moe.socialnetwork.api.services;
 import java.io.File;
 import java.io.IOException;
 
-import org.springframework.web.multipart.MultipartFile;
 /**
  * Author: nhutnm379
  */
 public interface ICloudinaryService {
-    String uploadImage(MultipartFile file) throws IOException;
+    String uploadImage(String base64) throws IOException;
 
-    String uploadAnyFile(MultipartFile file) throws IOException;
+    String uploadAnyFile(String base64) throws IOException;
 
     String uploadImage(File file) throws IOException;
 

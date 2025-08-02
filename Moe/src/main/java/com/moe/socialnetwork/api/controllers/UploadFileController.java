@@ -18,19 +18,19 @@ import java.io.IOException;
  */
 @RestController
 @RequestMapping("/api/files")
-public class FileUploadController {
+public class UploadFileController {
 
     private final ICloudinaryService cloudinaryService;
 
-    public FileUploadController(CloudinaryServiceImpl cloudinaryService) {
+    public UploadFileController(CloudinaryServiceImpl cloudinaryService) {
         this.cloudinaryService = cloudinaryService;
     }
 
-    @PostMapping("/images")
+    @PostMapping("/upload/images")
     public ResponseEntity<ResponseAPI<String>> uploadImage(
-        @Valid @ModelAttribute FileUploadDto request
+        @Valid @RequestBody FileUploadDto request
     ) throws IOException {
-        String publicId = cloudinaryService.uploadImage(request.getFile());
+        String publicId = cloudinaryService.uploadImage(request.getBase64());
         ResponseAPI<String> response = new ResponseAPI<>();
         response.setCode(200);
         response.setMessage("Success");
@@ -49,7 +49,7 @@ public class FileUploadController {
             response.setMessage("Success");
         } else {
             response.setCode(400);
-            response.setMessage("Success");
+            response.setMessage("Failed to delete file");
         }
         return ResponseEntity.ok(response);
     }

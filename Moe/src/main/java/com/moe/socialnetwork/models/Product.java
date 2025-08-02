@@ -43,6 +43,9 @@ public class Product {
     @Column(nullable = false)
     private BigDecimal price;
 
+    @Column(nullable = false, length = 255)
+	private String image;
+
     @Column(name = "short_description", length = 200, nullable = false)
     private String shortDescription;
 

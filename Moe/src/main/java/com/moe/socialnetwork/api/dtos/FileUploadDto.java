@@ -1,11 +1,11 @@
 package com.moe.socialnetwork.api.dtos;
 
-import org.springframework.web.multipart.MultipartFile;
+import jakarta.validation.constraints.NotBlank;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 /**
  * Author: nhutnm379
  */
@@ -14,6 +14,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class FileUploadDto {
 
-    @NotNull(message = "File must not be null")
-    private MultipartFile file;
+    @NotBlank(message = "Base64 string must not be empty")
+    private String base64;
 }

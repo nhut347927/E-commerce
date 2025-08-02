@@ -6,11 +6,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.moe.socialnetwork.api.services.ICloudinaryService;
+import com.moe.socialnetwork.util.Base64Util;
+
 /**
  * Author: nhutnm379
  */
@@ -22,9 +23,10 @@ public class CloudinaryServiceImpl implements ICloudinaryService {
         this.cloudinary = cloudinary;
     }
 
-    public String uploadImage(MultipartFile file) throws IOException {
+    public String uploadImage(String base64) throws IOException {
+        String cleanBase64 = Base64Util.cleanBase64Header(base64);
         Map<?, ?> response = cloudinary.uploader().upload(
-                file.getBytes(),
+                "data:image/jpeg;base64," + cleanBase64,
                 ObjectUtils.asMap(
                         "resource_type", "image",
                         "format", "jpg",
@@ -32,10 +34,10 @@ public class CloudinaryServiceImpl implements ICloudinaryService {
         return (String) response.get("public_id");
     }
 
- 
-    public String uploadAnyFile(MultipartFile file) throws IOException {
+    public String uploadAnyFile(String base64) throws IOException {
+        String cleanBase64 = Base64Util.cleanBase64Header(base64);
         Map<?, ?> response = cloudinary.uploader().upload(
-                file.getBytes(),
+                "data:application/octet-stream;base64," + cleanBase64,
                 ObjectUtils.asMap(
                         "resource_type", "raw",
                         "folder", "files"));
@@ -57,11 +59,11 @@ public class CloudinaryServiceImpl implements ICloudinaryService {
         if (publicId.startsWith("videos/")) {
             return "video";
         } else if (publicId.startsWith("audios/")) {
-            return "raw"; // Cloudinary xài "raw" cho file audio
+            return "raw"; // Cloudinary uses "raw" for audio files
         } else if (publicId.startsWith("images/")) {
             return "image";
         }
-        // fallback nếu không rõ
+        // Fallback if resource type is unclear
         return "image";
     }
 
@@ -70,10 +72,8 @@ public class CloudinaryServiceImpl implements ICloudinaryService {
                 file,
                 ObjectUtils.asMap(
                         "resource_type", "image",
-                        "format", "jpg", // Chuyển đổi tất cả thành JPG
+                        "format", "jpg",
                         "folder", "images"));
         return (String) response.get("public_id");
     }
-
-
 }

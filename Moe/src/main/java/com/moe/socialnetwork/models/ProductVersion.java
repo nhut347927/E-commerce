@@ -49,6 +49,9 @@ public class ProductVersion {
     @JsonBackReference
     private Color color;
 
+	@Column(nullable = false, length = 255)
+	private String image;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     @JsonBackReference

@@ -68,4 +68,61 @@ export interface SizeAll {
     userUpdateCode:string;
     userUpdateDisplayName:string;
 }
+//-------------------Color----------------------
+export interface ColorAll {
+    code:string;
+    name:string;
+    createAt:string;
+    userCreateCode:string;
+    userCreateDisplayName:string;
+    updateAt:string;
+    userUpdateCode:string;
+    userUpdateDisplayName:string;
+}
+//-------------------Tag----------------------
+export interface TagAll {
+    code:string;
+    name:string;
+    createAt:string;
+    userCreateCode:string;
+    userCreateDisplayName:string;
+    updateAt:string;
+    userUpdateCode:string;
+    userUpdateDisplayName:string;
+}
+//-------------------Brand----------------------
+export interface BrandAll {
+    code:string;
+    name:string;
+    createAt:string;
+    userCreateCode:string;
+    userCreateDisplayName:string;
+    updateAt:string;
+    userUpdateCode:string;
+    userUpdateDisplayName:string;
+}
+//-------------------Category----------------------
+export interface CategoryAll {
+    code:string;
+    name:string;
+    createAt:string;
+    userCreateCode:string;
+    userCreateDisplayName:string;
+    updateAt:string;
+    userUpdateCode:string;
+    userUpdateDisplayName:string;
+}
 
+//-------------------Blog----------------------
+export interface BlogAll {
+    code:string;
+    title:string;
+    image:string;
+    description:string;
+    createAt:string;
+    userCreateCode:string;
+    userCreateDisplayName:string;
+    updateAt:string;
+    userUpdateCode:string;
+    userUpdateDisplayName:string;
+}

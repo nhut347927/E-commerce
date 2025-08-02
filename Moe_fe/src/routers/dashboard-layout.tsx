@@ -55,24 +55,25 @@ const AdminLayout = () => {
     isActive: false,
     path: '/dashboard',
   },
+   {
+    title: 'Activity Log',
+    icon: <FileClock />,
+    isActive: false,
+    path: '/dashboard/activity-log',
+  },
   {
     title: 'User',
     icon: <User />,
     isActive: false,
     path: '/dashboard/user',
   },
-  {
-    title: 'Permissions',
-    icon: <Shield />,
-    isActive: false,
-    path: '/dashboard/permissions',
-  },
-  {
-    title: 'Activity Log',
-    icon: <FileClock />,
-    isActive: false,
-    path: '/dashboard/activity-log',
-  },
+  // {
+  //   title: 'Permissions',
+  //   icon: <Shield />,
+  //   isActive: false,
+  //   path: '/dashboard/permissions',
+  // },
+ 
   {
     title: 'Product',
     icon: <Package2 />,
