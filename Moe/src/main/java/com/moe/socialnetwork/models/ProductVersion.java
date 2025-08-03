@@ -36,6 +36,9 @@ public class ProductVersion {
 	@Column(unique = true, nullable = false, updatable = false)
 	private UUID code;
 
+	@Column(nullable = false, length = 50)
+    private String name;
+
 	@Column(nullable = false)
 	private int quantity;
 
