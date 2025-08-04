@@ -30,6 +30,8 @@ import TagPage from "@/pages/dashboard/product/tag";
 import BrandPage from "@/pages/dashboard/product/brand";
 import CategoryPage from "@/pages/dashboard/product/category";
 import BlogPage from "@/pages/dashboard/blog/blog-page";
+import Product from "@/pages/dashboard/product/product";
+import ProductDetail from "@/pages/dashboard/product/product-detail";
 // Lazy load layouts
 const ClientLayout = React.lazy(() => import("./client-layout"));
 const AuthLayout = React.lazy(() => import("./auth-layout"));
@@ -123,7 +125,7 @@ const AppRoutes = () => {
               </KeepAlive>
             }
           />
-           <Route
+          <Route
             path="product/category"
             element={
               <KeepAlive id="category">
@@ -131,11 +133,20 @@ const AppRoutes = () => {
               </KeepAlive>
             }
           />
-            <Route
+          <Route
+            path="product/all"
+            element={
+              <KeepAlive id="productall">
+                <Product />
+              </KeepAlive>
+            }
+          />
+          <Route path="product/detail" element={<ProductDetail />} />
+          <Route
             path="blog"
             element={
               <KeepAlive id="blog">
-                <BlogPage  />
+                <BlogPage />
               </KeepAlive>
             }
           />

@@ -2,6 +2,7 @@ package com.moe.socialnetwork.api.services.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -9,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.moe.socialnetwork.api.dtos.BrandAllDto;
 import com.moe.socialnetwork.api.dtos.CategoryAllDto;
@@ -134,7 +136,6 @@ public class ProductServiceImpl implements IProductService {
                 productTags.add(productTag);
             }
 
-            // 🟢 Đây là chỗ bạn đang nói tới
             productTagJpa.saveAll(productTags);
 
             return mapToDTO(pr);
@@ -143,11 +144,12 @@ public class ProductServiceImpl implements IProductService {
         }
     };
 
+    @Transactional
     public ProductAllDto updateProduct(User user, ProductUpdateDto productUpdateDto) {
         try {
             UUID productCode = UUID.fromString(productUpdateDto.getCode());
             Product product = productJpa.findByCode(productCode)
-                    .orElseThrow(() -> new AppException("product not found", HttpStatus.NOT_FOUND.value()));
+                    .orElseThrow(() -> new AppException("Product not found", HttpStatus.NOT_FOUND.value()));
 
             UUID categoryCode = UUID.fromString(productUpdateDto.getCategoryCode());
             UUID brandCode = UUID.fromString(productUpdateDto.getBrandCode());
@@ -156,41 +158,54 @@ public class ProductServiceImpl implements IProductService {
             Brand brand = brandJpa.findByCode(brandCode)
                     .orElseThrow(() -> new AppException("Brand not found", 404));
 
+            // Cập nhật thông tin sản phẩm
             product.setName(productUpdateDto.getName());
-
             product.setPrice(productUpdateDto.getPrice());
             product.setImage(productUpdateDto.getImage());
             product.setShortDescription(productUpdateDto.getShortDescription());
             product.setFullDescription(productUpdateDto.getFullDescription());
             product.setCategory(category);
             product.setBrand(brand);
-
             product.setUserUpdate(user);
-            productJpa.save(product);
-            // Chuyển list tagCode từ String -> UUID
+            Product pr = productJpa.save(product); // lưu và nhận lại object đã cập nhật
+
+            // ==================== TAG XỬ LÝ ====================
+
+            // 1. Chuyển list tagCode từ String -> UUID
             List<UUID> tagCodeUUIDs = productUpdateDto.getListTagCode().stream()
                     .map(UUID::fromString)
                     .collect(Collectors.toList());
 
-            // Lọc các tag từ DB phù hợp với code
-            List<Tag> tagOfProduct = tagJpa.findAll().stream()
+            // 2. Lấy tất cả tag tương ứng trong DB
+            List<Tag> selectedTags = tagJpa.findAll().stream()
                     .filter(tag -> tagCodeUUIDs.contains(tag.getCode()))
                     .collect(Collectors.toList());
 
-            // Lưu sản phẩm
-            Product pr = productJpa.save(product);
+            // 3. Lấy danh sách tag đã gán hiện tại
+            List<ProductTag> existingProductTags = productTagJpa.findByProductCode(pr.getCode());
+            Set<UUID> existingTagIds = existingProductTags.stream()
+                    .map(pt -> pt.getTag().getCode())
+                    .collect(Collectors.toSet());
 
-            // Tạo list ProductTag và lưu
-            List<ProductTag> productTags = new ArrayList<>();
-            for (Tag tag : tagOfProduct) {
-                ProductTag productTag = new ProductTag();
-                productTag.setProduct(pr);
-                productTag.setTag(tag);
-                productTags.add(productTag);
-            }
+            // 4. Xóa những tag không còn được chọn
+            List<ProductTag> tagsToRemove = existingProductTags.stream()
+                    .filter(pt -> !tagCodeUUIDs.contains(pt.getTag().getCode()))
+                    .collect(Collectors.toList());
+            productTagJpa.deleteAll(tagsToRemove);
 
-            // 🟢 Đây là chỗ bạn đang nói tới
-            productTagJpa.saveAll(productTags);
+            // 5. Thêm các tag mới chưa có
+            List<ProductTag> tagsToAdd = selectedTags.stream()
+                    .filter(tag -> !existingTagIds.contains(tag.getCode()))
+                    .map(tag -> {
+                        ProductTag pt = new ProductTag();
+                        pt.setProduct(pr);
+                        pt.setTag(tag);
+                        return pt;
+                    })
+                    .collect(Collectors.toList());
+            productTagJpa.saveAll(tagsToAdd);
+
+            // ==================== KẾT THÚC TAG XỬ LÝ ====================
 
             return mapToDTO(pr);
 
@@ -199,7 +214,7 @@ public class ProductServiceImpl implements IProductService {
         } catch (Exception e) {
             throw new AppException("An error occurred while updating product: " + e.getMessage(), 500);
         }
-    };
+    }
 
     public void deleteProduct(User user, CodeDto codeDto) {
         try {
@@ -223,7 +238,7 @@ public class ProductServiceImpl implements IProductService {
         List<ProductTag> productTagList = productTagJpa.findByProductCode(product.getCode());
 
         for (ProductTag productTag : productTagList) {
-            listTagCode.add(productTag.getCode().toString());
+            listTagCode.add(productTag.getTag().getCode().toString());
         }
 
         return new ProductAllDto(product.getCode().toString(),

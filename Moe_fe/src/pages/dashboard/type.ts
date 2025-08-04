@@ -32,7 +32,6 @@ export interface ListRolePer {
   rolePermissions: RolePermission[];
 }
 
-
 export interface Users {
   code: string;
   email: string;
@@ -55,74 +54,148 @@ export interface Users {
   lastLogin?: string;
 }
 
-
-
 //-------------------Size----------------------
 export interface SizeAll {
-    code:string;
-    name:string;
-    createAt:string;
-    userCreateCode:string;
-    userCreateDisplayName:string;
-    updateAt:string;
-    userUpdateCode:string;
-    userUpdateDisplayName:string;
+  code: string;
+  name: string;
+  createAt: string;
+  userCreateCode: string;
+  userCreateDisplayName: string;
+  updateAt: string;
+  userUpdateCode: string;
+  userUpdateDisplayName: string;
 }
 //-------------------Color----------------------
 export interface ColorAll {
-    code:string;
-    name:string;
-    createAt:string;
-    userCreateCode:string;
-    userCreateDisplayName:string;
-    updateAt:string;
-    userUpdateCode:string;
-    userUpdateDisplayName:string;
+  code: string;
+  name: string;
+  createAt: string;
+  userCreateCode: string;
+  userCreateDisplayName: string;
+  updateAt: string;
+  userUpdateCode: string;
+  userUpdateDisplayName: string;
 }
 //-------------------Tag----------------------
 export interface TagAll {
-    code:string;
-    name:string;
-    createAt:string;
-    userCreateCode:string;
-    userCreateDisplayName:string;
-    updateAt:string;
-    userUpdateCode:string;
-    userUpdateDisplayName:string;
+  code: string;
+  name: string;
+  createAt: string;
+  userCreateCode: string;
+  userCreateDisplayName: string;
+  updateAt: string;
+  userUpdateCode: string;
+  userUpdateDisplayName: string;
 }
 //-------------------Brand----------------------
 export interface BrandAll {
-    code:string;
-    name:string;
-    createAt:string;
-    userCreateCode:string;
-    userCreateDisplayName:string;
-    updateAt:string;
-    userUpdateCode:string;
-    userUpdateDisplayName:string;
+  code: string;
+  name: string;
+  createAt: string;
+  userCreateCode: string;
+  userCreateDisplayName: string;
+  updateAt: string;
+  userUpdateCode: string;
+  userUpdateDisplayName: string;
 }
 //-------------------Category----------------------
 export interface CategoryAll {
-    code:string;
-    name:string;
-    createAt:string;
-    userCreateCode:string;
-    userCreateDisplayName:string;
-    updateAt:string;
-    userUpdateCode:string;
-    userUpdateDisplayName:string;
+  code: string;
+  name: string;
+  createAt: string;
+  userCreateCode: string;
+  userCreateDisplayName: string;
+  updateAt: string;
+  userUpdateCode: string;
+  userUpdateDisplayName: string;
 }
 
 //-------------------Blog----------------------
 export interface BlogAll {
-    code:string;
-    title:string;
-    image:string;
-    description:string;
-    createAt:string;
-    userCreateCode:string;
-    userCreateDisplayName:string;
-    updateAt:string;
-    userUpdateCode:string;
-    userUpdateDisplayName:string;
+  code: string;
+  title: string;
+  image: string;
+  description: string;
+  createAt: string;
+  userCreateCode: string;
+  userCreateDisplayName: string;
+  updateAt: string;
+  userUpdateCode: string;
+  userUpdateDisplayName: string;
+}
+//-------------------Product----------------------
+export interface ProductAll {
+  code: string;
+  name: string;
+  price: number; // hoặc dùng BigDecimal nếu bạn có custom type
+  image: string;
+  shortDescription: string;
+  fullDescription: string;
+  categoryCode: string;
+  brandCode: string;
+  listTagCode: string[];
+
+  createAt: string;
+  userCreateCode: string;
+  userCreateDisplayName: string;
+  updateAt: string;
+  userUpdateCode: string;
+  userUpdateDisplayName: string;
+}
+
+export interface ProductCreate {
+  name: string;
+  price: number; // tương ứng BigDecimal
+  image: string;
+  shortDescription: string;
+  fullDescription: string;
+  categoryCode: string;
+  brandCode: string;
+  listTagCode: string[];
+}
+export interface ProductUpdate {
+  code: string;
+  name: string;
+  price: number; // BigDecimal tương ứng với number
+  image: string;
+  shortDescription: string;
+  fullDescription: string;
+  categoryCode: string;
+  brandCode: string;
+  listTagCode: string[];
+}
+//-------------------ProductVersion----------------------
+export interface ProductVersionAll {
+  code: string;
+  name: string;
+  quantity: number;
+  image: string;
+  sizeCode: string;
+  colorCode: string;
+  productCode: string;
+
+  createAt: string;
+  userCreateCode: string;
+  userCreateDisplayName: string;
+  updateAt: string;
+  userUpdateCode: string;
+  userUpdateDisplayName: string;
+}
+
+export interface ProductVersionCreate {
+  name: string;
+  quantity: number;
+  image: string;
+  sizeCode: string;
+  colorCode: string;
+  productCode: string;
+}
+export interface ProductVersionUpdate {
+  code: string;
+  name: string;
+  quantity: number;
+  image: string;
+  sizeCode: string;
+  colorCode: string;
+  productCode: string;
 }

@@ -54,3 +54,10 @@ export function formatDateTime(input: string): string {
 
   return `${hours}:${minutes} ${day}/${month}/${year}`;
 }
+export function formatVnPrice(price: number | string): string {
+  const number = typeof price === "string" ? parseFloat(price) : price;
+
+  if (isNaN(number)) return "0 ₫";
+
+  return number.toLocaleString("vi-VN") + "Vnđ";
+}

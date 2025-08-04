@@ -48,76 +48,77 @@ const AdminLayout = () => {
   );
 
   // Mảng sidebar items (bỏ isActive cứng)
- const sidebarItems = [
-  {
-    title: 'Dashboard',
-    icon: <Home />,
-    isActive: false,
-    path: '/dashboard',
-  },
-   {
-    title: 'Activity Log',
-    icon: <FileClock />,
-    isActive: false,
-    path: '/dashboard/activity-log',
-  },
-  {
-    title: 'User',
-    icon: <User />,
-    isActive: false,
-    path: '/dashboard/user',
-  },
-  // {
-  //   title: 'Permissions',
-  //   icon: <Shield />,
-  //   isActive: false,
-  //   path: '/dashboard/permissions',
-  // },
- 
-  {
-    title: 'Product',
-    icon: <Package2 />,
-    //badge: "2",
-    isActive: false,
-    path: '/dashboard/product',
-    items: [
-      { title: 'All Products', url: '/dashboard/product/all' },
-      { title: 'Category', url: '/dashboard/product/category' },
-      { title: 'Brand', url: '/dashboard/product/brand' },
-      { title: 'Tag', url: '/dashboard/product/tag' },
-      { title: 'Color', url: '/dashboard/product/color' },
-      {
-        title: 'Size',
-        url: '/dashboard/product/size',
-        //badge: "2"
-      },
-    ],
-  },
-  {
-    title: 'Order',
-    icon: <ShoppingCart />,
-    isActive: false,
-    path: '/dashboard/order',
-  },
-  {
-    title: 'Discount',
-    icon: <Percent />,
-    isActive: false,
-    path: '/dashboard/discount',
-  },
-  {
-    title: 'Blog',
-    icon: <BookOpen />,
-    isActive: false,
-    path: '/dashboard/blog',
-  },
-  {
-    title: 'Setting',
-    icon: <Settings />,
-    isActive: false,
-    path: '/dashboard/setting',
-  },
-];
+  const sidebarItems = [
+    {
+      title: "Dashboard",
+      icon: <Home />,
+      isActive: false,
+      path: "/dashboard",
+    },
+    {
+      title: "Activity Log",
+      icon: <FileClock />,
+      isActive: false,
+      path: "/dashboard/activity-log",
+    },
+    {
+      title: "User",
+      icon: <User />,
+      isActive: false,
+      path: "/dashboard/user",
+    },
+    // {
+    //   title: 'Permissions',
+    //   icon: <Shield />,
+    //   isActive: false,
+    //   path: '/dashboard/permissions',
+    // },
+
+    {
+      title: "Product",
+      icon: <Package2 />,
+      //badge: "2",
+      isActive: false,
+      path: "/dashboard/product",
+      items: [
+        { title: "All Products", url: "/dashboard/product/all" },
+       
+        { title: "Category", url: "/dashboard/product/category" },
+        { title: "Brand", url: "/dashboard/product/brand" },
+        { title: "Tag", url: "/dashboard/product/tag" },
+        { title: "Color", url: "/dashboard/product/color" },
+        {
+          title: "Size",
+          url: "/dashboard/product/size",
+          //badge: "2"
+        },
+      ],
+    },
+    {
+      title: "Order",
+      icon: <ShoppingCart />,
+      isActive: false,
+      path: "/dashboard/order",
+    },
+    {
+      title: "Discount",
+      icon: <Percent />,
+      isActive: false,
+      path: "/dashboard/discount",
+    },
+    {
+      title: "Blog",
+      icon: <BookOpen />,
+      isActive: false,
+      path: "/dashboard/blog",
+    },
+    {
+      title: "Setting",
+      icon: <Settings />,
+      isActive: false,
+      path: "/dashboard/setting",
+    },
+  ];
 
   // Hàm toggle expanded menu
   const toggleExpanded = (title: string) => {
@@ -252,11 +253,15 @@ const AdminLayout = () => {
                             subItem.url
                           );
                           return (
-                            <a
+                            <button
                               key={subItem.title}
-                              href={subItem.url}
+                              onClick={() => {
+                                if (item.path) {
+                                  navigate(subItem.url);
+                                }
+                              }}
                               className={cn(
-                                "flex items-center justify-between rounded-2xl px-3 py-2 text-sm",
+                                "w-full flex items-center justify-between rounded-2xl px-3 py-2 text-sm",
                                 subActive
                                   ? "bg-primary/10 text-primary"
                                   : "hover:bg-muted"
@@ -271,7 +276,7 @@ const AdminLayout = () => {
                                   {subItem.badge}
                                 </Badge>
                               )} */}
-                            </a>
+                            </button>
                           );
                         })}
                       </div>
@@ -386,11 +391,15 @@ const AdminLayout = () => {
                             subItem.url
                           );
                           return (
-                            <a
+                            <button
                               key={subItem.title}
-                              href={subItem.url}
+                              onClick={() => {
+                                if (item.path) {
+                                  navigate(subItem.url);
+                                }
+                              }}
                               className={cn(
-                                "flex items-center justify-between rounded-2xl px-3 py-2 text-sm",
+                                "w-full flex items-center justify-between rounded-2xl px-3 py-2 text-sm",
                                 subActive
                                   ? "bg-primary/10 text-primary"
                                   : "hover:bg-muted"
@@ -405,7 +414,7 @@ const AdminLayout = () => {
                                   {subItem.badge}
                                 </Badge>
                               )} */}
-                            </a>
+                            </button>
                           );
                         })}
                       </div>
