@@ -15,15 +15,21 @@ import com.moe.socialnetwork.models.ProductVersion;
  * Author: nhutnm379
  */
 public interface ProductVersionJpa extends JpaRepository<ProductVersion, Long> {
-    @Query("""
-                SELECT p FROM ProductVersion p
-                WHERE p.isDeleted = false
-                  AND p.product.code = :productCode
-                  AND (:query IS NULL OR :query = '' OR LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%')))
-            """)
-    Page<ProductVersion> searchByName(@Param("query") String query, @Param("productCode") UUID productCode,
-            Pageable pageable);
+        @Query("""
+                            SELECT p FROM ProductVersion p
+                            WHERE p.isDeleted = false
+                              AND p.product.code = :productCode
+                              AND (:query IS NULL OR :query = '' OR LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%')))
+                        """)
+        Page<ProductVersion> searchByName(@Param("query") String query, @Param("productCode") UUID productCode,
+                        Pageable pageable);
 
-    @Query(" SELECT p FROM ProductVersion p WHERE p.isDeleted = false AND p.code = :code")
-    Optional<ProductVersion> findByCode(@Param("code") UUID code);
+        @Query(" SELECT p FROM ProductVersion p WHERE p.isDeleted = false AND p.code = :code")
+        Optional<ProductVersion> findByCode(@Param("code") UUID code);
+
+        @Query("SELECT CASE WHEN COUNT(pv) > 0 THEN true ELSE false END " +
+                        "FROM ProductVersion pv " +
+                        "WHERE pv.product.id = :productId AND pv.color.id = :colorId AND pv.size.id = :sizeId")
+        boolean existsByColorIdAndSizeId(@Param("productId") Long productId, @Param("colorId") Long colorId,
+                        @Param("sizeId") Long sizeId);
 }

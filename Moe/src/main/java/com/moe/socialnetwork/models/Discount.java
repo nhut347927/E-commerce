@@ -38,11 +38,17 @@ public class Discount {
     @Column(unique = true, nullable = false, updatable = false)
     private UUID code;
 
+    @Column(name = "discount_code" ,nullable = false, length = 10)
+    private String discountCode;
+
+    @Column(name = "discount_type" ,nullable = false, length = 10)
+    private String discountType; //PRODUCT, CODE
+
     @Column(nullable = false, length = 150)
     private String description;
 
     @Column(name = "discount_value", nullable = false)
-    private BigDecimal discountValue;
+    private BigDecimal discountValue;   //max 50%
 
     @Column(name = "max_discount", nullable = false)
     private BigDecimal maxDiscount;
@@ -52,6 +58,14 @@ public class Discount {
 
     @Column(name = "end_date")
     private LocalDateTime endDate;
+
+    @Column(name = "is_active")
+	private Boolean isActive  = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = true)
+    @JsonBackReference
+    private Product product;
 
     @Column(name = "is_deleted", columnDefinition = "boolean default false")
     private Boolean isDeleted = false;

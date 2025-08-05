@@ -80,8 +80,10 @@ public class ActivityLogServiceImpl implements IActivityLogService {
             }
             // Sanitize sensitive data
             sanitizeLogData(log);
+            if (!log.getType().trim().equalsIgnoreCase("GET")) {
+                activityLogJPA.save(log);
+            }
 
-            activityLogJPA.save(log);
         } catch (Exception e) {
             logger.error("Failed to prepare log for Kafka: {}", e.getMessage(), e);
         }

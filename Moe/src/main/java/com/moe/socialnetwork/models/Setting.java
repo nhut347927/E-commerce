@@ -45,8 +45,8 @@ public class Setting  {
 	@Column(name = "description", columnDefinition = "TEXT", nullable = false)
     private String description;
 
-	@Column(name = "is_active", columnDefinition = "boolean default false")
-	private Boolean isActive  = false;
+	@Column(name = "is_active")
+	private Boolean isActive  = true;
 
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;

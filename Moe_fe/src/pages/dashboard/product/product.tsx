@@ -542,9 +542,9 @@ const ProductPage: React.FC = () => {
                   <TableCell className="truncate">{index + 1}</TableCell>
                   <TableCell>
                     <img
-                      src={`https://res.cloudinary.com/dazttnakn/image/upload/w_80,h_80/${product.image}`}
+                      src={`https://res.cloudinary.com/dazttnakn/image/upload/c_fill,w_80,h_80/${product.image}`}
                       alt={product.name}
-                      className="w-12 h-12 object-cover rounded"
+                      className="aspect-square w-12 object-cover rounded"
                     />
                   </TableCell>
                   <TableCell className="truncate">{product.name}</TableCell>
@@ -715,9 +715,9 @@ const ProductPage: React.FC = () => {
               )}
               {createFormData.image && (
                 <img
-                  src={`https://res.cloudinary.com/dazttnakn/image/upload/w_80,h_80/${createFormData.image}`}
+                  src={`https://res.cloudinary.com/dazttnakn/image/upload/c_fill,w_80,h_80/${createFormData.image}`}
                   alt="Selected product image"
-                  className="h-24 w-24 object-cover rounded mt-2"
+                 className="aspect-square w-24 object-cover rounded mt-2"
                 />
               )}
             </div>
@@ -1008,9 +1008,9 @@ const ProductPage: React.FC = () => {
               )}
               {updateFormData.image && (
                 <img
-                  src={`https://res.cloudinary.com/dazttnakn/image/upload/w_80,h_80/${updateFormData.image}`}
+                  src={`https://res.cloudinary.com/dazttnakn/image/upload/c_fill,w_80,h_80/${updateFormData.image}`}
                   alt="Current product image"
-                  className="h-24 w-24 object-cover rounded mt-2"
+                   className="aspect-square w-24 object-cover rounded mt-2"
                 />
               )}
             </div>

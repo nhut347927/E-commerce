@@ -28,7 +28,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Edit, Trash2, Plus, RefreshCw } from "lucide-react";
+import { Edit, Trash2, Plus, RefreshCw, Search, Eraser } from "lucide-react";
 import axiosInstance from "@/services/axios/axios-instance";
 import {
   formatDateTime,
@@ -74,9 +74,10 @@ interface FormErrors {
 
 const ProductDetailPage: React.FC = () => {
   const { toast } = useToast();
- const [searchParams] = useSearchParams();
-const productCode = searchParams.get("code") || "";
-  const [isCreateVersionDialogOpen, setIsCreateVersionDialogOpen] = useState<boolean>(false);
+  const [searchParams] = useSearchParams();
+  const productCode = searchParams.get("code") || "";
+  const [isCreateVersionDialogOpen, setIsCreateVersionDialogOpen] =
+    useState<boolean>(false);
   const [productFormData, setProductFormData] = useState<ProductUpdate>({
     code: "",
     name: "",
@@ -88,24 +89,32 @@ const productCode = searchParams.get("code") || "";
     brandCode: "",
     listTagCode: [],
   });
-  const [versionFormData, setVersionFormData] = useState<{ [key: string]: ProductVersionUpdate }>({});
-  const [createVersionFormData, setCreateVersionFormData] = useState<ProductVersionCreate>({
-    name: "",
-    quantity: 0,
-    image: "",
-    sizeCode: "",
-    colorCode: "",
-    productCode: productCode,
-  });
+  const [versionFormData, setVersionFormData] = useState<{
+    [key: string]: ProductVersionUpdate;
+  }>({});
+  const [createVersionFormData, setCreateVersionFormData] =
+    useState<ProductVersionCreate>({
+      name: "",
+      quantity: 0,
+      image: "",
+      sizeCode: "",
+      colorCode: "",
+      productCode: productCode,
+    });
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [sortOrder, setSortOrder] = useState<string>("desc");
   const [pageSize, setPageSize] = useState<number>(10);
   const [currentPage, setCurrentPage] = useState<number>(0);
 
   // Fetch product
-  const { data: product, loading: productLoading, error: productError, refetch: refetchProduct } = useGetApi<ProductAll>({
+  const {
+    data: product,
+    loading: productLoading,
+    error: productError,
+    refetch: refetchProduct,
+  } = useGetApi<ProductAll>({
     endpoint: "/product",
     params: { code: productCode },
     enabled: !!productCode,
@@ -119,7 +128,12 @@ const productCode = searchParams.get("code") || "";
   });
 
   // Fetch product versions
-  const { data: versions, loading: versionsLoading, error: versionsError, refetch: refetchVersions } = useGetApi<{
+  const {
+    data: versions,
+    loading: versionsLoading,
+    error: versionsError,
+    refetch: refetchVersions,
+  } = useGetApi<{
     contents: ProductVersionAll[];
     totalElements: number;
     totalPages: number;
@@ -128,7 +142,13 @@ const productCode = searchParams.get("code") || "";
     hasPrevious: boolean;
   }>({
     endpoint: "/product-version/all",
-    params: { code: productCode, q: searchQuery, page: currentPage, size: pageSize, sort: sortOrder },
+    params: {
+      code: productCode,
+      q: searchQuery,
+      page: currentPage,
+      size: pageSize,
+      sort: sortOrder,
+    },
     enabled: !!productCode,
     onError: (error) => {
       toast({
@@ -216,12 +236,14 @@ const productCode = searchParams.get("code") || "";
     if (!productFormData.shortDescription.trim()) {
       errors.shortDescription = "Short description is required";
     } else if (productFormData.shortDescription.length > 150) {
-      errors.shortDescription = "Short description must not exceed 150 characters";
+      errors.shortDescription =
+        "Short description must not exceed 150 characters";
     }
     if (!productFormData.fullDescription.trim()) {
       errors.fullDescription = "Full description is required";
     } else if (productFormData.fullDescription.length > 2000) {
-      errors.fullDescription = "Full description must not exceed 2000 characters";
+      errors.fullDescription =
+        "Full description must not exceed 2000 characters";
     }
     if (!productFormData.categoryCode) {
       errors.categoryCode = "Category is required";
@@ -236,7 +258,9 @@ const productCode = searchParams.get("code") || "";
     return Object.keys(errors).length === 0;
   };
 
-  const validateVersionForm = (formData: ProductVersionUpdate | ProductVersionCreate): boolean => {
+  const validateVersionForm = (
+    formData: ProductVersionUpdate | ProductVersionCreate
+  ): boolean => {
     const errors: FormErrors = {};
     if ("code" in formData && !formData.code.trim()) {
       errors.code = "Code is required";
@@ -284,7 +308,9 @@ const productCode = searchParams.get("code") || "";
     }
   };
 
-  const handleProductImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProductImageChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
     if (file) {
       try {
@@ -311,7 +337,10 @@ const productCode = searchParams.get("code") || "";
       try {
         const publicId = await handleImageUpload(file);
         if (isCreate) {
-          setCreateVersionFormData({ ...createVersionFormData, image: publicId });
+          setCreateVersionFormData({
+            ...createVersionFormData,
+            image: publicId,
+          });
         } else if (versionCode) {
           setVersionFormData((prev) => ({
             ...prev,
@@ -329,7 +358,9 @@ const productCode = searchParams.get("code") || "";
     }
   };
 
-  const handleUpdateProductSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleUpdateProductSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
     if (!validateProductForm()) {
       toast({
@@ -358,18 +389,27 @@ const productCode = searchParams.get("code") || "";
     } catch (err: any) {
       toast({
         title: "Error",
-        description: err.response?.data?.message || "An error occurred while updating product.",
+        description:
+          err.response?.data?.message ||
+          "An error occurred while updating product.",
         variant: "destructive",
       });
     }
   };
 
   const handleUpdateVersionSubmit = async (versionCode: string) => {
+    toast({
+      title: "Processing",
+      description: "Your request is being processed...",
+    });
+
     const formData = versionFormData[versionCode];
     if (!validateVersionForm(formData)) {
       toast({
         title: "Form Error",
-        description: "Please fill out all required fields correctly for version " + formData.name,
+        description:
+          "Please fill out all required fields correctly for version " +
+          formData.name,
         variant: "destructive",
       });
       return;
@@ -393,13 +433,17 @@ const productCode = searchParams.get("code") || "";
     } catch (err: any) {
       toast({
         title: "Error",
-        description: err.response?.data?.message || "An error occurred while updating product version.",
+        description:
+          err.response?.data?.message ||
+          "An error occurred while updating product version.",
         variant: "destructive",
       });
     }
   };
 
-  const handleCreateVersionSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleCreateVersionSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
     if (!validateVersionForm(createVersionFormData)) {
       toast({
@@ -411,7 +455,10 @@ const productCode = searchParams.get("code") || "";
     }
 
     try {
-      const response = await axiosInstance.post("/product-version", createVersionFormData);
+      const response = await axiosInstance.post(
+        "/product-version",
+        createVersionFormData
+      );
       if (response.data.code === 200) {
         toast({
           title: "Success",
@@ -437,7 +484,9 @@ const productCode = searchParams.get("code") || "";
     } catch (err: any) {
       toast({
         title: "Error",
-        description: err.response?.data?.message || "An error occurred while creating product version.",
+        description:
+          err.response?.data?.message ||
+          "An error occurred while creating product version.",
         variant: "destructive",
       });
     }
@@ -464,14 +513,16 @@ const productCode = searchParams.get("code") || "";
     } catch (err: any) {
       toast({
         title: "Error",
-        description: err.response?.data?.message || "An error occurred while deleting product version.",
+        description:
+          err.response?.data?.message ||
+          "An error occurred while deleting product version.",
         variant: "destructive",
       });
     }
   };
 
   return (
-    <div className="p-6">
+    <div>
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Product Details</h2>
 
       {/* Product Info */}
@@ -481,89 +532,192 @@ const productCode = searchParams.get("code") || "";
           <span className="ml-2 text-gray-600">Loading product...</span>
         </div>
       ) : productError ? (
-        <div className="text-center text-zinc-500">Error: {productError.message}</div>
+        <div className="text-center text-zinc-500">
+          Error: {productError.message}
+        </div>
       ) : product ? (
-        <form onSubmit={handleUpdateProductSubmit} className="bg-white p-6 rounded-lg shadow-sm mb-6">
-          <h3 className="text-xl font-semibold mb-4">{product.name}</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <img
-                src={`https://res.cloudinary.com/dazttnakn/image/upload/w_200,h_200/${productFormData.image}`}
-                alt={productFormData.name}
-                className="w-48 h-48 object-cover rounded mb-4"
-              />
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={handleProductImageChange}
-                disabled={isUploading}
-                className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${formErrors.image ? "border-zinc-500" : ""}`}
-              />
-              {formErrors.image && <p className="text-zinc-500 text-xs mt-1">{formErrors.image}</p>}
-              {isUploading && <p className="text-gray-600 text-xs mt-1">Uploading image...</p>}
+        <form onSubmit={handleUpdateProductSubmit} className="mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+            {/* Left column - image */}
+            <div className="md:col-span-4">
+              <div className="mb-4">
+                <img
+                  src={`https://res.cloudinary.com/dazttnakn/image/upload/c_fill,w_200,h_200/${productFormData.image}`}
+                  alt={productFormData.name}
+                  className="w-full aspect-[4/5] object-cover rounded"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-1">
+                  Upload New Image
+                </label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProductImageChange}
+                  disabled={isUploading}
+                  className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                    formErrors.image ? "border-zinc-500" : ""
+                  }`}
+                />
+                {formErrors.image && (
+                  <p className="text-zinc-500 text-xs mt-1">
+                    {formErrors.image}
+                  </p>
+                )}
+                {isUploading && (
+                  <p className="text-gray-600 text-xs mt-1">
+                    Uploading image...
+                  </p>
+                )}
+              </div>
             </div>
-            <div className="space-y-4">
+
+            {/* Right column - form */}
+            <div className="md:col-span-8 space-y-4">
+              {/* Code (disabled) */}
               <div>
+                <label className="block text-sm font-medium mb-1">Code</label>
                 <Input
                   type="text"
-                  placeholder="Code"
                   value={productFormData.code}
                   disabled
                   className="border-gray-300 rounded-lg bg-gray-100"
                 />
-                {formErrors.code && <p className="text-zinc-500 text-xs mt-1">{formErrors.code}</p>}
+                {formErrors.code && (
+                  <p className="text-zinc-500 text-xs mt-1">
+                    {formErrors.code}
+                  </p>
+                )}
               </div>
+
+              {/* Name */}
               <div>
+                <label className="block text-sm font-medium mb-1">Name</label>
                 <Input
                   type="text"
-                  placeholder="Name"
+                  placeholder="Product Name"
                   value={productFormData.name}
-                  onChange={(e) => setProductFormData({ ...productFormData, name: e.target.value })}
-                  className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${formErrors.name ? "border-zinc-500" : ""}`}
+                  onChange={(e) =>
+                    setProductFormData({
+                      ...productFormData,
+                      name: e.target.value,
+                    })
+                  }
+                  className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                    formErrors.name ? "border-zinc-500" : ""
+                  }`}
                 />
-                {formErrors.name && <p className="text-zinc-500 text-xs mt-1">{formErrors.name}</p>}
+                {formErrors.name && (
+                  <p className="text-zinc-500 text-xs mt-1">
+                    {formErrors.name}
+                  </p>
+                )}
               </div>
+
+              {/* Price */}
               <div>
+                <label className="block text-sm font-medium mb-1">Price</label>
                 <Input
                   type="number"
                   placeholder="Price"
                   value={productFormData.price || ""}
-                  onChange={(e) => setProductFormData({ ...productFormData, price: parseFloat(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setProductFormData({
+                      ...productFormData,
+                      price: parseFloat(e.target.value) || 0,
+                    })
+                  }
                   min="0.01"
                   step="0.01"
-                  className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${formErrors.price ? "border-zinc-500" : ""}`}
+                  className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                    formErrors.price ? "border-zinc-500" : ""
+                  }`}
                 />
                 {productFormData.price > 0 && (
-                  <p className="text-sm text-green-600">💵 {formatVnPrice(productFormData.price)}</p>
+                  <p className="text-sm text-green-600">
+                    💵 {formatVnPrice(productFormData.price)}
+                  </p>
                 )}
-                {formErrors.price && <p className="text-zinc-500 text-xs mt-1">{formErrors.price}</p>}
+                {formErrors.price && (
+                  <p className="text-zinc-500 text-xs mt-1">
+                    {formErrors.price}
+                  </p>
+                )}
               </div>
+
+              {/* Short Description */}
               <div>
+                <label className="block text-sm font-medium mb-1">
+                  Short Description
+                </label>
                 <Input
                   type="text"
                   placeholder="Short Description"
                   value={productFormData.shortDescription}
-                  onChange={(e) => setProductFormData({ ...productFormData, shortDescription: e.target.value })}
-                  className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${formErrors.shortDescription ? "border-zinc-500" : ""}`}
+                  onChange={(e) =>
+                    setProductFormData({
+                      ...productFormData,
+                      shortDescription: e.target.value,
+                    })
+                  }
+                  className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                    formErrors.shortDescription ? "border-zinc-500" : ""
+                  }`}
                 />
-                {formErrors.shortDescription && <p className="text-zinc-500 text-xs mt-1">{formErrors.shortDescription}</p>}
+                {formErrors.shortDescription && (
+                  <p className="text-zinc-500 text-xs mt-1">
+                    {formErrors.shortDescription}
+                  </p>
+                )}
               </div>
+
+              {/* Full Description */}
               <div>
+                <label className="block text-sm font-medium mb-1">
+                  Full Description
+                </label>
                 <Textarea
                   placeholder="Full Description"
                   value={productFormData.fullDescription}
-                  onChange={(e) => setProductFormData({ ...productFormData, fullDescription: e.target.value })}
-                  className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${formErrors.fullDescription ? "border-zinc-500" : ""}`}
+                  onChange={(e) =>
+                    setProductFormData({
+                      ...productFormData,
+                      fullDescription: e.target.value,
+                    })
+                  }
+                  className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                    formErrors.fullDescription ? "border-zinc-500" : ""
+                  }`}
                   rows={4}
                 />
-                {formErrors.fullDescription && <p className="text-zinc-500 text-xs mt-1">{formErrors.fullDescription}</p>}
+                {formErrors.fullDescription && (
+                  <p className="text-zinc-500 text-xs mt-1">
+                    {formErrors.fullDescription}
+                  </p>
+                )}
               </div>
+
+              {/* Category */}
               <div>
+                <label className="block text-sm font-medium mb-1">
+                  Category
+                </label>
                 <Select
                   value={productFormData.categoryCode}
-                  onValueChange={(value) => setProductFormData({ ...productFormData, categoryCode: value })}
+                  onValueChange={(value) =>
+                    setProductFormData({
+                      ...productFormData,
+                      categoryCode: value,
+                    })
+                  }
                 >
-                  <SelectTrigger className={`border-gray-300 rounded-lg ${formErrors.categoryCode ? "border-zinc-500" : ""}`}>
+                  <SelectTrigger
+                    className={`border-gray-300 rounded-lg ${
+                      formErrors.categoryCode ? "border-zinc-500" : ""
+                    }`}
+                  >
                     <SelectValue placeholder="Select Category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -574,14 +728,27 @@ const productCode = searchParams.get("code") || "";
                     ))}
                   </SelectContent>
                 </Select>
-                {formErrors.categoryCode && <p className="text-zinc-500 text-xs mt-1">{formErrors.categoryCode}</p>}
+                {formErrors.categoryCode && (
+                  <p className="text-zinc-500 text-xs mt-1">
+                    {formErrors.categoryCode}
+                  </p>
+                )}
               </div>
+
+              {/* Brand */}
               <div>
+                <label className="block text-sm font-medium mb-1">Brand</label>
                 <Select
                   value={productFormData.brandCode}
-                  onValueChange={(value) => setProductFormData({ ...productFormData, brandCode: value })}
+                  onValueChange={(value) =>
+                    setProductFormData({ ...productFormData, brandCode: value })
+                  }
                 >
-                  <SelectTrigger className={`border-gray-300 rounded-lg ${formErrors.brandCode ? "border-zinc-500" : ""}`}>
+                  <SelectTrigger
+                    className={`border-gray-300 rounded-lg ${
+                      formErrors.brandCode ? "border-zinc-500" : ""
+                    }`}
+                  >
                     <SelectValue placeholder="Select Brand" />
                   </SelectTrigger>
                   <SelectContent>
@@ -592,58 +759,90 @@ const productCode = searchParams.get("code") || "";
                     ))}
                   </SelectContent>
                 </Select>
-                {formErrors.brandCode && <p className="text-zinc-500 text-xs mt-1">{formErrors.brandCode}</p>}
+                {formErrors.brandCode && (
+                  <p className="text-zinc-500 text-xs mt-1">
+                    {formErrors.brandCode}
+                  </p>
+                )}
               </div>
+
+              {/* Tags */}
               <div>
+                <label className="block text-sm font-medium mb-1">Tags</label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
-                      className={`w-full justify-start text-left border-gray-300 rounded-lg focus:ring-zinc-500 ${formErrors.listTagCode ? "border-zinc-500" : ""}`}
+                      className={`w-full justify-start text-left border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                        formErrors.listTagCode ? "border-zinc-500" : ""
+                      }`}
                     >
                       <span className="block max-w-[600px] truncate">
                         {productFormData.listTagCode.length > 0
-                          ? productFormData.listTagCode.map((code) => tags?.find((t) => t.code === code)?.name || code).join(", ")
+                          ? productFormData.listTagCode
+                              .map(
+                                (code) =>
+                                  tags?.find((t) => t.code === code)?.name ||
+                                  code
+                              )
+                              .join(", ")
                           : "Select Tags"}
                       </span>
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent style={{ pointerEvents: "auto" }} className="w-[600px] p-0">
-                    <ScrollArea className="flex flex-col space-y-2 p-4 max-h-[300px]">
-                      <div className="h-full">
+                  <PopoverContent className="w-[600px] p-0">
+                    <ScrollArea className="p-4 max-h-[300px]">
+                      <div className="flex flex-wrap gap-4">
                         {tags?.length ? (
-                          <div className="flex flex-wrap gap-4">
-                            {tags.map((tag) => {
-                              const checked = productFormData.listTagCode.includes(tag.code);
-                              return (
-                                <label key={tag.code} className="flex items-center space-x-2 cursor-pointer">
-                                  <Checkbox
-                                    checked={checked}
-                                    onCheckedChange={(checkedValue) => {
-                                      setProductFormData((prev) => {
-                                        const newList = checkedValue
-                                          ? [...prev.listTagCode, tag.code]
-                                          : prev.listTagCode.filter((t) => t !== tag.code);
-                                        return { ...prev, listTagCode: newList };
-                                      });
-                                      setFormErrors((prev) => ({ ...prev, listTagCode: undefined }));
-                                    }}
-                                  />
-                                  <span className="text-gray-700">{tag.name}</span>
-                                </label>
-                              );
-                            })}
-                          </div>
+                          tags.map((tag) => {
+                            const checked =
+                              productFormData.listTagCode.includes(tag.code);
+                            return (
+                              <label
+                                key={tag.code}
+                                className="flex items-center space-x-2 cursor-pointer"
+                              >
+                                <Checkbox
+                                  checked={checked}
+                                  onCheckedChange={(checkedValue) => {
+                                    setProductFormData((prev) => {
+                                      const newList = checkedValue
+                                        ? [...prev.listTagCode, tag.code]
+                                        : prev.listTagCode.filter(
+                                            (t) => t !== tag.code
+                                          );
+                                      return { ...prev, listTagCode: newList };
+                                    });
+                                    setFormErrors((prev) => ({
+                                      ...prev,
+                                      listTagCode: undefined,
+                                    }));
+                                  }}
+                                />
+                                <span className="text-gray-700">
+                                  {tag.name}
+                                </span>
+                              </label>
+                            );
+                          })
                         ) : (
-                          <p className="text-gray-500 text-sm">No tags available</p>
+                          <p className="text-gray-500 text-sm">
+                            No tags available
+                          </p>
                         )}
                       </div>
                     </ScrollArea>
                   </PopoverContent>
                 </Popover>
-                {formErrors.listTagCode && <p className="text-zinc-500 text-xs mt-1">{formErrors.listTagCode}</p>}
+                {formErrors.listTagCode && (
+                  <p className="text-zinc-500 text-xs mt-1">
+                    {formErrors.listTagCode}
+                  </p>
+                )}
               </div>
-              <div className="flex space-x-2">
+
+              {/* Submit Button */}
+              <div className="pt-4 w-full text-end">
                 <Button
                   type="submit"
                   disabled={isUploading}
@@ -661,59 +860,83 @@ const productCode = searchParams.get("code") || "";
 
       {/* Product Versions */}
       <div className="mb-6">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-start items-center mb-4">
           <h3 className="text-xl font-semibold">Product Versions</h3>
-          <Button
-            onClick={() => setIsCreateVersionDialogOpen(true)}
-            className="bg-zinc-900 hover:bg-zinc-900/70 text-white rounded-lg"
-          >
-            <Plus className="h-4 w-4 mr-2" /> Add Version
-          </Button>
         </div>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 mb-4">
-          <Input
-            type="text"
-            placeholder="Search versions..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setCurrentPage(0);
-            }}
-            className="border-gray-300 rounded-lg mb-2 sm:mb-0"
-          />
-          <Select value={sortOrder} onValueChange={(value: "asc" | "desc") => setSortOrder(value)}>
-            <SelectTrigger className="w-[180px] border-gray-300 rounded-lg">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="desc">Newest First</SelectItem>
-              <SelectItem value="asc">Oldest First</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select
-            value={pageSize.toString()}
-            onValueChange={(value) => {
-              setPageSize(parseInt(value));
-              setCurrentPage(0);
-            }}
-          >
-            <SelectTrigger className="w-[120px] border-gray-300 rounded-lg">
-              <SelectValue placeholder="Items per page" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="5">5 per page</SelectItem>
-              <SelectItem value="10">10 per page</SelectItem>
-              <SelectItem value="20">20 per page</SelectItem>
-              <SelectItem value="50">50 per page</SelectItem>
-            </SelectContent>
-          </Select>
+        {/* Toolbar */}
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+          <div className="flex items-center space-x-2 w-full sm:w-auto">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                placeholder="Search products by keyword..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-4 border-gray-300 rounded-lg text-gray-700 focus:ring-zinc-500"
+              />
+            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setSearchQuery("")}
+              className="border-gray-300 text-gray-600 hover:text-zinc-500"
+            >
+              <Eraser className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex items-center space-x-2 w-full sm:w-auto">
+            <Select value={sortOrder} onValueChange={setSortOrder}>
+              <SelectTrigger className="w-[180px] border-gray-300 rounded-lg">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="desc">Newest to Oldest</SelectItem>
+                <SelectItem value="asc">Oldest to Newest</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={pageSize.toString()}
+              onValueChange={(value) => {
+                setPageSize(Number(value));
+                setCurrentPage(0);
+              }}
+            >
+              <SelectTrigger className="w-[100px] border-gray-300 rounded-lg">
+                <SelectValue placeholder="Size" />
+              </SelectTrigger>
+              <SelectContent>
+                {[10, 25, 50, 100, 200].map((sizeOption) => (
+                  <SelectItem key={sizeOption} value={sizeOption.toString()}>
+                    {sizeOption}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={refetchVersions}
+              disabled={versionsLoading}
+              className="border-gray-300 text-gray-600 hover:text-zinc-500"
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${versionsLoading ? "animate-spin" : ""}`}
+              />
+            </Button>
+            <Button
+              onClick={() => setIsCreateVersionDialogOpen(true)}
+              className="bg-zinc-900 hover:bg-zinc-900/70 text-white rounded-lg"
+            >
+              <Plus className="h-4 w-4 mr-2" /> Add Version
+            </Button>
+          </div>
         </div>
         <div className="overflow-hidden">
           <Table className="table-fixed">
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[60px]">Stt</TableHead>
-                <TableHead className="w-[80px]">Image</TableHead>
+                <TableHead className="w-[50px]">Stt</TableHead>
+                <TableHead className="w-[200px]">Image</TableHead>
                 <TableHead className="w-[150px]">Name</TableHead>
                 <TableHead className="w-[100px]">Quantity</TableHead>
                 <TableHead className="w-[150px]">Size</TableHead>
@@ -721,7 +944,7 @@ const productCode = searchParams.get("code") || "";
                 <TableHead className="w-[160px]">Created At</TableHead>
                 <TableHead className="w-[160px]">Created By</TableHead>
                 <TableHead className="w-[160px]">Updated At</TableHead>
-                <TableHead className="w-[140px]">Actions</TableHead>
+                <TableHead className="w-[200px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -741,63 +964,112 @@ const productCode = searchParams.get("code") || "";
               ) : versions?.contents.length ? (
                 versions.contents.map((version, index) => (
                   <TableRow key={version.code}>
-                    <TableCell className="truncate">{index + 1 + currentPage * pageSize}</TableCell>
-                    <TableCell>
+                    <TableCell className="truncate">
+                      {index + 1 + currentPage * pageSize}
+                    </TableCell>
+                    <TableCell className="flex items-center space-x-2">
                       <img
-                        src={`https://res.cloudinary.com/dazttnakn/image/upload/w_80,h_80/${versionFormData[version.code]?.image || version.image}`}
+                        src={`https://res.cloudinary.com/dazttnakn/image/upload/c_fill,w_80,h_80/${
+                          versionFormData[version.code]?.image || version.image
+                        }`}
                         alt={version.name}
-                        className="w-12 h-12 object-cover rounded"
+                        className="w-12 h-12 object-cover rounded "
                       />
                       <Input
                         type="file"
                         accept="image/*"
-                        onChange={(e) => handleVersionImageChange(e, false, version.code)}
+                        onChange={(e) =>
+                          handleVersionImageChange(e, false, version.code)
+                        }
                         disabled={isUploading}
-                        className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${formErrors.image ? "border-zinc-500" : ""}`}
+                        className={`border-gray-300 rounded-lg focus:ring-zinc-500  ${
+                          formErrors.image ? "border-zinc-500" : ""
+                        }`}
                       />
-                      {formErrors.image && <p className="text-zinc-500 text-xs mt-1">{formErrors.image}</p>}
-                      {isUploading && <p className="text-gray-600 text-xs mt-1">Uploading image...</p>}
+                      {formErrors.image && (
+                        <p className="text-zinc-500 text-xs ">
+                          {formErrors.image}
+                        </p>
+                      )}
+                      {isUploading && (
+                        <p className="text-gray-600 text-xs ">
+                          Uploading image...
+                        </p>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Input
                         type="text"
-                        value={versionFormData[version.code]?.name || version.name}
+                        value={
+                          versionFormData[version.code]?.name || version.name
+                        }
                         onChange={(e) =>
                           setVersionFormData((prev) => ({
                             ...prev,
-                            [version.code]: { ...prev[version.code], name: e.target.value },
+                            [version.code]: {
+                              ...prev[version.code],
+                              name: e.target.value,
+                            },
                           }))
                         }
-                        className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${formErrors.name ? "border-zinc-500" : ""}`}
+                        className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                          formErrors.name ? "border-zinc-500" : ""
+                        }`}
                       />
-                      {formErrors.name && <p className="text-zinc-500 text-xs mt-1">{formErrors.name}</p>}
+                      {formErrors.name && (
+                        <p className="text-zinc-500 text-xs mt-1">
+                          {formErrors.name}
+                        </p>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Input
                         type="number"
-                        value={versionFormData[version.code]?.quantity || version.quantity}
+                        value={
+                          versionFormData[version.code]?.quantity ||
+                          version.quantity
+                        }
                         onChange={(e) =>
                           setVersionFormData((prev) => ({
                             ...prev,
-                            [version.code]: { ...prev[version.code], quantity: parseInt(e.target.value) || 0 },
+                            [version.code]: {
+                              ...prev[version.code],
+                              quantity: parseInt(e.target.value) || 0,
+                            },
                           }))
                         }
                         min="0"
-                        className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${formErrors.quantity ? "border-zinc-500" : ""}`}
+                        className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                          formErrors.quantity ? "border-zinc-500" : ""
+                        }`}
                       />
-                      {formErrors.quantity && <p className="text-zinc-500 text-xs mt-1">{formErrors.quantity}</p>}
+                      {formErrors.quantity && (
+                        <p className="text-zinc-500 text-xs mt-1">
+                          {formErrors.quantity}
+                        </p>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Select
-                        value={versionFormData[version.code]?.sizeCode || version.sizeCode}
+                        value={
+                          versionFormData[version.code]?.sizeCode ||
+                          version.sizeCode
+                        }
                         onValueChange={(value) =>
                           setVersionFormData((prev) => ({
                             ...prev,
-                            [version.code]: { ...prev[version.code], sizeCode: value },
+                            [version.code]: {
+                              ...prev[version.code],
+                              sizeCode: value,
+                            },
                           }))
                         }
                       >
-                        <SelectTrigger className={`border-gray-300 rounded-lg ${formErrors.sizeCode ? "border-zinc-500" : ""}`}>
+                        <SelectTrigger
+                          className={`border-gray-300 rounded-lg ${
+                            formErrors.sizeCode ? "border-zinc-500" : ""
+                          }`}
+                        >
                           <SelectValue placeholder="Select Size" />
                         </SelectTrigger>
                         <SelectContent>
@@ -808,42 +1080,70 @@ const productCode = searchParams.get("code") || "";
                           ))}
                         </SelectContent>
                       </Select>
-                      {formErrors.sizeCode && <p className="text-zinc-500 text-xs mt-1">{formErrors.sizeCode}</p>}
+                      {formErrors.sizeCode && (
+                        <p className="text-zinc-500 text-xs mt-1">
+                          {formErrors.sizeCode}
+                        </p>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Select
-                        value={versionFormData[version.code]?.colorCode || version.colorCode}
+                        value={
+                          versionFormData[version.code]?.colorCode ||
+                          version.colorCode
+                        }
                         onValueChange={(value) =>
                           setVersionFormData((prev) => ({
                             ...prev,
-                            [version.code]: { ...prev[version.code], colorCode: value },
+                            [version.code]: {
+                              ...prev[version.code],
+                              colorCode: value,
+                            },
                           }))
                         }
                       >
-                        <SelectTrigger className={`border-gray-300 rounded-lg ${formErrors.colorCode ? "border-zinc-500" : ""}`}>
+                        <SelectTrigger
+                          className={`border-gray-300 rounded-lg ${
+                            formErrors.colorCode ? "border-zinc-500" : ""
+                          }`}
+                        >
                           <SelectValue placeholder="Select Color" />
                         </SelectTrigger>
                         <SelectContent>
                           {colors?.map((color) => (
                             <SelectItem key={color.code} value={color.code}>
-                              {color.name}
+                              <div className="flex items-center space-x-2">
+                                <span
+                                  className="h-4 w-4 rounded-full border"
+                                  style={{ backgroundColor: color.name }}
+                                ></span>
+                                <span>{color.name}</span>
+                              </div>
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      {formErrors.colorCode && <p className="text-zinc-500 text-xs mt-1">{formErrors.colorCode}</p>}
+                      {formErrors.colorCode && (
+                        <p className="text-zinc-500 text-xs mt-1">
+                          {formErrors.colorCode}
+                        </p>
+                      )}
                     </TableCell>
                     <TableCell>{formatDateTime(version.createAt)}</TableCell>
                     <TableCell>{version.userCreateDisplayName}</TableCell>
-                    <TableCell>{version.updateAt ? formatDateTime(version.updateAt) : "-"}</TableCell>
-                    <TableCell className="flex space-x-2">
+                    <TableCell>
+                      {version.updateAt
+                        ? formatDateTime(version.updateAt)
+                        : "-"}
+                    </TableCell>
+                    <TableCell className="space-x-2">
                       <Button
                         variant="outline"
                         size="icon"
                         onClick={() => handleUpdateVersionSubmit(version.code)}
-                        className="border-gray-300 text-gray-600 hover:text-zinc-500"
+                        className="w-20 border-gray-300 text-gray-600 hover:text-zinc-500"
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-4 w-4" /> Save
                       </Button>
                       <Button
                         variant="outline"
@@ -876,7 +1176,8 @@ const productCode = searchParams.get("code") || "";
               Previous
             </Button>
             <span>
-              Page {versions.page + 1} of {versions.totalPages} ({versions.totalElements} items)
+              Page {versions.page + 1} of {versions.totalPages} (
+              {versions.totalElements} items)
             </span>
             <Button
               disabled={!versions.hasNext}
@@ -890,7 +1191,10 @@ const productCode = searchParams.get("code") || "";
       </div>
 
       {/* Create Product Version Dialog */}
-      <Dialog open={isCreateVersionDialogOpen} onOpenChange={setIsCreateVersionDialogOpen}>
+      <Dialog
+        open={isCreateVersionDialogOpen}
+        onOpenChange={setIsCreateVersionDialogOpen}
+      >
         <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>Create Product Version</DialogTitle>
@@ -901,21 +1205,41 @@ const productCode = searchParams.get("code") || "";
                 type="text"
                 placeholder="Name"
                 value={createVersionFormData.name}
-                onChange={(e) => setCreateVersionFormData({ ...createVersionFormData, name: e.target.value })}
-                className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${formErrors.name ? "border-zinc-500" : ""}`}
+                onChange={(e) =>
+                  setCreateVersionFormData({
+                    ...createVersionFormData,
+                    name: e.target.value,
+                  })
+                }
+                className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                  formErrors.name ? "border-zinc-500" : ""
+                }`}
               />
-              {formErrors.name && <p className="text-zinc-500 text-xs mt-1">{formErrors.name}</p>}
+              {formErrors.name && (
+                <p className="text-zinc-500 text-xs mt-1">{formErrors.name}</p>
+              )}
             </div>
             <div>
               <Input
                 type="number"
                 placeholder="Quantity"
                 value={createVersionFormData.quantity || ""}
-                onChange={(e) => setCreateVersionFormData({ ...createVersionFormData, quantity: parseInt(e.target.value) || 0 })}
+                onChange={(e) =>
+                  setCreateVersionFormData({
+                    ...createVersionFormData,
+                    quantity: parseInt(e.target.value) || 0,
+                  })
+                }
                 min="0"
-                className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${formErrors.quantity ? "border-zinc-500" : ""}`}
+                className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                  formErrors.quantity ? "border-zinc-500" : ""
+                }`}
               />
-              {formErrors.quantity && <p className="text-zinc-500 text-xs mt-1">{formErrors.quantity}</p>}
+              {formErrors.quantity && (
+                <p className="text-zinc-500 text-xs mt-1">
+                  {formErrors.quantity}
+                </p>
+              )}
             </div>
             <div>
               <Input
@@ -923,13 +1247,19 @@ const productCode = searchParams.get("code") || "";
                 accept="image/*"
                 onChange={(e) => handleVersionImageChange(e, true)}
                 disabled={isUploading}
-                className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${formErrors.image ? "border-zinc-500" : ""}`}
+                className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                  formErrors.image ? "border-zinc-500" : ""
+                }`}
               />
-              {formErrors.image && <p className="text-zinc-500 text-xs mt-1">{formErrors.image}</p>}
-              {isUploading && <p className="text-gray-600 text-xs mt-1">Uploading image...</p>}
+              {formErrors.image && (
+                <p className="text-zinc-500 text-xs mt-1">{formErrors.image}</p>
+              )}
+              {isUploading && (
+                <p className="text-gray-600 text-xs mt-1">Uploading image...</p>
+              )}
               {createVersionFormData.image && (
                 <img
-                  src={`https://res.cloudinary.com/dazttnakn/image/upload/w_80,h_80/${createVersionFormData.image}`}
+                  src={`https://res.cloudinary.com/dazttnakn/image/upload/c_fill,w_80,h_80/${createVersionFormData.image}`}
                   alt="Selected version image"
                   className="h-24 w-24 object-cover rounded mt-2"
                 />
@@ -938,9 +1268,18 @@ const productCode = searchParams.get("code") || "";
             <div>
               <Select
                 value={createVersionFormData.sizeCode}
-                onValueChange={(value) => setCreateVersionFormData({ ...createVersionFormData, sizeCode: value })}
+                onValueChange={(value) =>
+                  setCreateVersionFormData({
+                    ...createVersionFormData,
+                    sizeCode: value,
+                  })
+                }
               >
-                <SelectTrigger className={`border-gray-300 rounded-lg ${formErrors.sizeCode ? "border-zinc-500" : ""}`}>
+                <SelectTrigger
+                  className={`border-gray-300 rounded-lg ${
+                    formErrors.sizeCode ? "border-zinc-500" : ""
+                  }`}
+                >
                   <SelectValue placeholder="Select Size" />
                 </SelectTrigger>
                 <SelectContent>
@@ -951,25 +1290,48 @@ const productCode = searchParams.get("code") || "";
                   ))}
                 </SelectContent>
               </Select>
-              {formErrors.sizeCode && <p className="text-zinc-500 text-xs mt-1">{formErrors.sizeCode}</p>}
+              {formErrors.sizeCode && (
+                <p className="text-zinc-500 text-xs mt-1">
+                  {formErrors.sizeCode}
+                </p>
+              )}
             </div>
             <div>
               <Select
                 value={createVersionFormData.colorCode}
-                onValueChange={(value) => setCreateVersionFormData({ ...createVersionFormData, colorCode: value })}
+                onValueChange={(value) =>
+                  setCreateVersionFormData({
+                    ...createVersionFormData,
+                    colorCode: value,
+                  })
+                }
               >
-                <SelectTrigger className={`border-gray-300 rounded-lg ${formErrors.colorCode ? "border-zinc-500" : ""}`}>
+                <SelectTrigger
+                  className={`border-gray-300 rounded-lg ${
+                    formErrors.colorCode ? "border-zinc-500" : ""
+                  }`}
+                >
                   <SelectValue placeholder="Select Color" />
                 </SelectTrigger>
                 <SelectContent>
                   {colors?.map((color) => (
                     <SelectItem key={color.code} value={color.code}>
-                      {color.name}
+                      <div className="flex items-center space-x-2">
+                        <span
+                          className="h-4 w-4 rounded-full border"
+                          style={{ backgroundColor: color.name }}
+                        ></span>
+                        <span>{color.name}</span>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              {formErrors.colorCode && <p className="text-zinc-500 text-xs mt-1">{formErrors.colorCode}</p>}
+              {formErrors.colorCode && (
+                <p className="text-zinc-500 text-xs mt-1">
+                  {formErrors.colorCode}
+                </p>
+              )}
             </div>
             <DialogFooter>
               <Button

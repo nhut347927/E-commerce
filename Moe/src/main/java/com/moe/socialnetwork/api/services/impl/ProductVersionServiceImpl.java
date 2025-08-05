@@ -82,8 +82,15 @@ public class ProductVersionServiceImpl implements IProductVersionService {
                     .orElseThrow(() -> new AppException("Color not found", 404));
             Size size = sizeJpa.findByCode(sizeCode)
                     .orElseThrow(() -> new AppException("Size not found", 404));
+
             Product product = productJpa.findByCode(productCode)
                     .orElseThrow(() -> new AppException("Product not found", 404));
+
+            boolean exists = productVersionJpa.existsByColorIdAndSizeId(product.getId(), color.getId(), size.getId());
+            if (exists) {
+                throw new AppException("Product version with the same color and size already exists.",
+                        409);
+            }
 
             ProductVersion productVersion = new ProductVersion();
             productVersion.setName(productVersionCreateDto.getName());
@@ -117,9 +124,14 @@ public class ProductVersionServiceImpl implements IProductVersionService {
                     .orElseThrow(() -> new AppException("Color not found", 404));
             Size size = sizeJpa.findByCode(sizeCode)
                     .orElseThrow(() -> new AppException("Size not found", 404));
+
             Product product = productJpa.findByCode(productCode)
                     .orElseThrow(() -> new AppException("Product not found", 404));
-
+            boolean exists = productVersionJpa.existsByColorIdAndSizeId(product.getId(), color.getId(), size.getId());
+            if (exists) {
+                throw new AppException("Product version with the same color and size already exists.",
+                        409);
+            }
             productVersion.setName(productVersionUpdateDto.getName());
 
             productVersion.setQuantity(productVersionUpdateDto.getQuantity());
