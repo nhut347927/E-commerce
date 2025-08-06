@@ -38,7 +38,7 @@ public class Discount {
     @Column(unique = true, nullable = false, updatable = false)
     private UUID code;
 
-    @Column(name = "discount_code" ,nullable = false, length = 10)
+    @Column(name = "discount_code", length = 20, nullable = true)
     private String discountCode;
 
     @Column(name = "discount_type" ,nullable = false, length = 10)
@@ -56,10 +56,13 @@ public class Discount {
     @Column(name = "start_date", updatable = false)
     private LocalDateTime startDate;
 
-    @Column(name = "end_date")
+    @Column(name = "end_date", nullable = true)
     private LocalDateTime endDate;
 
-    @Column(name = "is_active")
+    @Column(name = "usage_limit", nullable = true)
+    private int usageLimit;
+
+    @Column(name = "is_active", nullable = false)
 	private Boolean isActive  = true;
 
     @ManyToOne(fetch = FetchType.LAZY)

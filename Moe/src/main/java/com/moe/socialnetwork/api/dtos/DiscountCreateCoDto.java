@@ -1,0 +1,46 @@
+package com.moe.socialnetwork.api.dtos;
+
+import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class DiscountCreateCoDto {
+
+    @NotBlank(message = "Discount code must not be blank")
+    @Size(max = 20, message = "Discount code must not exceed 20 characters")
+    private String discountCode;
+
+    @NotBlank(message = "Discount type must not be blank")
+    @Pattern(regexp = "^(PRODUCT|CODE)$", message = "Discount type must be either 'PRODUCT' or 'CODE'")
+    private String discountType;
+
+    @Size(max = 255, message = "Description must not exceed 255 characters")
+    private String description;
+
+    @NotNull(message = "Discount value must not be null")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Discount value must be greater than 0")
+    @DecimalMax(value = "50.0", message = "Discount value must not exceed 50%")
+    private BigDecimal discountValue;
+
+    @NotNull(message = "Discount max must not be null")
+    @DecimalMin(value = "0.0", message = "Maximum discount must be greater than or equal to 0")
+    private BigDecimal maxDiscount;
+
+    @NotNull(message = "Start date must not be null")
+    private LocalDateTime startDate;
+
+    private LocalDateTime endDate;
+
+    @NotNull(message = "Status must not be null")
+    private Boolean isActive;
+
+    @Min(value = 0, message = "Usage limit must be greater than or equal to 0")
+    private int usageLimit;
+}

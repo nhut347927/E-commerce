@@ -547,7 +547,19 @@ const ProductPage: React.FC = () => {
                       className="aspect-square w-12 object-cover rounded"
                     />
                   </TableCell>
-                  <TableCell className="truncate">{product.name}</TableCell>
+                  <TableCell className="truncate">
+                    <a
+                      href={`/dashboard/product/detail?code=${encodeURIComponent(
+                        product.code
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="View Product Detail"
+                      className="hover:underline"
+                    >
+                      {product.name}
+                    </a>
+                  </TableCell>
                   <TableCell>{formatVnPrice(product.price)}</TableCell>
                   <TableCell className="truncate">
                     {product.shortDescription}
@@ -717,7 +729,7 @@ const ProductPage: React.FC = () => {
                 <img
                   src={`https://res.cloudinary.com/dazttnakn/image/upload/c_fill,w_80,h_80/${createFormData.image}`}
                   alt="Selected product image"
-                 className="aspect-square w-24 object-cover rounded mt-2"
+                  className="aspect-square w-24 object-cover rounded mt-2"
                 />
               )}
             </div>
@@ -1010,7 +1022,7 @@ const ProductPage: React.FC = () => {
                 <img
                   src={`https://res.cloudinary.com/dazttnakn/image/upload/c_fill,w_80,h_80/${updateFormData.image}`}
                   alt="Current product image"
-                   className="aspect-square w-24 object-cover rounded mt-2"
+                  className="aspect-square w-24 object-cover rounded mt-2"
                 />
               )}
             </div>

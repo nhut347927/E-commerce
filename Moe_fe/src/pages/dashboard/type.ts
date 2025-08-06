@@ -199,3 +199,70 @@ export interface ProductVersionUpdate {
   colorCode: string;
   productCode: string;
 }
+//-------------------Discount----------------------
+export interface DiscountAll {
+  code: string;
+  discountCode: string;
+  discountType: 'PRODUCT' | 'CODE';
+  description?: string;
+  discountValue: number;
+  maxDiscount: number;
+  startDate: string;
+  endDate?: string | null;
+  isActive: boolean;
+  usageLimit: number;
+  productCode?: string;
+  productName?: string;
+
+  createAt: string;
+  userCreateCode: string;
+  userCreateDisplayName: string;
+  updateAt: string;
+  userUpdateCode: string;
+  userUpdateDisplayName: string;
+}
+
+export interface DiscountCreateCo {
+  discountCode: string;
+  discountType: 'PRODUCT' | 'CODE';
+  description?: string;
+  discountValue: number;      // max 50
+  maxDiscount: number;
+  startDate: string;          // ISO format: '2025-08-06T15:00:00'
+  endDate?: string | null;    // nullable
+  isActive: boolean;
+  usageLimit: number;
+}
+export interface DiscountCreatePro {
+  discountType: 'PRODUCT' | 'CODE';
+  description?: string;
+  discountValue: number;
+  maxDiscount: number;
+  startDate: string;
+  endDate?: string | null;
+  isActive: boolean;
+  productCode: string;
+}
+export interface DiscountUpdateCo {
+  code: string;
+  discountCode: string;
+  discountType: 'PRODUCT' | 'CODE';
+  description?: string;
+  discountValue: number;
+  maxDiscount: number;
+  startDate: string;
+  endDate?: string | null;
+  isActive: boolean;
+  usageLimit: number;
+}
+export interface DiscountUpdatePro {
+  code: string;
+  discountType: 'PRODUCT' | 'CODE';
+  description?: string;
+  discountValue: number;
+  maxDiscount: number;
+  startDate: string;
+  endDate?: string | null;
+  isActive: boolean;
+  productCode: string;
+}
