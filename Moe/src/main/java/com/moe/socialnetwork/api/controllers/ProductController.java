@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.moe.socialnetwork.api.dtos.BrandAllDto;
 import com.moe.socialnetwork.api.dtos.CategoryAllDto;
+import com.moe.socialnetwork.api.dtos.ProductAllBasicDto;
 import com.moe.socialnetwork.api.dtos.ProductAllDto;
 import com.moe.socialnetwork.api.dtos.ProductCreateDto;
 import com.moe.socialnetwork.api.dtos.ProductUpdateDto;
@@ -38,6 +39,25 @@ public class ProductController {
 
     public ProductController(IProductService productService) {
         this.productService = productService;
+    }
+
+    @GetMapping("/all/basic")
+    public ResponseEntity<ResponseAPI<PageDto<ProductAllBasicDto>>> getAllProductBasic(
+            @Valid @ModelAttribute FilterPageDto request,
+            @AuthenticationPrincipal User user) {
+
+        PageDto<ProductAllBasicDto> data = productService.getProductAllBasic(
+                request.getQ(),
+                request.getPage(),
+                request.getSize(),
+                request.getSort());
+
+        ResponseAPI<PageDto<ProductAllBasicDto>> response = new ResponseAPI<>();
+        response.setCode(200);
+        response.setMessage("Success");
+        response.setData(data);
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/brand/all")
@@ -66,7 +86,7 @@ public class ProductController {
         return ResponseEntity.ok(response);
     }
 
-     @GetMapping("/tag/all")
+    @GetMapping("/tag/all")
     public ResponseEntity<ResponseAPI<List<TagAllDto>>> getAllTag() {
 
         List<TagAllDto> data = productService.getTagAll();

@@ -38,7 +38,7 @@ public class Discount {
     @Column(unique = true, nullable = false, updatable = false)
     private UUID code;
 
-    @Column(name = "discount_code", length = 20, nullable = true)
+    @Column(unique = true, name = "discount_code", length = 20, nullable = true)
     private String discountCode;
 
     @Column(name = "discount_type" ,nullable = false, length = 10)

@@ -56,4 +56,6 @@ public class DiscountUpdateCoDto {
     @Min(value = 0, message = "Usage limit must be greater than or equal to 0")
     private int usageLimit;
 
+    private String productCode;
+
 }

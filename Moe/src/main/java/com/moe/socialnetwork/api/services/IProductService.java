@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.moe.socialnetwork.api.dtos.BrandAllDto;
 import com.moe.socialnetwork.api.dtos.CategoryAllDto;
+import com.moe.socialnetwork.api.dtos.ProductAllBasicDto;
 import com.moe.socialnetwork.api.dtos.ProductAllDto;
 import com.moe.socialnetwork.api.dtos.ProductCreateDto;
 import com.moe.socialnetwork.api.dtos.ProductUpdateDto;
@@ -13,6 +14,8 @@ import com.moe.socialnetwork.api.dtos.common.PageDto;
 import com.moe.socialnetwork.models.User;
 
 public interface IProductService {
+    PageDto<ProductAllBasicDto> getProductAllBasic(String query, int page, int size, String sort);
+
     List<BrandAllDto> getBrandAll();
 
     List<CategoryAllDto> getCategoryAll();

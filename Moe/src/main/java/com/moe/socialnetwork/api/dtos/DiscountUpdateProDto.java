@@ -23,7 +23,6 @@ public class DiscountUpdateProDto {
 
     @NotBlank(message = "Code is required")
     private String code;
-
     
     @NotBlank(message = "Discount type must not be blank")
     @Pattern(regexp = "^(PRODUCT|CODE)$", message = "Discount type must be either 'PRODUCT' or 'CODE'")

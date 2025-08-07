@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.moe.socialnetwork.api.dtos.BrandAllDto;
 import com.moe.socialnetwork.api.dtos.CategoryAllDto;
+import com.moe.socialnetwork.api.dtos.ProductAllBasicDto;
 import com.moe.socialnetwork.api.dtos.ProductAllDto;
 import com.moe.socialnetwork.api.dtos.ProductCreateDto;
 import com.moe.socialnetwork.api.dtos.ProductUpdateDto;
@@ -51,6 +52,19 @@ public class ProductServiceImpl implements IProductService {
         this.brandJpa = brandJpa;
         this.productTagJpa = productTagJpa;
         this.tagJpa = tagJpa;
+    }
+
+    public PageDto<ProductAllBasicDto> getProductAllBasic(String query, int page, int size, String sort) {
+
+        Pageable pageable = PaginationUtils.buildPageable(page, size, sort);
+        Page<Product> products = productJpa.searchByName(query, pageable);
+
+        List<ProductAllBasicDto> contents = products.stream()
+                .map(this::mapToDTOBasic)
+                .collect(Collectors.toList());
+
+        return PaginationUtils.buildPageDTO(products, contents);
+
     }
 
     public List<CategoryAllDto> getCategoryAll() {
@@ -291,5 +305,12 @@ public class ProductServiceImpl implements IProductService {
                 tag.getUpdatedAt().toString(),
                 tag.getUserUpdate().getCode().toString(),
                 tag.getUserUpdate().getDisplayName());
+    }
+
+    private ProductAllBasicDto mapToDTOBasic(Product product) {
+        return new ProductAllBasicDto(
+                product.getCode().toString(),
+                product.getName(),
+                product.getImage());
     }
 }

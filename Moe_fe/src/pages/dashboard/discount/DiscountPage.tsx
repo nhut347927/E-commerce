@@ -38,6 +38,7 @@ import {
   DiscountUpdatePro,
   ProductAll,
 } from "../type";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface FormErrors {
   code?: string;
@@ -95,6 +96,12 @@ const DiscountPage: React.FC = () => {
   });
   const [formErrors, setFormErrors] = useState<FormErrors>({});
 
+  // state thêm vào component cha:
+  const [searchTermP, setSearchTermP] = useState("");
+  const [sortOptionP, setSortOptionP] = useState("asc");
+  const [sizeP, setSizeP] = useState(20);
+  const [selectedProductCodeP, setSelectedProductCodeP] = useState("");
+
   // Debounce search term
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -119,9 +126,14 @@ const DiscountPage: React.FC = () => {
   });
 
   // Fetch products for product selection
+
   const { data: products } = useGetApi<Page<ProductAll>>({
-    endpoint: "/product/all",
-    params: { size: 1000 },
+    endpoint: "/product/all/basic",
+    params: {
+      q: searchTermP,
+      sort: sortOptionP,
+      size: sizeP,
+    },
     enabled: true,
   });
 
@@ -225,6 +237,7 @@ const DiscountPage: React.FC = () => {
           discountCode: "",
           usageLimit: 0,
         });
+        setSelectedProductCodeP("");
         refetch();
       } else {
         toast({
@@ -474,6 +487,7 @@ const DiscountPage: React.FC = () => {
               <TableHead className="w-[100px]">Usage Limit</TableHead>
               <TableHead className="w-[120px]">Start Date</TableHead>
               <TableHead className="w-[120px]">End Date</TableHead>
+              <TableHead className="w-[80px]">Validity</TableHead>
               <TableHead className="w-[80px]">Active</TableHead>
               <TableHead className="w-[150px]">Created At</TableHead>
               <TableHead className="w-[150px]">Created By</TableHead>
@@ -501,7 +515,17 @@ const DiscountPage: React.FC = () => {
                 <TableRow key={discount.code}>
                   <TableCell className="truncate">{index + 1}</TableCell>
                   <TableCell>{discount.discountCode || "-"}</TableCell>
-                  <TableCell><span className={`${discount.discountType==="PRODUCT"?"px-3 py-1 rounded-md font-bold bg-green-400 text-white":"px-3 py-1 rounded-md font-bold bg-blue-400 text-white"}`}>{discount.discountType}</span></TableCell>
+                  <TableCell>
+                    <span
+                      className={`${
+                        discount.discountType === "PRODUCT"
+                          ? "px-3 py-1 rounded-md font-bold bg-green-400 text-white"
+                          : "px-3 py-1 rounded-md font-bold bg-blue-400 text-white"
+                      }`}
+                    >
+                      {discount.discountType}
+                    </span>
+                  </TableCell>
                   <TableCell className="truncate">
                     {discount.description || "-"}
                   </TableCell>
@@ -515,7 +539,42 @@ const DiscountPage: React.FC = () => {
                   <TableCell>
                     {discount.endDate ? formatDateTime(discount.endDate) : "-"}
                   </TableCell>
-                  <TableCell><span className={`${discount.isActive?"px-3 py-1 rounded-md font-bold bg-green-400 text-white":""}`}>{discount.isActive ? "Yes" : "No"}</span></TableCell>
+                  <TableCell>
+                    {(() => {
+                      const now = new Date();
+                      const start = new Date(discount.startDate);
+                      const end = discount.endDate
+                        ? new Date(discount.endDate)
+                        : null;
+
+                      const isActive = end
+                        ? now >= start && now <= end
+                        : now >= start;
+
+                      return (
+                        <span
+                          className={
+                            isActive
+                              ? "text-green-600 font-semibold"
+                              : "text-red-600 font-semibold"
+                          }
+                        >
+                          {isActive ? "Active" : "Expired"}
+                        </span>
+                      );
+                    })()}
+                  </TableCell>
+                  <TableCell>
+                    <span
+                      className={`${
+                        discount.isActive
+                          ? "px-3 py-1 rounded-md font-bold bg-green-400 text-white"
+                          : ""
+                      }`}
+                    >
+                      {discount.isActive ? "Yes" : "No"}
+                    </span>
+                  </TableCell>
                   <TableCell>{formatDateTime(discount.createAt)}</TableCell>
                   <TableCell>{discount.userCreateDisplayName}</TableCell>
                   <TableCell>{formatDateTime(discount.updateAt)}</TableCell>
@@ -596,561 +655,728 @@ const DiscountPage: React.FC = () => {
             setFormErrors({});
           }}
         >
-          <DialogContent className="max-w-3xl">
-            <DialogHeader>
-              <DialogTitle>
-                Create{" "}
-                {createDialogType === "PRODUCT"
-                  ? "Product Discount"
-                  : "Discount Code"}
-              </DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleCreateSubmit} className="space-y-4">
-              {createDialogType === "CODE" && (
-                <div>
-                  <Input
-                    type="text"
-                    placeholder="Discount Code"
-                    value={
-                      (createFormData as DiscountCreateCo).discountCode || ""
-                    }
-                    onChange={(e) =>
-                      setCreateFormData({
-                        ...createFormData,
-                        discountCode: e.target.value,
-                      })
-                    }
-                    className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
-                      formErrors.discountCode ? "border-zinc-500" : ""
-                    }`}
-                  />
-                  {formErrors.discountCode && (
-                    <p className="text-zinc-500 text-xs mt-1">
-                      {formErrors.discountCode}
-                    </p>
+          <DialogContent className="max-w-3xl p-0">
+            <ScrollArea className="w-full max-h-[80vh] ">
+              <div className="h-full p-5">
+                <DialogHeader className="mb-3">
+                  <DialogTitle>
+                    Create{" "}
+                    {createDialogType === "PRODUCT"
+                      ? "Product Discount"
+                      : "Discount Code"}
+                  </DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleCreateSubmit} className="space-y-4">
+                  {createDialogType === "CODE" && (
+                    <div>
+                      <Input
+                        type="text"
+                        placeholder="Discount Code"
+                        value={
+                          (createFormData as DiscountCreateCo).discountCode ||
+                          ""
+                        }
+                        onChange={(e) =>
+                          setCreateFormData({
+                            ...createFormData,
+                            discountCode: e.target.value,
+                          })
+                        }
+                        className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                          formErrors.discountCode ? "border-zinc-500" : ""
+                        }`}
+                      />
+                      {formErrors.discountCode && (
+                        <p className="text-zinc-500 text-xs mt-1">
+                          {formErrors.discountCode}
+                        </p>
+                      )}
+                    </div>
                   )}
-                </div>
-              )}
-              <div>
-                <Textarea
-                  placeholder="Description"
-                  value={createFormData.description || ""}
-                  onChange={(e) =>
-                    setCreateFormData({
-                      ...createFormData,
-                      description: e.target.value,
-                    })
-                  }
-                  className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
-                    formErrors.description ? "border-zinc-500" : ""
-                  }`}
-                  rows={3}
-                />
-                {formErrors.description && (
-                  <p className="text-zinc-500 text-xs mt-1">
-                    {formErrors.description}
-                  </p>
-                )}
-              </div>
-              <div>
-                <Input
-                  type="number"
-                  placeholder="Discount Value (%)"
-                  value={createFormData.discountValue || ""}
-                  onChange={(e) =>
-                    setCreateFormData({
-                      ...createFormData,
-                      discountValue: parseFloat(e.target.value) || 0,
-                    })
-                  }
-                  min="0.01"
-                  max="50"
-                  step="0.01"
-                  className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
-                    formErrors.discountValue ? "border-zinc-500" : ""
-                  }`}
-                />
-                {formErrors.discountValue && (
-                  <p className="text-zinc-500 text-xs mt-1">
-                    {formErrors.discountValue}
-                  </p>
-                )}
-              </div>
-              <div>
-                <Input
-                  type="number"
-                  placeholder="Max Discount (VND)"
-                  value={createFormData.maxDiscount || ""}
-                  onChange={(e) =>
-                    setCreateFormData({
-                      ...createFormData,
-                      maxDiscount: parseFloat(e.target.value) || 0,
-                    })
-                  }
-                  min="0"
-                  step="1000"
-                  className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
-                    formErrors.maxDiscount ? "border-zinc-500" : ""
-                  }`}
-                />
-                {createFormData.maxDiscount > 0 && (
-                  <p className="text-sm text-green-600">
-                    💵 {formatVnPrice(createFormData.maxDiscount)}
-                  </p>
-                )}
-                {formErrors.maxDiscount && (
-                  <p className="text-zinc-500 text-xs mt-1">
-                    {formErrors.maxDiscount}
-                  </p>
-                )}
-              </div>
-              <div>
-                <Input
-                  type="datetime-local"
-                  placeholder="Start Date"
-                  value={createFormData.startDate}
-                  onChange={(e) =>
-                    setCreateFormData({
-                      ...createFormData,
-                      startDate: e.target.value,
-                    })
-                  }
-                  className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
-                    formErrors.startDate ? "border-zinc-500" : ""
-                  }`}
-                />
-                {formErrors.startDate && (
-                  <p className="text-zinc-500 text-xs mt-1">
-                    {formErrors.startDate}
-                  </p>
-                )}
-              </div>
-              <div>
-                <Input
-                  type="datetime-local"
-                  placeholder="End Date"
-                  value={createFormData.endDate || ""}
-                  onChange={(e) =>
-                    setCreateFormData({
-                      ...createFormData,
-                      endDate: e.target.value,
-                    })
-                  }
-                  className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
-                    formErrors.endDate ? "border-zinc-500" : ""
-                  }`}
-                />
-                {formErrors.endDate && (
-                  <p className="text-zinc-500 text-xs mt-1">
-                    {formErrors.endDate}
-                  </p>
-                )}
-              </div>
-              <div>
-                <Select
-                  value={createFormData.isActive ? "true" : "false"}
-                  onValueChange={(value) =>
-                    setCreateFormData({
-                      ...createFormData,
-                      isActive: value === "true",
-                    })
-                  }
-                >
-                  <SelectTrigger
-                    className={`border-gray-300 rounded-lg ${
-                      formErrors.isActive ? "border-zinc-500" : ""
-                    }`}
-                  >
-                    <SelectValue placeholder="Select Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="true">Active</SelectItem>
-                    <SelectItem value="false">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
-                {formErrors.isActive && (
-                  <p className="text-zinc-500 text-xs mt-1">
-                    {formErrors.isActive}
-                  </p>
-                )}
-              </div>
-              {createDialogType === "PRODUCT" && (
-                <div>
-                  <Select
-                    value={(createFormData as DiscountCreatePro).productCode}
-                    onValueChange={(value) =>
-                      setCreateFormData({
-                        ...createFormData,
-                        productCode: value,
-                      })
-                    }
-                  >
-                    <SelectTrigger
-                      className={`border-gray-300 rounded-lg ${
-                        formErrors.productCode ? "border-zinc-500" : ""
+                  <div>
+                    <Textarea
+                      placeholder="Description"
+                      value={createFormData.description || ""}
+                      onChange={(e) =>
+                        setCreateFormData({
+                          ...createFormData,
+                          description: e.target.value,
+                        })
+                      }
+                      className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                        formErrors.description ? "border-zinc-500" : ""
                       }`}
+                      rows={3}
+                    />
+                    {formErrors.description && (
+                      <p className="text-zinc-500 text-xs mt-1">
+                        {formErrors.description}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <Input
+                      type="number"
+                      placeholder="Discount Value (%)"
+                      value={createFormData.discountValue || ""}
+                      onChange={(e) =>
+                        setCreateFormData({
+                          ...createFormData,
+                          discountValue: parseFloat(e.target.value) || 0,
+                        })
+                      }
+                      min="0.01"
+                      max="50"
+                      step="0.01"
+                      className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                        formErrors.discountValue ? "border-zinc-500" : ""
+                      }`}
+                    />
+                    {formErrors.discountValue && (
+                      <p className="text-zinc-500 text-xs mt-1">
+                        {formErrors.discountValue}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <Input
+                      type="number"
+                      placeholder="Max Discount (VND)"
+                      value={createFormData.maxDiscount || ""}
+                      onChange={(e) =>
+                        setCreateFormData({
+                          ...createFormData,
+                          maxDiscount: parseFloat(e.target.value) || 0,
+                        })
+                      }
+                      min="0"
+                      step="1000"
+                      className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                        formErrors.maxDiscount ? "border-zinc-500" : ""
+                      }`}
+                    />
+                    {createFormData.maxDiscount > 0 && (
+                      <p className="text-sm text-green-600">
+                        💵 {formatVnPrice(createFormData.maxDiscount)}
+                      </p>
+                    )}
+                    {formErrors.maxDiscount && (
+                      <p className="text-zinc-500 text-xs mt-1">
+                        {formErrors.maxDiscount}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <Input
+                      type="datetime-local"
+                      placeholder="Start Date"
+                      value={createFormData.startDate}
+                      onChange={(e) =>
+                        setCreateFormData({
+                          ...createFormData,
+                          startDate: e.target.value,
+                        })
+                      }
+                      className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                        formErrors.startDate ? "border-zinc-500" : ""
+                      }`}
+                    />
+                    {formErrors.startDate && (
+                      <p className="text-zinc-500 text-xs mt-1">
+                        {formErrors.startDate}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <Input
+                      type="datetime-local"
+                      placeholder="End Date"
+                      value={createFormData.endDate || ""}
+                      onChange={(e) =>
+                        setCreateFormData({
+                          ...createFormData,
+                          endDate: e.target.value,
+                        })
+                      }
+                      className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                        formErrors.endDate ? "border-zinc-500" : ""
+                      }`}
+                    />
+                    {formErrors.endDate && (
+                      <p className="text-zinc-500 text-xs mt-1">
+                        {formErrors.endDate}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <Select
+                      value={createFormData.isActive ? "true" : "false"}
+                      onValueChange={(value) =>
+                        setCreateFormData({
+                          ...createFormData,
+                          isActive: value === "true",
+                        })
+                      }
                     >
-                      <SelectValue placeholder="Select Product" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {products?.contents.map((product) => (
-                        <SelectItem key={product.code} value={product.code}>
-                          {product.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {formErrors.productCode && (
-                    <p className="text-zinc-500 text-xs mt-1">
-                      {formErrors.productCode}
-                    </p>
+                      <SelectTrigger
+                        className={`border-gray-300 rounded-lg ${
+                          formErrors.isActive ? "border-zinc-500" : ""
+                        }`}
+                      >
+                        <SelectValue placeholder="Select Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="true">Active</SelectItem>
+                        <SelectItem value="false">Inactive</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {formErrors.isActive && (
+                      <p className="text-zinc-500 text-xs mt-1">
+                        {formErrors.isActive}
+                      </p>
+                    )}
+                  </div>
+                  {createDialogType === "PRODUCT" && (
+                    <div className="space-y-4 p-5 bg-zinc-100 rounded-xl">
+                      {/* Search & Clear */}
+                      <div className="flex items-center space-x-2">
+                        <Input
+                          placeholder="Search product..."
+                          value={searchTermP}
+                          onChange={(e) => setSearchTermP(e.target.value)}
+                          className="w-full"
+                        />
+                        <Button
+                          variant="outline"
+                          onClick={() => setSearchTermP("")}
+                          className="text-sm"
+                        >
+                          Clear
+                        </Button>
+                      </div>
+
+                      {/* Sort + Size */}
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm">Sort:</span>
+                          <Select
+                            value={sortOptionP}
+                            onValueChange={setSortOptionP}
+                          >
+                            <SelectTrigger className="w-[160px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="desc">
+                                Newest to Oldest
+                              </SelectItem>
+                              <SelectItem value="asc">
+                                Oldest to Newest
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm">Size:</span>
+                          <Select
+                            value={sizeP.toString()}
+                            onValueChange={(v) => setSizeP(Number(v))}
+                          >
+                            <SelectTrigger className="w-[100px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="10">10</SelectItem>
+                              <SelectItem value="20">20</SelectItem>
+                              <SelectItem value="50">50</SelectItem>
+                              <SelectItem value="100">100</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      {/* Product cards with checkbox */}
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[400px] overflow-y-auto">
+                        {products?.contents.map((product: ProductAll) => {
+                          const isSelected =
+                            selectedProductCodeP === product.code;
+                          return (
+                            <label
+                              key={product.code}
+                              className={`relative p-2 border rounded-lg cursor-pointer flex flex-col items-center text-center transition 
+              ${
+                isSelected
+                  ? "border-blue-500 bg-blue-50 shadow"
+                  : "border-gray-300 hover:border-gray-400"
+              }`}
+                            >
+                              <img
+                                src={`https://res.cloudinary.com/dazttnakn/image/upload/c_fill,w_100,h_100/${product.image}`}
+                                alt={product.name}
+                                className="w-20 h-20 object-cover mb-2 rounded"
+                              />
+                              <p className="text-sm font-medium line-clamp-2">
+                                {product.name}
+                              </p>
+
+                              <input
+                                type="checkbox"
+                                className="absolute top-2 left-2"
+                                checked={isSelected}
+                                onChange={() => {
+                                  const value = isSelected ? "" : product.code;
+                                  setSelectedProductCodeP(value);
+                                  setCreateFormData({
+                                    ...createFormData,
+                                    productCode: value,
+                                  });
+                                }}
+                              />
+                            </label>
+                          );
+                        })}
+                      </div>
+
+                      {formErrors.productCode && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {formErrors.productCode}
+                        </p>
+                      )}
+                    </div>
                   )}
-                </div>
-              )}
-              {createDialogType === "CODE" && (
-                <div>
-                  <Input
-                    type="number"
-                    placeholder="Usage Limit"
-                    value={
-                      (createFormData as DiscountCreateCo).usageLimit || ""
-                    }
-                    onChange={(e) =>
-                      setCreateFormData({
-                        ...createFormData,
-                        usageLimit: parseInt(e.target.value) || 0,
-                      })
-                    }
-                    min="0"
-                    className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
-                      formErrors.usageLimit ? "border-zinc-500" : ""
-                    }`}
-                  />
-                  {formErrors.usageLimit && (
-                    <p className="text-zinc-500 text-xs mt-1">
-                      {formErrors.usageLimit}
-                    </p>
+                  {createDialogType === "CODE" && (
+                    <div>
+                      <Input
+                        type="number"
+                        placeholder="Usage Limit"
+                        value={
+                          (createFormData as DiscountCreateCo).usageLimit || ""
+                        }
+                        onChange={(e) =>
+                          setCreateFormData({
+                            ...createFormData,
+                            usageLimit: parseInt(e.target.value) || 0,
+                          })
+                        }
+                        min="0"
+                        className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                          formErrors.usageLimit ? "border-zinc-500" : ""
+                        }`}
+                      />
+                      {formErrors.usageLimit && (
+                        <p className="text-zinc-500 text-xs mt-1">
+                          {formErrors.usageLimit}
+                        </p>
+                      )}
+                    </div>
                   )}
-                </div>
-              )}
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setCreateDialogType(null);
-                    setCreateFormData({
-                      discountType: "PRODUCT",
-                      description: "",
-                      discountValue: 0,
-                      maxDiscount: 0,
-                      startDate: "",
-                      endDate: "",
-                      isActive: true,
-                      productCode: "",
-                      discountCode: "",
-                      usageLimit: 0,
-                    });
-                    setFormErrors({});
-                  }}
-                  className="border-gray-300 rounded-lg"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  className="bg-zinc-900 hover:bg-zinc-900/70 text-white rounded-lg"
-                >
-                  Save
-                </Button>
-              </DialogFooter>
-            </form>
+                  <DialogFooter>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setCreateDialogType(null);
+                        setCreateFormData({
+                          discountType: "PRODUCT",
+                          description: "",
+                          discountValue: 0,
+                          maxDiscount: 0,
+                          startDate: "",
+                          endDate: "",
+                          isActive: true,
+                          productCode: "",
+                          discountCode: "",
+                          usageLimit: 0,
+                        });
+                        setFormErrors({});
+                        setSelectedProductCodeP("");
+                      }}
+                      className="border-gray-300 rounded-lg"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      className="bg-zinc-900 hover:bg-zinc-900/70 text-white rounded-lg"
+                    >
+                      Save
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </div>
+            </ScrollArea>
           </DialogContent>
         </Dialog>
       )}
 
       {/* Update Dialog */}
       <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>
-              Update{" "}
-              {updateFormData.discountType === "PRODUCT"
-                ? "Product Discount"
-                : "Discount Code"}
-            </DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleUpdateSubmit} className="space-y-4">
-            <div>
-              <Input
-                type="text"
-                placeholder="Code"
-                value={updateFormData.code}
-                disabled
-                className="border-gray-300 rounded-lg bg-gray-100"
-              />
-              {formErrors.code && (
-                <p className="text-zinc-500 text-xs mt-1">{formErrors.code}</p>
-              )}
-            </div>
-            {updateFormData.discountType === "CODE" && (
-              <div>
-                <Input
-                  type="text"
-                  placeholder="Discount Code"
-                  value={
-                    (updateFormData as DiscountUpdateCo).discountCode || ""
-                  }
-                  onChange={(e) =>
-                    setUpdateFormData({
-                      ...updateFormData,
-                      discountCode: e.target.value,
-                    })
-                  }
-                  className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
-                    formErrors.discountCode ? "border-zinc-500" : ""
-                  }`}
-                />
-                {formErrors.discountCode && (
-                  <p className="text-zinc-500 text-xs mt-1">
-                    {formErrors.discountCode}
-                  </p>
+        <DialogContent className="max-w-3xl p-0">
+          <ScrollArea className="w-full max-h-[80vh] ">
+            <div className="h-full p-5">
+              <DialogHeader>
+                <DialogTitle>
+                  Update{" "}
+                  {updateFormData.discountType === "PRODUCT"
+                    ? "Product Discount"
+                    : "Discount Code"}
+                </DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleUpdateSubmit} className="space-y-4">
+                <div>
+                  <Input
+                    type="text"
+                    placeholder="Code"
+                    value={updateFormData.code}
+                    disabled
+                    className="border-gray-300 rounded-lg bg-gray-100"
+                  />
+                  {formErrors.code && (
+                    <p className="text-zinc-500 text-xs mt-1">
+                      {formErrors.code}
+                    </p>
+                  )}
+                </div>
+                {updateFormData.discountType === "CODE" && (
+                  <div>
+                    <Input
+                      type="text"
+                      placeholder="Discount Code"
+                      value={
+                        (updateFormData as DiscountUpdateCo).discountCode || ""
+                      }
+                      onChange={(e) =>
+                        setUpdateFormData({
+                          ...updateFormData,
+                          discountCode: e.target.value,
+                        })
+                      }
+                      className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                        formErrors.discountCode ? "border-zinc-500" : ""
+                      }`}
+                    />
+                    {formErrors.discountCode && (
+                      <p className="text-zinc-500 text-xs mt-1">
+                        {formErrors.discountCode}
+                      </p>
+                    )}
+                  </div>
                 )}
-              </div>
-            )}
-            <div>
-              <Textarea
-                placeholder="Description"
-                value={updateFormData.description || ""}
-                onChange={(e) =>
-                  setUpdateFormData({
-                    ...updateFormData,
-                    description: e.target.value,
-                  })
-                }
-                className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
-                  formErrors.description ? "border-zinc-500" : ""
-                }`}
-                rows={3}
-              />
-              {formErrors.description && (
-                <p className="text-zinc-500 text-xs mt-1">
-                  {formErrors.description}
-                </p>
-              )}
-            </div>
-            <div>
-              <Input
-                type="number"
-                placeholder="Discount Value (%)"
-                value={updateFormData.discountValue || ""}
-                onChange={(e) =>
-                  setUpdateFormData({
-                    ...updateFormData,
-                    discountValue: parseFloat(e.target.value) || 0,
-                  })
-                }
-                min="0.01"
-                max="50"
-                step="0.01"
-                className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
-                  formErrors.discountValue ? "border-zinc-500" : ""
-                }`}
-              />
-              {formErrors.discountValue && (
-                <p className="text-zinc-500 text-xs mt-1">
-                  {formErrors.discountValue}
-                </p>
-              )}
-            </div>
-            <div>
-              <Input
-                type="number"
-                placeholder="Max Discount (VND)"
-                value={updateFormData.maxDiscount || ""}
-                onChange={(e) =>
-                  setUpdateFormData({
-                    ...updateFormData,
-                    maxDiscount: parseFloat(e.target.value) || 0,
-                  })
-                }
-                min="0"
-                step="1000"
-                className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
-                  formErrors.maxDiscount ? "border-zinc-500" : ""
-                }`}
-              />
-              {updateFormData.maxDiscount > 0 && (
-                <p className="text-sm text-green-600">
-                  💵 {formatVnPrice(updateFormData.maxDiscount)}
-                </p>
-              )}
-              {formErrors.maxDiscount && (
-                <p className="text-zinc-500 text-xs mt-1">
-                  {formErrors.maxDiscount}
-                </p>
-              )}
-            </div>
-            <div>
-              <Input
-                type="datetime-local"
-                placeholder="Start Date"
-                value={updateFormData.startDate}
-                onChange={(e) =>
-                  setUpdateFormData({
-                    ...updateFormData,
-                    startDate: e.target.value,
-                  })
-                }
-                className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
-                  formErrors.startDate ? "border-zinc-500" : ""
-                }`}
-              />
-              {formErrors.startDate && (
-                <p className="text-zinc-500 text-xs mt-1">
-                  {formErrors.startDate}
-                </p>
-              )}
-            </div>
-            <div>
-              <Input
-                type="datetime-local"
-                placeholder="End Date"
-                value={updateFormData.endDate || ""}
-                onChange={(e) =>
-                  setUpdateFormData({
-                    ...updateFormData,
-                    endDate: e.target.value,
-                  })
-                }
-                className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
-                  formErrors.endDate ? "border-zinc-500" : ""
-                }`}
-              />
-              {formErrors.endDate && (
-                <p className="text-zinc-500 text-xs mt-1">
-                  {formErrors.endDate}
-                </p>
-              )}
-            </div>
-            <div>
-              <Select
-                value={updateFormData.isActive ? "true" : "false"}
-                onValueChange={(value) =>
-                  setUpdateFormData({
-                    ...updateFormData,
-                    isActive: value === "true",
-                  })
-                }
-              >
-                <SelectTrigger
-                  className={`border-gray-300 rounded-lg ${
-                    formErrors.isActive ? "border-zinc-500" : ""
-                  }`}
-                >
-                  <SelectValue placeholder="Select Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="true">Active</SelectItem>
-                  <SelectItem value="false">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
-              {formErrors.isActive && (
-                <p className="text-zinc-500 text-xs mt-1">
-                  {formErrors.isActive}
-                </p>
-              )}
-            </div>
-            {updateFormData.discountType === "PRODUCT" && (
-              <div>
-                <Select
-                  value={(updateFormData as DiscountUpdatePro).productCode}
-                  onValueChange={(value) =>
-                    setUpdateFormData({
-                      ...updateFormData,
-                      productCode: value,
-                    })
-                  }
-                >
-                  <SelectTrigger
-                    className={`border-gray-300 rounded-lg ${
-                      formErrors.productCode ? "border-zinc-500" : ""
+                <div>
+                  <Textarea
+                    placeholder="Description"
+                    value={updateFormData.description || ""}
+                    onChange={(e) =>
+                      setUpdateFormData({
+                        ...updateFormData,
+                        description: e.target.value,
+                      })
+                    }
+                    className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                      formErrors.description ? "border-zinc-500" : ""
                     }`}
+                    rows={3}
+                  />
+                  {formErrors.description && (
+                    <p className="text-zinc-500 text-xs mt-1">
+                      {formErrors.description}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Input
+                    type="number"
+                    placeholder="Discount Value (%)"
+                    value={updateFormData.discountValue || ""}
+                    onChange={(e) =>
+                      setUpdateFormData({
+                        ...updateFormData,
+                        discountValue: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    min="0.01"
+                    max="50"
+                    step="0.01"
+                    className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                      formErrors.discountValue ? "border-zinc-500" : ""
+                    }`}
+                  />
+                  {formErrors.discountValue && (
+                    <p className="text-zinc-500 text-xs mt-1">
+                      {formErrors.discountValue}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Input
+                    type="number"
+                    placeholder="Max Discount (VND)"
+                    value={updateFormData.maxDiscount || ""}
+                    onChange={(e) =>
+                      setUpdateFormData({
+                        ...updateFormData,
+                        maxDiscount: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    min="0"
+                    step="1000"
+                    className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                      formErrors.maxDiscount ? "border-zinc-500" : ""
+                    }`}
+                  />
+                  {updateFormData.maxDiscount > 0 && (
+                    <p className="text-sm text-green-600">
+                      💵 {formatVnPrice(updateFormData.maxDiscount)}
+                    </p>
+                  )}
+                  {formErrors.maxDiscount && (
+                    <p className="text-zinc-500 text-xs mt-1">
+                      {formErrors.maxDiscount}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Input
+                    type="datetime-local"
+                    placeholder="Start Date"
+                    value={updateFormData.startDate}
+                    onChange={(e) =>
+                      setUpdateFormData({
+                        ...updateFormData,
+                        startDate: e.target.value,
+                      })
+                    }
+                    className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                      formErrors.startDate ? "border-zinc-500" : ""
+                    }`}
+                  />
+                  {formErrors.startDate && (
+                    <p className="text-zinc-500 text-xs mt-1">
+                      {formErrors.startDate}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Input
+                    type="datetime-local"
+                    placeholder="End Date"
+                    value={updateFormData.endDate || ""}
+                    onChange={(e) =>
+                      setUpdateFormData({
+                        ...updateFormData,
+                        endDate: e.target.value,
+                      })
+                    }
+                    className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                      formErrors.endDate ? "border-zinc-500" : ""
+                    }`}
+                  />
+                  {formErrors.endDate && (
+                    <p className="text-zinc-500 text-xs mt-1">
+                      {formErrors.endDate}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Select
+                    value={updateFormData.isActive ? "true" : "false"}
+                    onValueChange={(value) =>
+                      setUpdateFormData({
+                        ...updateFormData,
+                        isActive: value === "true",
+                      })
+                    }
                   >
-                    <SelectValue placeholder="Select Product" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {products?.contents.map((product) => (
-                      <SelectItem key={product.code} value={product.code}>
-                        {product.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {formErrors.productCode && (
-                  <p className="text-zinc-500 text-xs mt-1">
-                    {formErrors.productCode}
-                  </p>
+                    <SelectTrigger
+                      className={`border-gray-300 rounded-lg ${
+                        formErrors.isActive ? "border-zinc-500" : ""
+                      }`}
+                    >
+                      <SelectValue placeholder="Select Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">Active</SelectItem>
+                      <SelectItem value="false">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {formErrors.isActive && (
+                    <p className="text-zinc-500 text-xs mt-1">
+                      {formErrors.isActive}
+                    </p>
+                  )}
+                </div>
+                {updateFormData.discountType === "PRODUCT" && (
+                  <div className="space-y-4 p-5 bg-zinc-100 rounded-xl">
+                    {/* Search & Clear */}
+                    <div className="flex items-center space-x-2">
+                      <Input
+                        placeholder="Search product..."
+                        value={searchTermP}
+                        onChange={(e) => setSearchTermP(e.target.value)}
+                        className="w-full"
+                      />
+                      <Button
+                        variant="outline"
+                        onClick={() => setSearchTermP("")}
+                        className="text-sm"
+                      >
+                        Clear
+                      </Button>
+                    </div>
+
+                    {/* Sort + Size */}
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm">Sort:</span>
+                        <Select
+                          value={sortOptionP}
+                          onValueChange={setSortOptionP}
+                        >
+                          <SelectTrigger className="w-[160px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="desc">
+                              Newest to Oldest
+                            </SelectItem>
+                            <SelectItem value="asc">
+                              Oldest to Newest
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm">Size:</span>
+                        <Select
+                          value={sizeP.toString()}
+                          onValueChange={(v) => setSizeP(Number(v))}
+                        >
+                          <SelectTrigger className="w-[100px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="10">10</SelectItem>
+                            <SelectItem value="20">20</SelectItem>
+                            <SelectItem value="50">50</SelectItem>
+                            <SelectItem value="100">100</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    {/* Product cards with checkbox */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[400px] overflow-y-auto">
+                      {products?.contents.map((product: ProductAll) => {
+                        const isSelected =
+                          (updateFormData as DiscountUpdatePro).productCode ===
+                          product.code;
+                        return (
+                          <label
+                            key={product.code}
+                            className={`relative p-2 border rounded-lg cursor-pointer flex flex-col items-center text-center transition 
+              ${
+                isSelected
+                  ? "border-blue-500 bg-blue-50 shadow"
+                  : "border-gray-300 hover:border-gray-400"
+              }`}
+                          >
+                            <img
+                              src={`https://res.cloudinary.com/dazttnakn/image/upload/c_fill,w_100,h_100/${product.image}`}
+                              alt={product.name}
+                              className="w-20 h-20 object-cover mb-2 rounded"
+                            />
+                            <p className="text-sm font-medium line-clamp-2">
+                              {product.name}
+                            </p>
+
+                            <input
+                              type="checkbox"
+                              className="absolute top-2 left-2"
+                              checked={isSelected}
+                              onChange={() => {
+                                const value = isSelected ? "" : product.code;
+                                setSelectedProductCodeP(value);
+                                setUpdateFormData({
+                                  ...updateFormData,
+                                  productCode: value,
+                                });
+                              }}
+                            />
+                          </label>
+                        );
+                      })}
+                    </div>
+
+                    {formErrors.productCode && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {formErrors.productCode}
+                      </p>
+                    )}
+                  </div>
                 )}
-              </div>
-            )}
-            {updateFormData.discountType === "CODE" && (
-              <div>
-                <Input
-                  type="number"
-                  placeholder="Usage Limit"
-                  value={(updateFormData as DiscountUpdateCo).usageLimit || ""}
-                  onChange={(e) =>
-                    setUpdateFormData({
-                      ...updateFormData,
-                      usageLimit: parseInt(e.target.value) || 0,
-                    })
-                  }
-                  min="0"
-                  className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
-                    formErrors.usageLimit ? "border-zinc-500" : ""
-                  }`}
-                />
-                {formErrors.usageLimit && (
-                  <p className="text-zinc-500 text-xs mt-1">
-                    {formErrors.usageLimit}
-                  </p>
+                {updateFormData.discountType === "CODE" && (
+                  <div>
+                    <Input
+                      type="number"
+                      placeholder="Usage Limit"
+                      value={
+                        (updateFormData as DiscountUpdateCo).usageLimit || ""
+                      }
+                      onChange={(e) =>
+                        setUpdateFormData({
+                          ...updateFormData,
+                          usageLimit: parseInt(e.target.value) || 0,
+                        })
+                      }
+                      min="0"
+                      className={`border-gray-300 rounded-lg focus:ring-zinc-500 ${
+                        formErrors.usageLimit ? "border-zinc-500" : ""
+                      }`}
+                    />
+                    {formErrors.usageLimit && (
+                      <p className="text-zinc-500 text-xs mt-1">
+                        {formErrors.usageLimit}
+                      </p>
+                    )}
+                  </div>
                 )}
-              </div>
-            )}
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setIsUpdateDialogOpen(false);
-                  setUpdateFormData({
-                    code: "",
-                    discountType: "PRODUCT",
-                    description: "",
-                    discountValue: 0,
-                    maxDiscount: 0,
-                    startDate: "",
-                    endDate: "",
-                    isActive: true,
-                    productCode: "",
-                    discountCode: "",
-                    usageLimit: 0,
-                  });
-                  setFormErrors({});
-                }}
-                className="border-gray-300 rounded-lg"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                className="bg-zinc-900 hover:bg-zinc-900/70 text-white rounded-lg"
-              >
-                Save
-              </Button>
-            </DialogFooter>
-          </form>
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsUpdateDialogOpen(false);
+                      setUpdateFormData({
+                        code: "",
+                        discountType: "PRODUCT",
+                        description: "",
+                        discountValue: 0,
+                        maxDiscount: 0,
+                        startDate: "",
+                        endDate: "",
+                        isActive: true,
+                        productCode: "",
+                        discountCode: "",
+                        usageLimit: 0,
+                      });
+                      setFormErrors({});
+                    }}
+                    className="border-gray-300 rounded-lg"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="bg-zinc-900 hover:bg-zinc-900/70 text-white rounded-lg"
+                  >
+                    Save
+                  </Button>
+                </DialogFooter>
+              </form>
+            </div>
+          </ScrollArea>
         </DialogContent>
       </Dialog>
     </div>

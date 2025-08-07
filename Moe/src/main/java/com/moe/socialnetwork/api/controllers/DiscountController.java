@@ -1,16 +1,29 @@
 package com.moe.socialnetwork.api.controllers;
 
-import com.moe.socialnetwork.api.dtos.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.moe.socialnetwork.api.dtos.DiscountAllDto;
+import com.moe.socialnetwork.api.dtos.DiscountCreateCoDto;
+import com.moe.socialnetwork.api.dtos.DiscountCreateProDto;
+import com.moe.socialnetwork.api.dtos.DiscountUpdateCoDto;
+import com.moe.socialnetwork.api.dtos.DiscountUpdateProDto;
 import com.moe.socialnetwork.api.dtos.common.CodeDto;
 import com.moe.socialnetwork.api.dtos.common.FilterPageDto;
 import com.moe.socialnetwork.api.dtos.common.PageDto;
 import com.moe.socialnetwork.api.services.IDiscountService;
 import com.moe.socialnetwork.models.User;
 import com.moe.socialnetwork.response.ResponseAPI;
+
 import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/discount")
@@ -42,7 +55,7 @@ public class DiscountController {
     }
 
     @PostMapping("/code")
-    public ResponseEntity<ResponseAPI<DiscountAllDto>> createDiscountCode(
+    public ResponseEntity<ResponseAPI<DiscountAllDto>> createDiscountCo(
             @Valid @RequestBody DiscountCreateCoDto request,
             @AuthenticationPrincipal User user) {
 
@@ -57,10 +70,9 @@ public class DiscountController {
     }
 
     @PutMapping("/code")
-    public ResponseEntity<ResponseAPI<DiscountAllDto>> updateDiscountCode(
+    public ResponseEntity<ResponseAPI<DiscountAllDto>> updateDiscountCo(
             @Valid @RequestBody DiscountUpdateCoDto request,
             @AuthenticationPrincipal User user) {
-
         DiscountAllDto data = discountService.updateDiscountCo(user, request);
 
         ResponseAPI<DiscountAllDto> response = new ResponseAPI<>();
@@ -72,7 +84,7 @@ public class DiscountController {
     }
 
     @PostMapping("/product")
-    public ResponseEntity<ResponseAPI<DiscountAllDto>> createDiscountProduct(
+    public ResponseEntity<ResponseAPI<DiscountAllDto>> createDiscountPro(
             @Valid @RequestBody DiscountCreateProDto request,
             @AuthenticationPrincipal User user) {
 
@@ -87,7 +99,7 @@ public class DiscountController {
     }
 
     @PutMapping("/product")
-    public ResponseEntity<ResponseAPI<DiscountAllDto>> updateDiscountProduct(
+    public ResponseEntity<ResponseAPI<DiscountAllDto>> updateDiscountPro(
             @Valid @RequestBody DiscountUpdateProDto request,
             @AuthenticationPrincipal User user) {
 
