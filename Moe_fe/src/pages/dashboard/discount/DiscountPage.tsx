@@ -847,6 +847,7 @@ const DiscountPage: React.FC = () => {
                           className="w-full"
                         />
                         <Button
+                        type="button" 
                           variant="outline"
                           onClick={() => setSearchTermP("")}
                           className="text-sm"
@@ -1217,6 +1218,7 @@ const DiscountPage: React.FC = () => {
                         className="w-full"
                       />
                       <Button
+                      type="button" 
                         variant="outline"
                         onClick={() => setSearchTermP("")}
                         className="text-sm"
