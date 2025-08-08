@@ -124,6 +124,14 @@ export interface BlogAll {
   userUpdateDisplayName: string;
 }
 //-------------------Product----------------------
+export type ProductAllBasic = {
+  code: string;
+  name: string;
+  image: string;
+  price: number;
+  discountPrice: number;
+};
+
 export interface ProductAll {
   code: string;
   name: string;
@@ -203,7 +211,7 @@ export interface ProductVersionUpdate {
 export interface DiscountAll {
   code: string;
   discountCode: string;
-  discountType: 'PRODUCT' | 'CODE';
+  discountType: "PRODUCT" | "CODE";
   description?: string;
   discountValue: number;
   maxDiscount: number;
@@ -224,17 +232,17 @@ export interface DiscountAll {
 
 export interface DiscountCreateCo {
   discountCode: string;
-  discountType: 'PRODUCT' | 'CODE';
+  discountType: "PRODUCT" | "CODE";
   description?: string;
-  discountValue: number;      // max 50
+  discountValue: number; // max 50
   maxDiscount: number;
-  startDate: string;          // ISO format: '2025-08-06T15:00:00'
-  endDate?: string | null;    // nullable
+  startDate: string; // ISO format: '2025-08-06T15:00:00'
+  endDate?: string | null; // nullable
   isActive: boolean;
   usageLimit: number;
 }
 export interface DiscountCreatePro {
-  discountType: 'PRODUCT' | 'CODE';
+  discountType: "PRODUCT" | "CODE";
   description?: string;
   discountValue: number;
   maxDiscount: number;
@@ -246,7 +254,7 @@ export interface DiscountCreatePro {
 export interface DiscountUpdateCo {
   code: string;
   discountCode: string;
-  discountType: 'PRODUCT' | 'CODE';
+  discountType: "PRODUCT" | "CODE";
   description?: string;
   discountValue: number;
   maxDiscount: number;
@@ -257,7 +265,7 @@ export interface DiscountUpdateCo {
 }
 export interface DiscountUpdatePro {
   code: string;
-  discountType: 'PRODUCT' | 'CODE';
+  discountType: "PRODUCT" | "CODE";
   description?: string;
   discountValue: number;
   maxDiscount: number;
@@ -265,4 +273,79 @@ export interface DiscountUpdatePro {
   endDate?: string | null;
   isActive: boolean;
   productCode: string;
+}
+//-------------------Order----------------------
+export interface OrderAll {
+  code: string;
+  quantity: number;
+  price: number;
+  discountAmount: number;
+  shippingFee: number;
+  total: number;
+  firstName: string;
+  lastName: string;
+  country: string;
+  address: string;
+  townCity: string;
+  phone: string;
+  email: string;
+  notes?: string;
+  paymentMethod: string;
+  reason?: string; // lý do khi hủy
+  discount?: string;
+   deliveryStatus:
+    | "PENDING"
+    | "PACKED"
+    | "SHIPPED"
+    | "IN_TRANSIT"
+    | "OUT_FOR_DELIVERY"
+    | "DELIVERED"
+    | "FAILED"
+    | "CANCELED"
+    | "RETURNED";
+  createAt: string;
+  userCreateCode: string;
+  userCreateDisplayName: string;
+  updateAt: string;
+  userUpdateCode: string;
+  userUpdateDisplayName: string;
+}
+
+export interface OrderItemAdd {
+  orderCode: string;
+  productCode: string;
+  quantity: number; // >= 1
+}
+
+export interface OrderItemAll {
+  code: string;
+  productName: string;
+  image: string;
+  quantity: number;
+  price: number;
+  createAt: string;
+  userCreateCode: string;
+  userCreateDisplayName: string;
+}
+
+export interface OrderUpdate {
+  code: string;
+  firstName: string;
+  lastName: string;
+  country: string;
+  address: string;
+  townCity: string;
+  phone: string; // format: +[country][number]
+  email: string;
+  paymentMethod: string;
+  deliveryStatus:
+    | "PENDING"
+    | "PACKED"
+    | "SHIPPED"
+    | "IN_TRANSIT"
+    | "OUT_FOR_DELIVERY"
+    | "DELIVERED"
+    | "FAILED"
+    | "CANCELED"
+    | "RETURNED"; // Enum tương ứng
 }

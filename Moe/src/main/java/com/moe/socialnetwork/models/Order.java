@@ -82,35 +82,17 @@ public class Order {
     private String paymentMethod;
 
     // thông tin sản phẩm rút gọn
-    @Column(name = "short_description", length = 1000, nullable = false)
-    private String shortDescription;
+    @Column(name = "reason", length = 1000, nullable = true)
+    private String reason;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "discount_id", nullable = false)
     @JsonBackReference
     private Discount discount;
 
-    @Column(name = "is_rated", columnDefinition = "boolean default false")
-    private boolean isRated = false;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "delivery_status", nullable = false)
     private DeliveryStatus deliveryStatus;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    @JsonBackReference
-    private User user;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    @JsonBackReference
-    private Category category;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "brand_id", nullable = false)
-    @JsonBackReference
-    private Brand brand;
 
     @Column(name = "is_deleted", columnDefinition = "boolean default false")
     private Boolean isDeleted = false;

@@ -33,6 +33,7 @@ import BlogPage from "@/pages/dashboard/blog/blog-page";
 import Product from "@/pages/dashboard/product/product";
 import ProductDetail from "@/pages/dashboard/product/product-detail";
 import DiscountPage from "@/pages/dashboard/discount/DiscountPage";
+import OrderPage from "@/pages/dashboard/order/order";
 // Lazy load layouts
 const ClientLayout = React.lazy(() => import("./client-layout"));
 const AuthLayout = React.lazy(() => import("./auth-layout"));
@@ -152,12 +153,22 @@ const AppRoutes = () => {
             }
           />
 
-            <Route path="product/detail" element={<ProductDetail />} />
+          <Route path="product/detail" element={<ProductDetail />} />
           <Route
             path="discount"
             element={
               <KeepAlive id="discount">
                 <DiscountPage />
+              </KeepAlive>
+            }
+          />
+
+
+            <Route
+            path="order"
+            element={
+              <KeepAlive id="order">
+                <OrderPage />
               </KeepAlive>
             }
           />

@@ -1,5 +1,7 @@
 package com.moe.socialnetwork.api.services.impl;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -25,11 +27,13 @@ import com.moe.socialnetwork.api.services.IProductService;
 import com.moe.socialnetwork.exception.AppException;
 import com.moe.socialnetwork.jpa.BrandJpa;
 import com.moe.socialnetwork.jpa.CategoryJpa;
+import com.moe.socialnetwork.jpa.DiscountJpa;
 import com.moe.socialnetwork.jpa.ProductJpa;
 import com.moe.socialnetwork.jpa.ProductTagJpa;
 import com.moe.socialnetwork.jpa.TagJpa;
 import com.moe.socialnetwork.models.Brand;
 import com.moe.socialnetwork.models.Category;
+import com.moe.socialnetwork.models.Discount;
 import com.moe.socialnetwork.models.Product;
 import com.moe.socialnetwork.models.ProductTag;
 import com.moe.socialnetwork.models.Tag;
@@ -44,14 +48,16 @@ public class ProductServiceImpl implements IProductService {
     private final BrandJpa brandJpa;
     private final ProductTagJpa productTagJpa;
     private final TagJpa tagJpa;
+    private final DiscountJpa discountJpa;
 
     public ProductServiceImpl(ProductJpa productJpa, CategoryJpa categoryJpa, BrandJpa brandJpa,
-            ProductTagJpa productTagJpa, TagJpa tagJpa) {
+            ProductTagJpa productTagJpa, TagJpa tagJpa, DiscountJpa discountJpa) {
         this.productJpa = productJpa;
         this.categoryJpa = categoryJpa;
         this.brandJpa = brandJpa;
         this.productTagJpa = productTagJpa;
         this.tagJpa = tagJpa;
+        this.discountJpa = discountJpa;
     }
 
     public PageDto<ProductAllBasicDto> getProductAllBasic(String query, int page, int size, String sort) {
@@ -308,9 +314,56 @@ public class ProductServiceImpl implements IProductService {
     }
 
     private ProductAllBasicDto mapToDTOBasic(Product product) {
+        BigDecimal discountPrice = BigDecimal.ZERO; // Số tiền giảm
+        BigDecimal finalPrice = product.getPrice(); // Giá sau giảm (mặc định là giá gốc)
+
+        List<Discount> discounts = discountJpa.findByProductCode(product.getCode(), null);
+
+        if (!discounts.isEmpty()) {
+            for (Discount discount : discounts) {
+                if (isValid(discount.getStartDate(), discount.getEndDate())) {
+
+                    // Tính số tiền giảm
+                    discountPrice = product.getPrice()
+                            .multiply(discount.getDiscountValue())
+                            .divide(BigDecimal.valueOf(100));
+
+                    // Giới hạn số tiền giảm
+                    if (discount.getMaxDiscount() != null &&
+                            discountPrice.compareTo(discount.getMaxDiscount()) > 0) {
+                        discountPrice = discount.getMaxDiscount();
+                    }
+
+                    // Cập nhật giá sau giảm
+                    finalPrice = product.getPrice().subtract(discountPrice);
+                    break; // Nếu chỉ áp dụng 1 discount hợp lệ thì thoát luôn
+                }
+            }
+        }
+
         return new ProductAllBasicDto(
                 product.getCode().toString(),
                 product.getName(),
-                product.getImage());
+                product.getImage(),
+                product.getPrice(),
+                finalPrice);
     }
+
+    public boolean isValid(LocalDateTime startDate, LocalDateTime endDate) {
+        LocalDateTime now = LocalDateTime.now();
+
+        // Nếu startDate sau thời điểm hiện tại => chưa có hiệu lực
+        if (startDate.isAfter(now)) {
+            return false;
+        }
+
+        // Nếu endDate null => không có hạn kết thúc => luôn hợp lệ sau startDate
+        if (endDate == null) {
+            return true;
+        }
+
+        // Nếu endDate >= hiện tại => còn hạn
+        return !endDate.isBefore(now);
+    }
+
 }

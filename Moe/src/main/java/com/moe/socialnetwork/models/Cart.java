@@ -44,11 +44,6 @@ public class Cart {
 	@JsonBackReference
 	private Product product;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", nullable = false)
-	@JsonBackReference
-	private User user;
-
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
 

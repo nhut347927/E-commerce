@@ -36,7 +36,7 @@ import {
   DiscountCreatePro,
   DiscountUpdateCo,
   DiscountUpdatePro,
-  ProductAll,
+  ProductAllBasic,
 } from "../type";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -127,7 +127,7 @@ const DiscountPage: React.FC = () => {
 
   // Fetch products for product selection
 
-  const { data: products } = useGetApi<Page<ProductAll>>({
+  const { data: products } = useGetApi<Page<ProductAllBasic>>({
     endpoint: "/product/all/basic",
     params: {
       q: searchTermP,
@@ -847,7 +847,7 @@ const DiscountPage: React.FC = () => {
                           className="w-full"
                         />
                         <Button
-                        type="button" 
+                          type="button"
                           variant="outline"
                           onClick={() => setSearchTermP("")}
                           className="text-sm"
@@ -899,7 +899,7 @@ const DiscountPage: React.FC = () => {
 
                       {/* Product cards with checkbox */}
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[400px] overflow-y-auto">
-                        {products?.contents.map((product: ProductAll) => {
+                        {products?.contents.map((product: ProductAllBasic) => {
                           const isSelected =
                             selectedProductCodeP === product.code;
                           return (
@@ -1218,7 +1218,7 @@ const DiscountPage: React.FC = () => {
                         className="w-full"
                       />
                       <Button
-                      type="button" 
+                        type="button"
                         variant="outline"
                         onClick={() => setSearchTermP("")}
                         className="text-sm"
@@ -1270,7 +1270,7 @@ const DiscountPage: React.FC = () => {
 
                     {/* Product cards with checkbox */}
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[400px] overflow-y-auto">
-                      {products?.contents.map((product: ProductAll) => {
+                      {products?.contents.map((product: ProductAllBasic) => {
                         const isSelected =
                           (updateFormData as DiscountUpdatePro).productCode ===
                           product.code;
