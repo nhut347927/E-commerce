@@ -57,45 +57,45 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String email = null;
         User user = null;
 
-        // Skip token validation for public endpoints
+        // Bỏ qua xác thực cho các endpoint public
         if (isPublicEndpoint(wrappedRequest)) {
             chain.doFilter(wrappedRequest, response);
             return;
         }
 
+        // Debug log
+        //System.out.println("JWT nhận được: " + jwt);
+
+        // Token bị thiếu
         if (jwt == null) {
-            chain.doFilter(wrappedRequest, response); // vẫn cho đi để đọc body rồi mới log
             logFailure(null, "Missing JWT token", null, "401", wrappedRequest);
             sendErrorResponse(response, "JWT token is missing", 401);
-            return;
+            return; // DỪNG luôn
         }
 
         try {
             if (tokenService.validateJwtToken(jwt)) {
                 email = tokenService.getEmailFromJwtToken(jwt);
             } else {
-                chain.doFilter(wrappedRequest, response);
                 logFailure(null, "Invalid JWT token", null, "401", wrappedRequest);
                 sendErrorResponse(response, "Invalid JWT token", 401);
                 return;
             }
         } catch (ExpiredJwtException e) {
-            chain.doFilter(wrappedRequest, response);
             logFailure(null, "Expired JWT token", e.getMessage(), "401", wrappedRequest);
             sendErrorResponse(response, "JWT token has expired. Please log in again.", 401);
             return;
         } catch (AppException e) {
-            chain.doFilter(wrappedRequest, response);
             logFailure(null, "Authentication error: AppException", e.getMessage(), "401", wrappedRequest);
             sendErrorResponse(response, "Application error: " + sanitizeMessage(e.getMessage()), 500);
             return;
         } catch (Exception e) {
-            chain.doFilter(wrappedRequest, response);
             logFailure(null, "Invalid JWT token format", e.getMessage(), "401", wrappedRequest);
             sendErrorResponse(response, "Invalid JWT token format", 401);
             return;
         }
 
+        // Tạo authentication cho user
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
@@ -106,18 +106,19 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(wrappedRequest));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } else {
-                chain.doFilter(wrappedRequest, response);
                 logFailure(null, "User not found for email", email, "401", wrappedRequest);
                 sendErrorResponse(response, "User not found", 401);
                 return;
             }
         }
 
-        // Gọi các filter/controller khác
+        // Nếu tới đây thì xác thực OK → Cho request đi tiếp
         chain.doFilter(wrappedRequest, response);
 
-        // Sau khi request đã xử lý xong -> Lấy body/log
-        logSuccess(user, "Successful authentication for user: " + email, wrappedRequest);
+        // Chỉ log thành công nếu có user
+        if (user != null) {
+            logSuccess(user, "Successful authentication for user: " + email, wrappedRequest);
+        }
     }
 
     private String extractToken(HttpServletRequest request) {
@@ -135,7 +136,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         return jwt;
     }
 
-private boolean isPublicEndpoint(HttpServletRequest request) {
+    private boolean isPublicEndpoint(HttpServletRequest request) {
         String path = request.getRequestURI();
         return path.startsWith("/api/auth/register") ||
                 path.startsWith("/api/auth/login") ||
@@ -192,7 +193,6 @@ private boolean isPublicEndpoint(HttpServletRequest request) {
     private void logFailure(User user, String message, String error, String statusCode, HttpServletRequest req) {
         String query = getQueryOrBody(req);
         String path = req.getRequestURI();
-        // Lấy địa chỉ IP
         String ip = req.getHeader("X-Forwarded-For");
         if (ip == null || ip.isEmpty()) {
             ip = req.getRemoteAddr();
@@ -202,16 +202,19 @@ private boolean isPublicEndpoint(HttpServletRequest request) {
             activityLogService.logActivity(user, message, error, statusCode, query);
         }
 
-        // Gắn IP vào message để ghi lại
         String fullMessage = String.format("[%s] %s", ip, message);
 
-        userActivityContextService.addUserActivity(user.getCode().toString(), user.getDisplayName(), fullMessage);
+        if (user != null) {
+            userActivityContextService.addUserActivity(user.getCode().toString(), user.getDisplayName(), fullMessage);
+        } else {
+            // Nếu chưa xác thực được user thì có thể log ẩn danh
+            userActivityContextService.addUserActivity("anonymous", "Anonymous", fullMessage);
+        }
     }
 
     private void logSuccess(User user, String message, HttpServletRequest req) {
         String query = getQueryOrBody(req);
         String path = req.getRequestURI();
-        // Lấy địa chỉ IP
         String ip = req.getHeader("X-Forwarded-For");
         if (ip == null || ip.isEmpty()) {
             ip = req.getRemoteAddr();
@@ -221,10 +224,13 @@ private boolean isPublicEndpoint(HttpServletRequest request) {
             activityLogService.logActivity(user, message, null, "200", query);
         }
 
-        // Gắn IP vào message để ghi lại
         String fullMessage = String.format("[%s] %s", ip, message);
 
-        userActivityContextService.addUserActivity(user.getCode().toString(), user.getDisplayName(), fullMessage);
+        if (user != null) {
+            userActivityContextService.addUserActivity(user.getCode().toString(), user.getDisplayName(), fullMessage);
+        } else {
+            userActivityContextService.addUserActivity("anonymous", "Anonymous", fullMessage);
+        }
     }
 
     private String getQueryOrBody(HttpServletRequest request) {

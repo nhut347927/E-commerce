@@ -123,5 +123,4 @@ public interface ITokenService {
      * @throws AppException if user is null
      */
     void clearTokens(User user) throws AppException;
-
 }

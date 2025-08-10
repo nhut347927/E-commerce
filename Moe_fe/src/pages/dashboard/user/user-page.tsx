@@ -32,6 +32,7 @@ import { Page } from "@/common/hooks/type";
 import { Users } from "../type";
 import { formatDateTime } from "@/common/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import axiosInstance from "@/services/axios/axios-instance";
 
 const UserPage: React.FC = () => {
   const { toast } = useToast();
@@ -74,6 +75,33 @@ const UserPage: React.FC = () => {
   const onChangeSize = (newSize: string) => {
     setSize(Number(newSize));
     setPage(0);
+  };
+
+  const handleDelete = async (code: string) => {
+    try {
+      const response = await axiosInstance.delete("/user", { data: { code } });
+      if (response.data.code === 200) {
+        toast({
+          title: "Success",
+          description: "User deleted successfully.",
+        });
+        refetch();
+      } else {
+        toast({
+          title: "Error",
+          description: response.data.message,
+          variant: "destructive",
+        });
+      }
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description:
+          err.response?.data?.message ||
+          "An error occurred while deleting user.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -203,6 +231,7 @@ const UserPage: React.FC = () => {
                     <Button
                       variant="outline"
                       size="icon"
+                      onClick={() => handleDelete(user.code)}
                       className="border-gray-300 text-gray-600 hover:text-zinc-500"
                     >
                       <Trash2 className="h-4 w-4" />

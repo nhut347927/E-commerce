@@ -2,11 +2,14 @@ package com.moe.socialnetwork.api.controllers;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.moe.socialnetwork.api.dtos.UsersDto;
+import com.moe.socialnetwork.api.dtos.common.CodeDto;
 import com.moe.socialnetwork.api.dtos.common.FilterPageDto;
 import com.moe.socialnetwork.api.dtos.common.PageDto;
 import com.moe.socialnetwork.api.services.IUserService;
@@ -14,6 +17,7 @@ import com.moe.socialnetwork.models.User;
 import com.moe.socialnetwork.response.ResponseAPI;
 
 import jakarta.validation.Valid;
+
 /**
  * Author: nhutnm379
  */
@@ -41,6 +45,22 @@ public class UserController {
         response.setCode(200);
         response.setMessage("Success");
         response.setData(data);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping
+    public ResponseEntity<ResponseAPI<String>> deleteUser(
+            @Valid @RequestBody CodeDto request,
+            @AuthenticationPrincipal User user) {
+
+        userService.deleteUser(user,
+                request);
+
+        ResponseAPI<String> response = new ResponseAPI<>();
+        response.setCode(200);
+        response.setMessage("Success");
+        response.setData(null);
 
         return ResponseEntity.ok(response);
     }

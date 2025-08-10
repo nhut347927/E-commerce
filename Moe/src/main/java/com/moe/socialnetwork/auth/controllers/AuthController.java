@@ -36,169 +36,160 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final IAuthService authService;
-    private final ITokenService tokenService;
-    private final IEmailService emailService;
+        private final IAuthService authService;
+        private final ITokenService tokenService;
+        private final IEmailService emailService;
 
-    @Value("${app.expiration24h}")
-    private Long jwtExpirationMs;
+        @Value("${app.expiration24h}")
+        private Long jwtExpirationMs;
 
-    @Value("${app.expiration6months}")
-    private Long jwtExpirationMs2;
+        @Value("${app.expiration6months}")
+        private Long jwtExpirationMs2;
 
-    public AuthController(IAuthService authService, ITokenService tokenService, IEmailService emailService) {
-        this.authService = authService;
-        this.tokenService = tokenService;
-        this.emailService = emailService;
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<ResponseAPI<RPUserRegisterDTO>> register(
-            @RequestBody @Valid RQRegisterDTO request) {
-        RPUserRegisterDTO registeredUser = authService.register(request);
-        return ResponseEntity.ok(ResponseAPI.of(HttpStatus.OK.value(), "Success", registeredUser));
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<ResponseAPI<RPLoginDTO>> login(@RequestBody @Valid RQLoginDTO request) {
-        RPLoginDTO login = authService.login(request);
-        return buildLoginResponse(login);
-    }
-
-    @PostMapping("/google-login")
-    public ResponseEntity<ResponseAPI<RPLoginDTO>> loginWithGoogle(
-            @RequestBody @Valid RQLoginWithGoogleDTO request) {
-        RPLoginDTO login = authService.loginWithGoogle(request.getToken());
-        return buildLoginResponse(login);
-    }
-
-    @PutMapping("/change-password")
-    public ResponseEntity<ResponseAPI<String>> changePassword(@AuthenticationPrincipal User user,
-            @RequestBody @Valid RQChangePasswordDTO request) {
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ResponseAPI.error(HttpStatus.UNAUTHORIZED.value(), "User is not authenticated", null));
+        public AuthController(IAuthService authService, ITokenService tokenService, IEmailService emailService) {
+                this.authService = authService;
+                this.tokenService = tokenService;
+                this.emailService = emailService;
         }
 
-        authService.validateNewPassword(request.getNewPassword(), request.getConfirmNewPassword());
-        authService.changePassword(user, request.getNewPassword());
-
-        return ResponseEntity.ok(ResponseAPI.of(HttpStatus.OK.value(), "Password changed successfully",
-                "Password updated for user: " + user.getUsername()));
-    }
-
-    @PostMapping("/password-reset-request")
-    public ResponseEntity<ResponseAPI<String>> passwordResetRequest(
-            @RequestBody @Valid RQPasswordResetRequestDTO request) {
-        User user = authService.findByEmail(request.getEmail());
-        String resetToken = tokenService.generatePasswordResetToken(user);
-        emailService.sendPasswordResetEmail(user.getEmail(), resetToken);
-
-        return ResponseEntity.ok(ResponseAPI.of(HttpStatus.OK.value(),
-                "Password reset email sent successfully. Please check your email!", "Success"));
-    }
-
-    @PostMapping("/password-reset")
-    public ResponseEntity<ResponseAPI<String>> passwordReset(@RequestBody @Valid RQPasswordResetDTO request) {
-        User user = authService.findByResetToken(request.getToken());
-
-        if (!tokenService.validatePasswordResetToken(user, request.getToken())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ResponseAPI.error(HttpStatus.UNAUTHORIZED.value(), "Invalid or expired reset token", null));
+        @PostMapping("/register")
+        public ResponseEntity<ResponseAPI<RPUserRegisterDTO>> register(
+                        @RequestBody @Valid RQRegisterDTO request) {
+                RPUserRegisterDTO registeredUser = authService.register(request);
+                return ResponseEntity.ok(ResponseAPI.of(HttpStatus.OK.value(), "Success", registeredUser));
         }
 
-        authService.validateNewPassword(request.getNewPassword(), request.getConfirmNewPassword());
-        authService.updatePassword(user, request.getNewPassword());
-
-        return ResponseEntity.ok(ResponseAPI.of(HttpStatus.OK.value(), "Success", null));
-    }
-
-    @PostMapping("/refresh-token")
-    public ResponseEntity<ResponseAPI<String>> refreshAccessToken(HttpServletRequest httpRequest) {
-        int maxAgeAccessToken = (int) (jwtExpirationMs / 1000);
-
-        // B1: Lấy refresh token từ cookie
-        String reToken = tokenService.extractRefreshTokenFromCookie(httpRequest);
-
-        // B2: Kiểm tra token
-        if (reToken == null || !tokenService.validateJwtToken(reToken)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ResponseAPI.error(HttpStatus.UNAUTHORIZED.value(), "Invalid or expired refresh token", null));
+        @PostMapping("/login")
+        public ResponseEntity<ResponseAPI<RPLoginDTO>> login(@RequestBody @Valid RQLoginDTO request) {
+                RPLoginDTO login = authService.login(request);
+                return buildLoginResponse(login);
         }
 
-        // B3: Lấy user
-        String email = tokenService.getEmailFromJwtToken(reToken);
-        User user = authService.findByEmail(email);
-
-        // B4: Tạo access token mới
-        String newAccessToken = tokenService.generateJwtToken(user);
-        ResponseCookie accessCookie = ResponseCookie.from("access_token", newAccessToken)
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(maxAgeAccessToken)
-                .sameSite("Strict") // hoặc "Lax" nếu redirect từ bên ngoài
-                .build();
-
-        // B5: Trả về cookie và access token mới
-        return ResponseEntity
-                .ok()
-                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
-                .body(ResponseAPI.of(HttpStatus.OK.value(), "Success", newAccessToken));
-    }
-
-    @PostMapping("/logout")
-    public ResponseEntity<ResponseAPI<String>> logout(@AuthenticationPrincipal User user) {
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ResponseAPI.error(HttpStatus.UNAUTHORIZED.value(), "User is not authenticated", null));
+        @PostMapping("/google-login")
+        public ResponseEntity<ResponseAPI<RPLoginDTO>> loginWithGoogle(
+                        @RequestBody @Valid RQLoginWithGoogleDTO request) {
+                RPLoginDTO login = authService.loginWithGoogle(request.getToken());
+                return buildLoginResponse(login);
         }
 
-        authService.logOut(user);
+        @PutMapping("/change-password")
+        public ResponseEntity<ResponseAPI<String>> changePassword(@AuthenticationPrincipal User user,
+                        @RequestBody @Valid RQChangePasswordDTO request) {
+                if (user == null) {
+                        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                        .body(ResponseAPI.error(HttpStatus.UNAUTHORIZED.value(),
+                                                        "User is not authenticated", null));
+                }
 
-        ResponseCookie deleteAccessCookie = ResponseCookie.from("access_token", "")
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .sameSite("Strict")
-                .maxAge(0)
-                .build();
+                authService.validateNewPassword(request.getNewPassword(), request.getConfirmNewPassword());
+                authService.changePassword(user, request.getNewPassword());
 
-        ResponseCookie deleteRefreshCookie = ResponseCookie.from("refresh_token", "")
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .sameSite("Strict")
-                .maxAge(0)
-                .build();
+                return ResponseEntity.ok(ResponseAPI.of(HttpStatus.OK.value(), "Password changed successfully",
+                                "Password updated for user: " + user.getUsername()));
+        }
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, deleteAccessCookie.toString(), deleteRefreshCookie.toString())
-                .body(ResponseAPI.of(HttpStatus.OK.value(), "Success", null));
-    }
+        @PostMapping("/password-reset-request")
+        public ResponseEntity<ResponseAPI<String>> passwordResetRequest(
+                        @RequestBody @Valid RQPasswordResetRequestDTO request) {
+                User user = authService.findByEmail(request.getEmail());
+                String resetToken = tokenService.generatePasswordResetToken(user);
+                emailService.sendPasswordResetEmail(user.getEmail(), resetToken);
 
-    private ResponseEntity<ResponseAPI<RPLoginDTO>> buildLoginResponse(RPLoginDTO login) {
-        int maxAgeAccessToken = (int) (jwtExpirationMs / 1000);
-        int maxAgeRefreshToken = (int) (jwtExpirationMs2 / 1000);
+                return ResponseEntity.ok(ResponseAPI.of(HttpStatus.OK.value(),
+                                "Password reset email sent successfully. Please check your email!", "Success"));
+        }
 
-        ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", login.getRefreshToken())
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(maxAgeRefreshToken)
-                .sameSite("Strict")
-                .build();
+        @PostMapping("/password-reset")
+        public ResponseEntity<ResponseAPI<String>> passwordReset(@RequestBody @Valid RQPasswordResetDTO request) {
+                User user = authService.findByResetToken(request.getToken());
 
-        ResponseCookie accessCookie = ResponseCookie.from("access_token", login.getAccessToken())
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(maxAgeAccessToken)
-                .sameSite("Strict")
-                .build();
+                if (!tokenService.validatePasswordResetToken(user, request.getToken())) {
+                        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                        .body(ResponseAPI.error(HttpStatus.UNAUTHORIZED.value(),
+                                                        "Invalid or expired reset token", null));
+                }
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, accessCookie.toString(), refreshCookie.toString())
-                .body(ResponseAPI.of(HttpStatus.OK.value(), "Success", login));
-    }
+                authService.validateNewPassword(request.getNewPassword(), request.getConfirmNewPassword());
+                authService.updatePassword(user, request.getNewPassword());
+
+                return ResponseEntity.ok(ResponseAPI.of(HttpStatus.OK.value(), "Success", null));
+        }
+
+        @PostMapping("/refresh-token")
+        public ResponseEntity<ResponseAPI<String>> refreshAccessToken(HttpServletRequest httpRequest) {
+                int maxAgeAccessToken = (int) (jwtExpirationMs / 1000);
+
+                String reToken = tokenService.extractRefreshTokenFromCookie(httpRequest);
+
+                String newAccessToken = authService.refreshAccessToken(reToken);
+                ResponseCookie accessCookie = ResponseCookie.from("access_token", newAccessToken)
+                                .httpOnly(true)
+                                .secure(true)
+                                .path("/")
+                                .maxAge(maxAgeAccessToken)
+                                .sameSite("Strict")
+                                .build();
+
+                return ResponseEntity
+                                .ok()
+                                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+                                .body(ResponseAPI.of(HttpStatus.OK.value(), "Success", newAccessToken));
+        }
+
+        @PostMapping("/logout")
+        public ResponseEntity<ResponseAPI<String>> logout(@AuthenticationPrincipal User user) {
+                if (user == null) {
+                        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                        .body(ResponseAPI.error(HttpStatus.UNAUTHORIZED.value(),
+                                                        "User is not authenticated", null));
+                }
+
+                authService.logOut(user);
+
+                ResponseCookie deleteAccessCookie = ResponseCookie.from("access_token", "")
+                                .httpOnly(true)
+                                .secure(true)
+                                .path("/")
+                                .sameSite("Strict")
+                                .maxAge(0)
+                                .build();
+
+                ResponseCookie deleteRefreshCookie = ResponseCookie.from("refresh_token", "")
+                                .httpOnly(true)
+                                .secure(true)
+                                .path("/")
+                                .sameSite("Strict")
+                                .maxAge(0)
+                                .build();
+
+                return ResponseEntity.ok()
+                                .header(HttpHeaders.SET_COOKIE, deleteAccessCookie.toString(),
+                                                deleteRefreshCookie.toString())
+                                .body(ResponseAPI.of(HttpStatus.OK.value(), "Success", null));
+        }
+
+        private ResponseEntity<ResponseAPI<RPLoginDTO>> buildLoginResponse(RPLoginDTO login) {
+                int maxAgeAccessToken = (int) (jwtExpirationMs / 1000);
+                int maxAgeRefreshToken = (int) (jwtExpirationMs2 / 1000);
+
+                ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", login.getRefreshToken())
+                                .httpOnly(true)
+                                .secure(true)
+                                .path("/")
+                                .maxAge(maxAgeRefreshToken)
+                                .sameSite("Strict")
+                                .build();
+
+                ResponseCookie accessCookie = ResponseCookie.from("access_token", login.getAccessToken())
+                                .httpOnly(true)
+                                .secure(true)
+                                .path("/")
+                                .maxAge(maxAgeAccessToken)
+                                .sameSite("Strict")
+                                .build();
+
+                return ResponseEntity.ok()
+                                .header(HttpHeaders.SET_COOKIE, accessCookie.toString(), refreshCookie.toString())
+                                .body(ResponseAPI.of(HttpStatus.OK.value(), "Success", login));
+        }
 }

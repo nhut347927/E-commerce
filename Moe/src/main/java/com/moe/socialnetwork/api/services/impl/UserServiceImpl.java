@@ -1,16 +1,21 @@
 package com.moe.socialnetwork.api.services.impl;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.moe.socialnetwork.api.dtos.UsersDto;
+import com.moe.socialnetwork.api.dtos.common.CodeDto;
 import com.moe.socialnetwork.api.dtos.common.PageDto;
 import com.moe.socialnetwork.api.services.IUserService;
+import com.moe.socialnetwork.exception.AppException;
 import com.moe.socialnetwork.jpa.UserJpa;
+import com.moe.socialnetwork.models.Discount;
 import com.moe.socialnetwork.models.User;
 import com.moe.socialnetwork.util.PaginationUtils;
 
@@ -38,6 +43,28 @@ public class UserServiceImpl implements IUserService {
                 .collect(Collectors.toList());
 
         return PaginationUtils.buildPageDTO(users, contents);
+    }
+
+    public void deleteUser(User user, CodeDto codeDto) {
+        try {
+            UUID userCodeToDelete = UUID.fromString(codeDto.getCode());
+            User u = userJPA.findByCode(userCodeToDelete)
+                    .orElseThrow(() -> new AppException("User not found", HttpStatus.NOT_FOUND.value()));
+
+            if (user.getCode().equals(u.getCode())) {
+                throw new AppException("You cannot delete yourself", HttpStatus.BAD_REQUEST.value());
+            }
+
+            u.softDelete();
+            u.setUserDelete(user);
+            userJPA.save(u);
+
+        } catch (IllegalArgumentException e) {
+            throw new AppException("Invalid User code format", HttpStatus.BAD_REQUEST.value());
+        } catch (Exception e) {
+            throw new AppException("An error occurred while deleting user: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
     }
 
     private UsersDto mapUserToRPUsersDTO(User user) {

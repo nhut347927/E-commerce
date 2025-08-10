@@ -233,7 +233,7 @@ public class AuthServiceImpl implements IAuthService {
         userInfo.setProfilePictureUrl(user.getAvatar());
         return userInfo;
     }
-
+    @Override
     public String refreshAccessToken(String refreshToken) {
         if (refreshToken == null || refreshToken.isBlank()) {
             throw new AppException("Refresh token must not be null or empty", HttpStatus.BAD_REQUEST.value());

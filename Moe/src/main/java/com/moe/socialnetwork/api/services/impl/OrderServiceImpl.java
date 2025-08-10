@@ -1,6 +1,7 @@
 package com.moe.socialnetwork.api.services.impl;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -31,6 +32,8 @@ import com.moe.socialnetwork.models.Product;
 import com.moe.socialnetwork.models.Order.DeliveryStatus;
 import com.moe.socialnetwork.models.User;
 import com.moe.socialnetwork.util.PaginationUtils;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class OrderServiceImpl implements IOrderService {
@@ -103,30 +106,62 @@ public class OrderServiceImpl implements IOrderService {
         return contents;
     }
 
+    @Transactional
     public void addOrderItem(User user, OrderItemAddDto orderUpdateDto) {
         try {
-            UUID orderCode = UUID.fromString(orderUpdateDto.getOrderCode());
+            // 1. Parse và validate UUID
+            UUID orderCode = parseUuid(orderUpdateDto.getOrderCode(), "orderCode");
+            UUID productCode = parseUuid(orderUpdateDto.getProductCode(), "productCode");
+
+            // 2. Lấy order và product
             Order order = orderJpa.findByCode(orderCode)
                     .orElseThrow(() -> new AppException("Order not found", HttpStatus.NOT_FOUND.value()));
-            UUID productCode = UUID.fromString(orderUpdateDto.getProductCode());
+
             Product product = productJpa.findByCode(productCode)
                     .orElseThrow(() -> new AppException("Product not found", HttpStatus.NOT_FOUND.value()));
 
-            OrderItem orderItem = new OrderItem();
-            orderItem.setOrder(order);
-            orderItem.setProduct(product);
-            orderItem.setQuantity(orderUpdateDto.getQuantity());
-            orderItem.setPrice(getFinalPrice(product));
-            orderItemJpa.save(orderItem);
-            // ############################
+            // 3. Tìm order item
+            OrderItem item = orderItemJpa.findByOrderIdAndProductId(order.getId(), product.getId())
+                    .map(existingItem -> {
+                        // Nếu đã tồn tại thì cộng số lượng
+                        existingItem.setQuantity(existingItem.getQuantity() + orderUpdateDto.getQuantity());
+                        return existingItem;
+                    })
+                    .orElseGet(() -> {
+                        // Nếu chưa tồn tại thì tạo mới
+                        OrderItem newItem = new OrderItem();
+                        newItem.setOrder(order);
+                        newItem.setProduct(product);
+                        newItem.setQuantity(orderUpdateDto.getQuantity());
+                        newItem.setPrice(getFinalPrice(product));
+                        newItem.setUserCreate(user);
+                        return newItem;
+                    });
+
+            // 4. Lưu order item
+            orderItemJpa.save(item);
+
+            // 5. Tính lại tổng đơn hàng
             recalculateOrderTotals(order);
-            // ############################
-        } catch (IllegalArgumentException e) {
-            throw new AppException("Invalid size code format", HttpStatus.BAD_REQUEST.value());
+
+        } catch (AppException e) {
+            // Ném lại AppException để không bị gói vào Exception chung
+            throw e;
         } catch (Exception e) {
-            throw new AppException("An error occurred while updating order: " + e.getMessage(), 500);
+            throw new AppException(
+                    "An error occurred while updating order: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
-    };
+    }
+
+    // Hàm parse UUID có thông báo lỗi rõ ràng
+    private UUID parseUuid(String uuidStr, String fieldName) {
+        try {
+            return UUID.fromString(uuidStr);
+        } catch (IllegalArgumentException e) {
+            throw new AppException("Invalid UUID format for " + fieldName, HttpStatus.BAD_REQUEST.value());
+        }
+    }
 
     public void deleteOrderItem(CodeDto dto) {
         try {
@@ -151,50 +186,62 @@ public class OrderServiceImpl implements IOrderService {
     };
 
     public void recalculateOrderTotals(Order order) {
-        try {
-            BigDecimal tongGiaSanPham = BigDecimal.ZERO;
-            BigDecimal giaGiam = BigDecimal.ZERO;
-            BigDecimal tongCuoiCung;
+        List<OrderItem> orderItems = orderItemJpa.findByOrderCode(order.getCode());
 
-            // Lấy danh sách sản phẩm trong order
-            List<OrderItem> orderItems = orderItemJpa.findByOrderCode(order.getCode());
+        if (orderItems == null || orderItems.isEmpty()) {
+            order.setQuantity(0);
+            order.setPrice(BigDecimal.ZERO);
+            order.setDiscountAmount(BigDecimal.ZERO);
+            order.setTotal(BigDecimal.ZERO);
+            orderJpa.save(order);
+            return;
+        }
 
-            // Cộng tổng giá tất cả sản phẩm
-            for (OrderItem orderItem : orderItems) {
-                if (orderItem.getPrice() != null) {
-                    tongGiaSanPham = tongGiaSanPham.add(orderItem.getPrice());
+        int totalQuantity = orderItems.stream()
+                .mapToInt(OrderItem::getQuantity)
+                .sum();
+
+        BigDecimal tongGiaSanPham = orderItems.stream()
+                .filter(item -> item.getPrice() != null)
+                .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        order.setQuantity(totalQuantity);
+        order.setPrice(tongGiaSanPham);
+
+        BigDecimal giaGiam = BigDecimal.ZERO;
+        if (order.getDiscount() != null && order.getDiscount().getDiscountValue() != null&&isValid(order.getDiscount().getStartDate(), order.getDiscount().getEndDate())) {
+            BigDecimal discountValue = order.getDiscount().getDiscountValue();
+            if (discountValue.compareTo(BigDecimal.ZERO) >= 0
+                    && discountValue.compareTo(BigDecimal.valueOf(100)) <= 0) {
+                giaGiam = tongGiaSanPham.multiply(discountValue)
+                        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+
+                // So sánh với maxDiscount
+                BigDecimal maxDiscount = order.getDiscount().getMaxDiscount();
+                if (maxDiscount != null && giaGiam.compareTo(maxDiscount) > 0) {
+                    giaGiam = maxDiscount;
                 }
             }
-            order.setPrice(tongGiaSanPham);
-
-            // Tính tiền giảm giá (nếu có discount)
-            if (order.getDiscount() != null && order.getDiscount().getDiscountValue() != null) {
-                giaGiam = tongGiaSanPham
-                        .multiply(order.getDiscount().getDiscountValue())
-                        .divide(BigDecimal.valueOf(100));
-                order.setDiscountAmount(giaGiam);
-            } else {
-                order.setDiscountAmount(BigDecimal.ZERO);
-            }
-
-            // Phí vận chuyển (nếu null thì = 0)
-            BigDecimal phiVanChuyen = order.getShippingFee() != null ? order.getShippingFee() : BigDecimal.ZERO;
-
-            // Tổng cuối cùng = Tổng giá sản phẩm + Phí vận chuyển - Giảm giá
-            tongCuoiCung = tongGiaSanPham.add(phiVanChuyen).subtract(giaGiam);
-            order.setTotal(tongCuoiCung);
-
-            // Lưu lại order
-            orderJpa.save(order);
-
-        } catch (IllegalArgumentException e) {
-            throw new AppException("Invalid size code format", HttpStatus.BAD_REQUEST.value());
-        } catch (Exception e) {
-            throw new AppException("An error occurred while updating order: " + e.getMessage(), 500);
         }
+        order.setDiscountAmount(giaGiam);
+
+        BigDecimal phiVanChuyen = order.getShippingFee() != null ? order.getShippingFee() : BigDecimal.ZERO;
+
+        BigDecimal tongCuoiCung = tongGiaSanPham.add(phiVanChuyen).subtract(giaGiam);
+        order.setTotal(tongCuoiCung);
+
+        orderJpa.save(order);
     }
 
     private OrderAllDto mapToDTO(Order order) {
+        String discountDisplay = null;
+        if (order.getDiscount() != null && order.getDiscount().getDiscountValue() != null) {
+            BigDecimal val = order.getDiscount().getDiscountValue().stripTrailingZeros();
+            String valStr = val.scale() <= 0 ? val.toPlainString() : val.toString();
+            discountDisplay = order.getDiscount().getDiscountCode() + "(" + valStr + "%)";
+        }
+
         return new OrderAllDto(order.getCode().toString(),
                 order.getQuantity(),
                 order.getPrice(),
@@ -212,15 +259,15 @@ public class OrderServiceImpl implements IOrderService {
                 order.getNotes(),
                 order.getPaymentMethod(),
                 order.getReason(),
-                order.getDiscount() == null ? order.getDiscount().getDiscountCode() : null,
+                discountDisplay,
                 order.getDeliveryStatus().toString(),
 
                 order.getCreatedAt().toString(),
-                order.getUserCreate().getCode().toString(),
-                order.getUserCreate().getDisplayName(),
+                order.getUserCreate() != null ? order.getUserCreate().getCode().toString() : null,
+                order.getUserCreate() != null ? order.getUserCreate().getDisplayName() : null,
                 order.getUpdatedAt().toString(),
-                order.getUserUpdate().getCode().toString(),
-                order.getUserUpdate().getDisplayName());
+                order.getUserUpdate() != null ? order.getUserUpdate().getCode().toString() : null,
+                order.getUserUpdate() != null ? order.getUserUpdate().getDisplayName() : null);
     }
 
     private OrderItemAllDto mapToDTO(OrderItem order) {
@@ -231,8 +278,8 @@ public class OrderServiceImpl implements IOrderService {
                 order.getPrice(),
 
                 order.getCreatedAt().toString(),
-                order.getUserCreate().getCode().toString(),
-                order.getUserCreate().getDisplayName());
+                order.getUserCreate() != null ? order.getUserCreate().getCode().toString() : null,
+                order.getUserCreate() != null ? order.getUserCreate().getDisplayName() : null);
     }
 
     private boolean isValid(LocalDateTime startDate, LocalDateTime endDate) {

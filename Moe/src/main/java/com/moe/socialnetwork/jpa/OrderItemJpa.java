@@ -20,4 +20,7 @@ public interface OrderItemJpa extends JpaRepository<OrderItem, Long> {
     @Query(" SELECT o FROM OrderItem o WHERE o.code = :orderItemCode")
     Optional<OrderItem> findByCode(@Param("orderItemCode") UUID orderItemCode);
 
+    @Query(" SELECT o FROM OrderItem o WHERE o.order.id = :orderId AND o.product.id = :productId")
+    Optional<OrderItem> findByOrderIdAndProductId(@Param("orderId") Long orderIdm, @Param("productId") Long productId);
+
 }
