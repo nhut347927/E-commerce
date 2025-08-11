@@ -1,5 +1,7 @@
 package com.moe.socialnetwork.jpa;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -55,4 +57,10 @@ public interface UserJpa extends JpaRepository<User, Long> {
 			""")
 	Page<User> searchUsers(@Param("keyword") String keyword, Pageable pageable);
 
+	// ######################################################################
+	@Query("SELECT u FROM User u WHERE u.isDeleted = false AND u.createdAt >= :startDate")
+	List<User> findUsersFromStartDate(@Param("startDate") LocalDateTime startDate);
+
+	@Query("SELECT COUNT(u.id) FROM User u WHERE u.isDeleted = false")
+	long countByIsDeletedFalse();
 }

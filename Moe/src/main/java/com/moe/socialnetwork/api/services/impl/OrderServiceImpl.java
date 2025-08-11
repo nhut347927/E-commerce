@@ -24,11 +24,11 @@ import com.moe.socialnetwork.exception.AppException;
 import com.moe.socialnetwork.jpa.DiscountJpa;
 import com.moe.socialnetwork.jpa.OrderItemJpa;
 import com.moe.socialnetwork.jpa.OrderJpa;
-import com.moe.socialnetwork.jpa.ProductJpa;
+import com.moe.socialnetwork.jpa.ProductVersionJpa;
 import com.moe.socialnetwork.models.Discount;
 import com.moe.socialnetwork.models.Order;
 import com.moe.socialnetwork.models.OrderItem;
-import com.moe.socialnetwork.models.Product;
+import com.moe.socialnetwork.models.ProductVersion;
 import com.moe.socialnetwork.models.Order.DeliveryStatus;
 import com.moe.socialnetwork.models.User;
 import com.moe.socialnetwork.util.PaginationUtils;
@@ -39,14 +39,14 @@ import jakarta.transaction.Transactional;
 public class OrderServiceImpl implements IOrderService {
     private final OrderJpa orderJpa;
     private final OrderItemJpa orderItemJpa;
-    private final ProductJpa productJpa;
+    private final ProductVersionJpa productVersionJpa;
     private final DiscountJpa discountJpa;
 
-    public OrderServiceImpl(OrderJpa orderJpa, OrderItemJpa orderItemJpa, ProductJpa productJpa,
+    public OrderServiceImpl(OrderJpa orderJpa, OrderItemJpa orderItemJpa, ProductVersionJpa productVersionJpa,
             DiscountJpa discountJpa) {
         this.orderJpa = orderJpa;
         this.orderItemJpa = orderItemJpa;
-        this.productJpa = productJpa;
+        this.productVersionJpa = productVersionJpa;
         this.discountJpa = discountJpa;
     }
 
@@ -111,17 +111,17 @@ public class OrderServiceImpl implements IOrderService {
         try {
             // 1. Parse và validate UUID
             UUID orderCode = parseUuid(orderUpdateDto.getOrderCode(), "orderCode");
-            UUID productCode = parseUuid(orderUpdateDto.getProductCode(), "productCode");
+            UUID productCode = parseUuid(orderUpdateDto.getProductVersionCode(), "productVersionCode");
 
-            // 2. Lấy order và product
+            // 2. Lấy order và productversion
             Order order = orderJpa.findByCode(orderCode)
                     .orElseThrow(() -> new AppException("Order not found", HttpStatus.NOT_FOUND.value()));
 
-            Product product = productJpa.findByCode(productCode)
-                    .orElseThrow(() -> new AppException("Product not found", HttpStatus.NOT_FOUND.value()));
+            ProductVersion productVersion = productVersionJpa.findByCode(productCode)
+                    .orElseThrow(() -> new AppException("Product version not found", HttpStatus.NOT_FOUND.value()));
 
             // 3. Tìm order item
-            OrderItem item = orderItemJpa.findByOrderIdAndProductId(order.getId(), product.getId())
+            OrderItem item = orderItemJpa.findByOrderIdAndProductId(order.getId(), productVersion.getId())
                     .map(existingItem -> {
                         // Nếu đã tồn tại thì cộng số lượng
                         existingItem.setQuantity(existingItem.getQuantity() + orderUpdateDto.getQuantity());
@@ -131,9 +131,9 @@ public class OrderServiceImpl implements IOrderService {
                         // Nếu chưa tồn tại thì tạo mới
                         OrderItem newItem = new OrderItem();
                         newItem.setOrder(order);
-                        newItem.setProduct(product);
+                        newItem.setProductVersion(productVersion);
                         newItem.setQuantity(orderUpdateDto.getQuantity());
-                        newItem.setPrice(getFinalPrice(product));
+                        newItem.setPrice(getFinalPrice(productVersion));
                         newItem.setUserCreate(user);
                         return newItem;
                     });
@@ -272,11 +272,12 @@ public class OrderServiceImpl implements IOrderService {
 
     private OrderItemAllDto mapToDTO(OrderItem order) {
         return new OrderItemAllDto(order.getCode().toString(),
-                order.getProduct().getName(),
-                order.getProduct().getImage(),
+                order.getProductVersion().getProduct().getName(),
+                order.getProductVersion().getSize().getName(),
+                order.getProductVersion().getColor().getName(),
+                order.getProductVersion().getImage(),
                 order.getQuantity(),
                 order.getPrice(),
-
                 order.getCreatedAt().toString(),
                 order.getUserCreate() != null ? order.getUserCreate().getCode().toString() : null,
                 order.getUserCreate() != null ? order.getUserCreate().getDisplayName() : null);
@@ -299,18 +300,18 @@ public class OrderServiceImpl implements IOrderService {
         return !endDate.isBefore(now);
     }
 
-    private BigDecimal getFinalPrice(Product product) {
+    private BigDecimal getFinalPrice(ProductVersion productVersion) {
         BigDecimal discountPrice = BigDecimal.ZERO; // Số tiền giảm
-        BigDecimal finalPrice = product.getPrice(); // Giá sau giảm (mặc định là giá gốc)
+        BigDecimal finalPrice = productVersion.getProduct().getPrice(); // Giá sau giảm (mặc định là giá gốc)
 
-        List<Discount> discounts = discountJpa.findByProductCode(product.getCode(), null);
+        List<Discount> discounts = discountJpa.findByProductCode(productVersion.getProduct().getCode(), null);
 
         if (!discounts.isEmpty()) {
             for (Discount discount : discounts) {
                 if (isValid(discount.getStartDate(), discount.getEndDate())) {
 
                     // Tính số tiền giảm
-                    discountPrice = product.getPrice()
+                    discountPrice = productVersion.getProduct().getPrice()
                             .multiply(discount.getDiscountValue())
                             .divide(BigDecimal.valueOf(100));
 
@@ -321,7 +322,7 @@ public class OrderServiceImpl implements IOrderService {
                     }
 
                     // Cập nhật giá sau giảm
-                    finalPrice = product.getPrice().subtract(discountPrice);
+                    finalPrice = productVersion.getProduct().getPrice().subtract(discountPrice);
                     break; // Nếu chỉ áp dụng 1 discount hợp lệ thì thoát luôn
                 }
             }

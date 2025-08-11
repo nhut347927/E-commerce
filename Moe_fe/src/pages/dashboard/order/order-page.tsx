@@ -40,8 +40,15 @@ interface FormErrors {
   email?: string;
   paymentMethod?: string;
   deliveryStatus?: string;
-  productCode?: string;
+  productVersionCode?: string;
   quantity?: string;
+}
+
+interface ProductVersionBase {
+  code: string;
+  productName: string;
+  size: string;
+  color: string;
 }
 
 const OrderPage: React.FC = () => {
@@ -65,10 +72,11 @@ const OrderPage: React.FC = () => {
   });
   const [addItemFormData, setAddItemFormData] = useState<OrderItemAdd>({
     orderCode: "",
-    productCode: "",
+    productVersionCode: "",
     quantity: 1,
   });
   const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [selectedProductCode, setSelectedProductCode] = useState<string>("");
 
   // Fetch orders
   const {
@@ -133,6 +141,21 @@ const OrderPage: React.FC = () => {
     },
   });
 
+  // Fetch product versions for selected product
+  const { data: versionsData } = useGetApi<ProductVersionBase[]>({
+    endpoint: "/product-version/all/basic",
+    params: { code: selectedProductCode },
+    enabled: !!selectedProductCode,
+    onSuccess: () => {},
+    onError: (err) => {
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   useEffect(() => {
     if (selectedOrder) {
       setUpdateFormData({
@@ -181,8 +204,8 @@ const OrderPage: React.FC = () => {
 
   const validateAddItemForm = (): boolean => {
     const errors: FormErrors = {};
-    if (!addItemFormData.productCode)
-      errors.productCode = "Product is required";
+    if (!addItemFormData.productVersionCode)
+      errors.productVersionCode = "Product version is required";
     if (addItemFormData.quantity < 1)
       errors.quantity = "Quantity must be at least 1";
     setFormErrors(errors);
@@ -249,9 +272,10 @@ const OrderPage: React.FC = () => {
         });
         setAddItemFormData({
           orderCode: selectedOrder?.code || "",
-          productCode: "",
+          productVersionCode: "",
           quantity: 1,
         });
+        setSelectedProductCode("");
         refetchOrderItems();
         refetchOrders();
       } else {
@@ -375,8 +399,21 @@ const OrderPage: React.FC = () => {
                         alt={item.productName}
                         className="w-16 aspect-[4/5] object-cover rounded"
                       />
-                      <span>{item.productName}</span>
+                      <div>
+                        <span className="block font-medium">
+                          {item.productName}
+                        </span>
+                        <div className="flex items-center space-x-1 mt-1">
+                          <span className="leading-none">{`${item.size} -`}</span>
+                          <span
+                            className="inline-block h-4 w-4 rounded-full border"
+                            style={{ backgroundColor: item.color }}
+                            title={item.color}
+                          />
+                        </div>
+                      </div>
                     </TableCell>
+
                     <TableCell>{item.quantity}</TableCell>
                     <TableCell>{formatVnPrice(item.price)}</TableCell>
                     <TableCell>
@@ -399,18 +436,11 @@ const OrderPage: React.FC = () => {
                   <TableCell colSpan={5}>
                     <div className="flex items-center space-x-2">
                       <Select
-                        value={addItemFormData.productCode}
-                        onValueChange={(value) =>
-                          setAddItemFormData({
-                            ...addItemFormData,
-                            productCode: value,
-                          })
-                        }
+                        value={selectedProductCode}
+                        onValueChange={(value) => setSelectedProductCode(value)}
                       >
                         <SelectTrigger
-                          className={`w-full border-gray-300 rounded-lg ${
-                            formErrors.productCode ? "border-zinc-500" : ""
-                          }`}
+                          className={`w-full border-gray-300 rounded-lg`}
                         >
                           <SelectValue placeholder="Select Product" />
                         </SelectTrigger>
@@ -425,6 +455,42 @@ const OrderPage: React.FC = () => {
                               </SelectItem>
                             )
                           )}
+                        </SelectContent>
+                      </Select>
+                      <Select
+                        value={addItemFormData.productVersionCode}
+                        onValueChange={(value) =>
+                          setAddItemFormData({
+                            ...addItemFormData,
+                            productVersionCode: value,
+                          })
+                        }
+                        disabled={!selectedProductCode || !versionsData?.length}
+                      >
+                        <SelectTrigger
+                          className={`w-full border-gray-300 rounded-lg ${
+                            formErrors.productVersionCode
+                              ? "border-zinc-500"
+                              : ""
+                          }`}
+                        >
+                          <SelectValue placeholder="Select Version" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {versionsData?.map((version) => (
+                            <SelectItem
+                              key={version.code}
+                              value={version.code}
+                              className="flex w-full justify-center items-center"
+                            >
+                              <span className="leading-none">{`${version.size} -`}</span>
+                              <span
+                                className="inline-block h-4 w-4 rounded-full border align-middle ms-2"
+                                style={{ backgroundColor: version.color }}
+                                title={version.color}
+                              />
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <Input
@@ -446,14 +512,14 @@ const OrderPage: React.FC = () => {
                         variant="outline"
                         size="icon"
                         onClick={handleAddItemSubmit}
-                        className="w-12 border-gray-300 text-gray-600 hover:text-zinc-500"
+                        className="min-w-12 border-gray-300 text-gray-600 hover:text-zinc-500"
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
-                    {(formErrors.productCode || formErrors.quantity) && (
+                    {(formErrors.productVersionCode || formErrors.quantity) && (
                       <p className="text-zinc-500 text-xs mt-1">
-                        {formErrors.productCode || formErrors.quantity}
+                        {formErrors.productVersionCode || formErrors.quantity}
                       </p>
                     )}
                   </TableCell>

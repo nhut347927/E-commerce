@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.moe.socialnetwork.api.dtos.ColorAllDto;
 import com.moe.socialnetwork.api.dtos.ProductVersionAllDto;
+import com.moe.socialnetwork.api.dtos.ProductVersionBaseDto;
 import com.moe.socialnetwork.api.dtos.ProductVersionCreateDto;
 import com.moe.socialnetwork.api.dtos.ProductVersionUpdateDto;
 import com.moe.socialnetwork.api.dtos.SizeAllDto;
@@ -44,6 +45,18 @@ public class ProductVersionServiceImpl implements IProductVersionService {
         this.sizeJpa = sizeJpa;
         this.productJpa = productJpa;
 
+    }
+
+    public List<ProductVersionBaseDto> getAllProductVersionByProductCode(CodeDto codeDto) {
+        UUID code = UUID.fromString(codeDto.getCode());
+        List<ProductVersion> productVersions = productVersionJpa.findByProductCode(code);
+        return productVersions.stream()
+                .map(pv -> new ProductVersionBaseDto(
+                        pv.getCode().toString(),
+                        pv.getProduct().getName(),
+                        pv.getSize().getName(),
+                        pv.getColor().getName()))
+                .collect(Collectors.toList());
     }
 
     public List<ColorAllDto> getColorAll() {

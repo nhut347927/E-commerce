@@ -17,8 +17,8 @@ public class OrderItemAddDto {
     @NotBlank(message = "orderCode is required")
     private String orderCode;
 
-    @NotBlank(message = "productCode is required")
-    private String productCode;
+    @NotBlank(message = "productVersionCode is required")
+    private String productVersionCode;
 
     @Min(value = 1, message = "Quantity must be at least 1")
     private int quantity;

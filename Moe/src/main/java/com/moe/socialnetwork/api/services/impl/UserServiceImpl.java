@@ -15,7 +15,6 @@ import com.moe.socialnetwork.api.dtos.common.PageDto;
 import com.moe.socialnetwork.api.services.IUserService;
 import com.moe.socialnetwork.exception.AppException;
 import com.moe.socialnetwork.jpa.UserJpa;
-import com.moe.socialnetwork.models.Discount;
 import com.moe.socialnetwork.models.User;
 import com.moe.socialnetwork.util.PaginationUtils;
 

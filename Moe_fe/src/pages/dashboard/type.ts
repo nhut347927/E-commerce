@@ -313,13 +313,15 @@ export interface OrderAll {
 
 export interface OrderItemAdd {
   orderCode: string;
-  productCode: string;
+  productVersionCode: string;
   quantity: number; // >= 1
 }
 
 export interface OrderItemAll {
   code: string;
   productName: string;
+  size:string;
+  color:string;
   image: string;
   quantity: number;
   price: number;

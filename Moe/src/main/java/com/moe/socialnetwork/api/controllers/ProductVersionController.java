@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.moe.socialnetwork.api.dtos.ColorAllDto;
 import com.moe.socialnetwork.api.dtos.ProductVersionAllDto;
+import com.moe.socialnetwork.api.dtos.ProductVersionBaseDto;
 import com.moe.socialnetwork.api.dtos.ProductVersionCreateDto;
 import com.moe.socialnetwork.api.dtos.ProductVersionUpdateDto;
 import com.moe.socialnetwork.api.dtos.SizeAllDto;
@@ -37,6 +38,20 @@ public class ProductVersionController {
 
     public ProductVersionController(IProductVersionService productVersionService) {
         this.productVersionService = productVersionService;
+    }
+
+    @GetMapping("/all/basic")
+    public ResponseEntity<ResponseAPI<List<ProductVersionBaseDto>>> getAllProductVersionByProductCode(
+            @Valid @ModelAttribute CodeDto codeDto) {
+
+        List<ProductVersionBaseDto> data = productVersionService.getAllProductVersionByProductCode(codeDto);
+
+        ResponseAPI<List<ProductVersionBaseDto>> response = new ResponseAPI<>();
+        response.setCode(200);
+        response.setMessage("Success");
+        response.setData(data);
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/color/all")

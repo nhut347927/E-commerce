@@ -40,9 +40,8 @@ public class Cart {
 	private int quantity;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "product_id", updatable = false)
-	@JsonBackReference
-	private Product product;
+    @JoinColumn(name = "product_version", nullable = false)
+    private ProductVersion productVersion;
 
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
