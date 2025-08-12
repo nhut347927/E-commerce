@@ -351,3 +351,109 @@ export interface OrderUpdate {
     | "CANCELED"
     | "RETURNED"; // Enum tương ứng
 }
+
+
+//-------------------Analytic----------------------
+
+export interface DateTime {
+  startDate: string; // LocalDateTime -> string
+}
+
+export interface Limit {
+  limit: number; // Long -> number
+}
+
+export interface AnalyticCancelledOrdersRate {
+  totalOrders: number;     // long -> number
+  cancelledOrders: number; // long -> number
+  cancelRate: number;      // double -> number
+}
+
+export interface AnalyticGrossProfit {
+  grossProfit: string; // BigDecimal -> string
+}
+
+export interface AnalyticLowStockProducts {
+  productCode: string;
+  image: string;
+  productName: string;
+  stockQuantity: number;
+}
+
+export interface AnalyticNewCustomersOverTime {
+  count: number;
+}
+
+export type DeliveryStatus =
+  | "PENDING"
+  | "PACKED"
+  | "SHIPPED"
+  | "IN_TRANSIT"
+  | "OUT_FOR_DELIVERY"
+  | "DELIVERED"
+  | "FAILED"
+  | "CANCELED"
+  | "RETURNED";
+
+export interface AnalyticOrdersByStatus {
+  status: DeliveryStatus;
+  totalOrders: number;
+}
+
+export interface AnalyticOrdersPerDay {
+  orderCount: number;
+}
+
+export interface AnalyticRevenueOverTime {
+  dateTime: string;  // LocalDate -> string
+  orderCount: number;
+}
+
+export interface ProductSales {
+  productCode: string;
+  image: string;
+  productName: string;
+  revenue: string; // BigDecimal -> string
+  quantitySold: number;
+}
+
+export interface AnalyticTopSellingProducts {
+  topByRevenue: ProductSales[];
+  topByQuantity: ProductSales[];
+}
+
+export interface AnalyticTotalCustomers {
+  purchasingCustomers: string;
+  totalCustomers: string;
+  conversionRate: number;
+}
+
+//-------------------Setting----------------------
+export interface SettingAll {
+  code: string;
+  name: string;
+  data: string;
+  description: string;
+  isActive: boolean;
+  createAt: string;
+  userCreateCode: string;
+  userCreateDisplayName: string;
+  updateAt: string;
+  userUpdateCode: string;
+  userUpdateDisplayName: string;
+}
+
+export interface SettingCreate {
+  name: string;
+  data: string;
+  description?: string;
+  isActive: boolean;
+}
+
+export interface SettingUpdate {
+  code: string;
+  name: string;
+  data: string;
+  description?: string;
+  isActive: boolean;
+}

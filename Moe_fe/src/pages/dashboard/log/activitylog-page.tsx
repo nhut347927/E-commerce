@@ -11,7 +11,6 @@ import {
   AlertCircle,
   CheckCircle,
   XCircle,
-  ArrowUpDown,
   Clipboard,
   RefreshCw,
   Eraser,

@@ -17,6 +17,7 @@ import com.moe.socialnetwork.api.dtos.AnalyticOrdersPerDayDto;
 import com.moe.socialnetwork.api.dtos.AnalyticRevenueOverTimeDto;
 import com.moe.socialnetwork.api.dtos.AnalyticTopSellingProductsDto;
 import com.moe.socialnetwork.api.dtos.AnalyticTotalCustomersDto;
+import com.moe.socialnetwork.api.dtos.ProductSalesDto;
 import com.moe.socialnetwork.api.dtos.common.DateTimeDto;
 import com.moe.socialnetwork.api.dtos.common.LimitDto;
 import com.moe.socialnetwork.api.services.IAnalyticService;
@@ -27,6 +28,7 @@ import com.moe.socialnetwork.jpa.UserJpa;
 import com.moe.socialnetwork.models.Order;
 import com.moe.socialnetwork.models.ProductVersion;
 import com.moe.socialnetwork.models.User;
+
 @Service
 public class AnalyticServiceImpl implements IAnalyticService {
     private final OrderJpa orderJpa;
@@ -84,7 +86,7 @@ public class AnalyticServiceImpl implements IAnalyticService {
                 .map(pv -> new AnalyticLowStockProductsDto(
                         pv.getProduct().getCode().toString(),
                         pv.getImage(),
-                        pv.getName(),
+                        pv.getProduct().getName() + "(" + pv.getName() + ")",
                         pv.getQuantity()))
                 .collect(Collectors.toList());
     }
@@ -109,14 +111,13 @@ public class AnalyticServiceImpl implements IAnalyticService {
     }
 
     public AnalyticTopSellingProductsDto getAnalyticTopSellingProducts(LimitDto limitDto) {
-        // int limit = limitDto.getLimit() != null ? limitDto.getLimit().intValue() : 10;
-        // PageRequest pageable = PageRequest.of(0, limit);
+        int limit = limitDto.getLimit() != null ? limitDto.getLimit().intValue() : 10;
+        PageRequest pageable = PageRequest.of(0, limit);
 
-        // List<AnalyticTopSellingProductsDto.ProductSalesDto> topByRevenue = orderItemJpa.findTopByRevenue(pageable);
-        // List<AnalyticTopSellingProductsDto.ProductSalesDto> topByQuantity = orderItemJpa.findTopByQuantity(pageable);
+        List<ProductSalesDto> topByRevenue = orderItemJpa.findTopByRevenue(pageable);
+        List<ProductSalesDto> topByQuantity = orderItemJpa.findTopByQuantity(pageable);
 
-        // return new AnalyticTopSellingProductsDto(topByRevenue, topByQuantity);
-        return null;
+        return new AnalyticTopSellingProductsDto(topByRevenue, topByQuantity);
     }
 
     public AnalyticTotalCustomersDto getAnalyticTotalCustomers() {

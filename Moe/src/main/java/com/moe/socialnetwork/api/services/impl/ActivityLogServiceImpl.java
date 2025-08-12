@@ -80,7 +80,7 @@ public class ActivityLogServiceImpl implements IActivityLogService {
             }
             // Sanitize sensitive data
             sanitizeLogData(log);
-            if (!log.getType().trim().equalsIgnoreCase("GET")) {
+            if (!log.getType().trim().equalsIgnoreCase("GET") || !(log.getError() == null)) {
                 activityLogJPA.save(log);
             }
 
