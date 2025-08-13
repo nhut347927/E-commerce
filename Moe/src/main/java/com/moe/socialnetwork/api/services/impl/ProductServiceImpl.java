@@ -3,19 +3,25 @@ package com.moe.socialnetwork.api.services.impl;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.moe.socialnetwork.api.dtos.BrandAllDto;
 import com.moe.socialnetwork.api.dtos.CategoryAllDto;
+import com.moe.socialnetwork.api.dtos.ClientProductDto;
+import com.moe.socialnetwork.api.dtos.ClientProductFilterDto;
 import com.moe.socialnetwork.api.dtos.ProductAllBasicDto;
 import com.moe.socialnetwork.api.dtos.ProductAllDto;
 import com.moe.socialnetwork.api.dtos.ProductCreateDto;
@@ -30,14 +36,19 @@ import com.moe.socialnetwork.jpa.CategoryJpa;
 import com.moe.socialnetwork.jpa.DiscountJpa;
 import com.moe.socialnetwork.jpa.ProductJpa;
 import com.moe.socialnetwork.jpa.ProductTagJpa;
+import com.moe.socialnetwork.jpa.ProductVersionJpa;
+import com.moe.socialnetwork.jpa.RatingJpa;
 import com.moe.socialnetwork.jpa.TagJpa;
+import com.moe.socialnetwork.jpa.WishListJpa;
 import com.moe.socialnetwork.models.Brand;
 import com.moe.socialnetwork.models.Category;
 import com.moe.socialnetwork.models.Discount;
 import com.moe.socialnetwork.models.Product;
 import com.moe.socialnetwork.models.ProductTag;
+import com.moe.socialnetwork.models.ProductVersion;
 import com.moe.socialnetwork.models.Tag;
 import com.moe.socialnetwork.models.User;
+import com.moe.socialnetwork.models.WishList;
 import com.moe.socialnetwork.util.PaginationUtils;
 
 @Service
@@ -49,15 +60,140 @@ public class ProductServiceImpl implements IProductService {
     private final ProductTagJpa productTagJpa;
     private final TagJpa tagJpa;
     private final DiscountJpa discountJpa;
+    private final ProductVersionJpa productVersionJpa;
+    private final RatingJpa ratingJpa;
+    private final WishListJpa wishListJpa;
 
     public ProductServiceImpl(ProductJpa productJpa, CategoryJpa categoryJpa, BrandJpa brandJpa,
-            ProductTagJpa productTagJpa, TagJpa tagJpa, DiscountJpa discountJpa) {
+            ProductTagJpa productTagJpa, TagJpa tagJpa, DiscountJpa discountJpa, ProductVersionJpa productVersionJpa,
+            RatingJpa ratingJpa, WishListJpa wishListJpa) {
         this.productJpa = productJpa;
         this.categoryJpa = categoryJpa;
         this.brandJpa = brandJpa;
         this.productTagJpa = productTagJpa;
         this.tagJpa = tagJpa;
         this.discountJpa = discountJpa;
+        this.productVersionJpa = productVersionJpa;
+        this.ratingJpa = ratingJpa;
+        this.wishListJpa = wishListJpa;
+    }
+
+    public PageDto<ClientProductDto> getClientProductAll(User user, ClientProductFilterDto dto) {
+        // Validate and parse sort direction
+        Sort.Direction direction = "asc".equalsIgnoreCase(dto.getSort()) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(dto.getPage(), dto.getSize(), Sort.by(direction, "price"));
+
+        // Safely parse UUIDs with null checks
+        UUID categoryCode = null;
+        if (dto.getCategoryCode() != null && !dto.getCategoryCode().isEmpty()) {
+            try {
+                categoryCode = UUID.fromString(dto.getCategoryCode());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid category code format: " + dto.getCategoryCode());
+            }
+        }
+
+        UUID brandCode = null;
+        if (dto.getBrandCode() != null && !dto.getBrandCode().isEmpty()) {
+            try {
+                brandCode = UUID.fromString(dto.getBrandCode());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid brand code format: " + dto.getBrandCode());
+            }
+        }
+
+        UUID sizeCode = null;
+        if (dto.getSizeCode() != null && !dto.getSizeCode().isEmpty()) {
+            try {
+                sizeCode = UUID.fromString(dto.getSizeCode());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid size code format: " + dto.getSizeCode());
+            }
+        }
+
+        UUID colorCode = null;
+        if (dto.getColorCode() != null && !dto.getColorCode().isEmpty()) {
+            try {
+                colorCode = UUID.fromString(dto.getColorCode());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid color code format: " + dto.getColorCode());
+            }
+        }
+
+        UUID tagCode = null;
+        if (dto.getTagCode() != null && !dto.getTagCode().isEmpty()) {
+            try {
+                tagCode = UUID.fromString(dto.getTagCode());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid tag code format: " + dto.getTagCode());
+            }
+        }
+
+        // Fetch filtered products
+        Page<Product> products = productJpa.filterProducts(
+                dto.getQ(),
+                categoryCode,
+                brandCode,
+                dto.getMinPrice(),
+                dto.getMaxPrice(),
+                sizeCode,
+                colorCode,
+                tagCode,
+                pageable);
+
+        // Fetch user's wishlist for efficient lookup
+        List<WishList> wishLists = Collections.emptyList();
+        if (user != null) {
+            wishLists = wishListJpa.findByUserCode(user.getCode());
+        }
+
+        Set<UUID> wishListProductCodes = wishLists.stream()
+                .map(wishList -> wishList.getProduct().getCode())
+                .collect(Collectors.toSet());
+
+        // Map products to DTOs and enhance with rating and wishlist status
+        List<ClientProductDto> contents = products.getContent().stream()
+                .map(product -> {
+                    ClientProductDto pro = mapToProductDTO(product);
+                    // Set average rating
+                    Double rating = ratingJpa.getAverageRatingByProductCode(product.getCode());
+                    pro.setRating(rating != null ? rating : 0.0);
+                    // Set liked status only if user is logged in
+                    pro.setLiked(user != null && wishListProductCodes.contains(product.getCode()));
+                    return pro;
+                })
+                .collect(Collectors.toList());
+
+        // Build PageDto
+        PageDto<ClientProductDto> pageDto = new PageDto<>();
+        pageDto.setContents(contents);
+        pageDto.setTotalElements(products.getTotalElements());
+        pageDto.setTotalPages(products.getTotalPages());
+        pageDto.setPage(products.getNumber());
+        pageDto.setSize(products.getSize());
+        pageDto.setHasNext(products.hasNext());
+        pageDto.setHasPrevious(products.hasPrevious());
+
+        return pageDto;
+    }
+
+    private ClientProductDto mapToProductDTO(Product product) {
+
+        List<ProductVersion> list = productVersionJpa.findByProductCode(product.getCode());
+
+        String colorOne = list.size() > 0 && list.get(0) != null ? list.get(0).getColor().getName() : null;
+        String colorTwo = list.size() > 1 && list.get(1) != null ? list.get(1).getColor().getName() : null;
+        String colorThree = list.size() > 2 && list.get(2) != null ? list.get(2).getColor().getName() : null;
+
+        return new ClientProductDto(product.getCode().toString(),
+                product.getName(),
+                product.getPrice(),
+                product.getImage(),
+                false,
+                0.0,
+                colorOne,
+                colorTwo,
+                colorThree);
     }
 
     public PageDto<ProductAllBasicDto> getProductAllBasic(String query, int page, int size, String sort) {

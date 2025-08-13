@@ -304,8 +304,10 @@ const SettingPage = () => {
           <div className="flex items-center space-x-2">
             {imageUrl && (
               <div className="flex items-center space-x-2">
-                <span className="inline-block max-w-64 truncate">
-                  {imageUrl}
+                <span className="inline-block truncate text-blue-600 underline">
+                 <a href={imageUrl}>
+                   {imageUrl}
+                 </a>
                 </span>
 
                 <Button
@@ -584,6 +586,14 @@ const SettingPage = () => {
                   </>
                 ) : (
                   <>
+                    <Button
+                      variant="outline"
+                      onClick={() => copyToClipboard(setting.code)}
+                      className="border-gray-300 rounded-lg"
+                    >
+                      <Clipboard className="w-4 h-4 mr-2" />
+                      Copy Code
+                    </Button>
                     <Button
                       variant="outline"
                       onClick={() => handleEdit(setting)}

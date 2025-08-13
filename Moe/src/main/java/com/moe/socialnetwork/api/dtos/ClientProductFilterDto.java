@@ -1,0 +1,33 @@
+package com.moe.socialnetwork.api.dtos;
+
+import java.math.BigDecimal;
+
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class ClientProductFilterDto {
+    private String q;
+
+    @Min(value = 0, message = "Page must be greater than or equal to 0.")
+    private Integer page = 0;
+
+    @Min(value = 1, message = "Size must be greater than or equal to 1.")
+    private Integer size = 10;
+
+    @Pattern(regexp = "^(desc|asc)$", message = "Sort type must be either 'desc' or 'asc'")
+    private String sort = "desc";
+
+    private String categoryCode;
+    private String brandCode;
+    private BigDecimal minPrice;
+    private BigDecimal maxPrice;
+    private String sizeCode;
+    private String colorCode;
+    private String tagCode;
+}
