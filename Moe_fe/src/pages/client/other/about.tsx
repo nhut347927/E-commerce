@@ -1,15 +1,9 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import { Quote } from "lucide-react";
 
 // Placeholder image imports (replace with actual paths)
 import aboutUs from "../../../assets/img/about/about-us.jpg";
-import testimonialAuthor from "../../../assets/img/about/testimonial-author.jpg";
 import testimonialPic from "../../../assets/img/about/testimonial-pic.jpg";
-import team1 from "../../../assets/img/about/team-1.jpg";
-import team2 from "../../../assets/img/about/team-2.jpg";
-import team3 from "../../../assets/img/about/team-3.jpg";
-import team4 from "../../../assets/img/about/team-4.jpg";
 import client1 from "../../../assets/img/clients/client-1.png";
 import client2 from "../../../assets/img/clients/client-2.png";
 import client3 from "../../../assets/img/clients/client-3.png";
@@ -79,40 +73,40 @@ const About: React.FC = () => {
 
       {/* Testimonial Section */}
       <section className="bg-gray-100 mb-20 h-auto sm:h-[80vh] flex flex-col justify-center">
-  <div className="max-w-7xl w-full mx-auto px-4 sm:px-16 flex flex-col lg:flex-row gap-8 items-center">
-    
-    {/* Câu nói */}
-    <div className="flex flex-col items-center p-6 sm:p-10 lg:p-20 text-center">
-      <Quote className="h-8 w-8 text-red-500 fill-red-500 mb-4" />
-      <p className="text-base sm:text-lg text-gray-600 italic leading-relaxed sm:leading-loose">
-        “Cuộc đời là vô số những lần lựa chọn, bạn sẽ không thể lựa chọn đúng mãi, 
-        cho nên chọn thế nào cũng được và hãy làm những điều mình cảm thấy hài lòng. 
-        Nhưng hãy nhớ một điều quan trọng là bạn đã làm gì để sẵn sàng cho lựa chọn đó, 
-        để khi nhắc lại bạn sẽ không nói "Nếu như...".”
-      </p>
+        <div className="max-w-7xl w-full mx-auto px-4 sm:px-16 flex flex-col lg:flex-row gap-8 items-center">
+          {/* Câu nói */}
+          <div className="flex flex-col items-center p-6 sm:p-10 lg:p-20 text-center">
+            <Quote className="h-8 w-8 text-red-500 fill-red-500 mb-4" />
+            <p className="text-base sm:text-lg text-gray-600 italic leading-relaxed sm:leading-loose">
+              “Cuộc đời là chuỗi những lựa chọn. Bạn không thể lúc nào cũng chọn
+              đúng, nên hãy chọn điều khiến mình hài lòng nhất. Điều quan trọng
+              là bạn đã chuẩn bị thế nào cho lựa chọn ấy, để khi nhìn lại, bạn
+              không phải thốt lên: ‘Giá như…’.”
+            </p>
 
-      <div className="flex items-center mt-6">
-        <p className="text-lg text-gray-600 font-bold bg-slate-400 w-12 h-12 rounded-full flex justify-center items-center">
-          N
-        </p>
-        <div className="ml-4 text-left">
-          <h5 className="text-base font-semibold text-gray-800">nhut379</h5>
-          <p className="text-sm text-gray-600">...</p>
+            <div className="flex items-center mt-6">
+              <p className="text-lg text-gray-600 font-bold bg-slate-400 w-12 h-12 rounded-full flex justify-center items-center">
+                N
+              </p>
+              <div className="ml-4 text-left">
+                <h5 className="text-base font-semibold text-gray-800">
+                  nhut379
+                </h5>
+                <p className="text-sm text-gray-600">...</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Ảnh testimonial: ẩn trên mobile */}
+          <div className="hidden lg:block w-full lg:w-1/2">
+            <img
+              src={testimonialPic}
+              alt="Testimonial"
+              className="w-full h-full object-cover rounded-lg"
+            />
+          </div>
         </div>
-      </div>
-    </div>
-
-    {/* Ảnh testimonial: ẩn trên mobile */}
-    <div className="hidden lg:block w-full lg:w-1/2">
-      <img
-        src={testimonialPic}
-        alt="Testimonial"
-        className="w-full h-full object-cover rounded-lg"
-      />
-    </div>
-  </div>
-</section>
-
+      </section>
 
       {/* Counter Section */}
       <section className="max-w-7xl w-full mx-auto px-3 sm:px-16 mb-20">
@@ -159,12 +153,10 @@ const About: React.FC = () => {
         <div className="flex justify-center">
           <div className="flex items-center space-x-16">
             <div className="w-56 h-64 flex justify-center items-center font-bold bg-slate-300">
-N
+              N
             </div>
             <div className="p-4 text-start">
-              <h4 className="text-3xl font-semibold text-gray-800">
-                Nhut379
-              </h4>
+              <h4 className="text-3xl font-semibold text-gray-800">Nhut379</h4>
               <span className="text-sm text-gray-600">Dev</span>
             </div>
           </div>
@@ -175,7 +167,7 @@ N
       <section className="max-w-7xl w-full mx-auto px-3 sm:px-16 mb-32">
         <div className="text-center mb-20">
           <span className="text-sm text-red-500 uppercase tracking-wider">
-             Partner
+            Partner
           </span>
           <h2 className="text-4xl font-bold text-gray-800 mt-2">
             Happy Clients

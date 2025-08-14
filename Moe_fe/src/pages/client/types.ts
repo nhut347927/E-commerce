@@ -224,3 +224,38 @@ export interface Message {
 export interface SeenMessage {
   fromUserCode: string;
 }
+
+
+
+// types.ts
+export interface ProductFilterParams {
+  q?: string;
+  page?: number;
+  size?: number;
+  sort?: "desc" | "asc";
+  categoryCode?: string;
+  brandCode?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  sizeCode?: string;
+  colorCode?: string;
+  tagCode?: string;
+}
+
+export type ClientProduct = {
+  code: string;
+  name: string;
+
+  price: number; // BigDecimal -> number
+  image: string;
+  liked: boolean;
+  rating: number; // Double -> number
+
+  colorOne: string;
+  colorTwo: string;
+  colorThree: string;
+
+  isDiscount: boolean;
+  discountValue: number;
+  discountPrice: number; // BigDecimal -> number
+};

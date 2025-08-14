@@ -1,70 +1,32 @@
-import React, { useState, FormEvent } from "react";
-import { Link } from "react-router-dom";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import {
-  Facebook,
-  Twitter,
-  Youtube,
-  Linkedin,
-  Quote,
-  ArrowLeft,
-  ArrowRight,
-} from "lucide-react";
+import React, {  } from "react";
+import { useSearchParams } from "react-router-dom";
 
 // Placeholder image imports (replace with actual paths)
-import blogDetails from "../../../assets/img/blog/details/blog-details.jpg";
-import blogAuthor from "../../../assets/img/blog/details/blog-author.jpg";
+import { useGetApi } from "@/common/hooks/use-get-api";
+import { toast } from "@/common/hooks/use-toast";
+import { BlogAll } from "@/pages/dashboard/type";
+import { formatDateTime } from "@/common/lib/utils";
 
-interface FormData {
-  name: string;
-  email: string;
-  phone: string;
-  comment: string;
-}
 
-interface Errors {
-  name?: string;
-  email?: string;
-  comment?: string;
-}
-
-interface BlogData {
-  id: string;
-  title: string;
-  author: string;
-  date: string;
-  comments: number;
-}
 
 const BlogDetail: React.FC = () => {
-  const [formData, setFormData] = useState<FormData>({
-    name: "",
-    email: "",
-    phone: "",
-    comment: "",
+   const [searchParams] = useSearchParams();
+  const code = searchParams.get("code");
+  const {
+    data: blog,
+  } = useGetApi<BlogAll>({
+    endpoint: "/blog",
+    params: {
+      code:code,
+    },
+    enabled: true,
+    onError: (error) =>
+      toast({
+        title: "Error",
+        description: error.message || "Failed to load blogs",
+        variant: "destructive",
+      }),
   });
-
-  const [errors, setErrors] = useState<Errors>({});
-
-  const blog: BlogData = {
-    id: "1",
-    title: "Are you one of the thousands of iPhone owners who has no idea",
-    author: "Deercreative",
-    date: "February 21, 2019",
-    comments: 8,
-  };
-
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name as keyof Errors]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
-  };
 
   return (
     <div>
@@ -73,13 +35,14 @@ const BlogDetail: React.FC = () => {
         <div className="max-w-7xl w-full mx-auto px-3 sm:px-16 flex justify-center items-center">
           <div className="text-center space-y-8">
             <h2 className="max-w-4xl text-4xl font-semibold text-gray-800">
-              {blog.title}
+              {blog?.title}
             </h2>
             <ul className="flex justify-center space-x-4 text-sm text-gray-600">
-              <li>By {blog.author}</li> <p>|</p>
-              <li>{blog.date}</li>
-              <p>|</p>
-              <li>{blog.comments} Comments</li>
+              <li>By {blog?.userCreateDisplayName}</li> <p>|</p>
+            <li>{blog?.createAt ? formatDateTime(blog.createAt) : ""}</li>
+
+              {/* <p>|</p>
+              <li>{blog.comments} Comments</li> */}
             </ul>
           </div>
         </div>
@@ -89,48 +52,18 @@ const BlogDetail: React.FC = () => {
       <section className="max-w-7xl w-full mx-auto px-3 sm:px-16 -mt-52 mb-32">
         <div className="flex flex-col items-center">
           <img
-            src={blogDetails}
-            alt={blog.title}
+            src={`https://res.cloudinary.com/dazttnakn/image/upload/${blog?.image}`}
+            alt={blog?.title}
             className="w-full h-auto object-cover rounded-lg shadow-md mb-8"
           />
           <div className="max-w-3xl w-full mt-8">
             {/* Blog Content */}
             <div className="space-y-6 leading-loose text-base text-gray-600">
-              <p>
-                Hydroderm is the highly desired anti-aging cream on the block.
-                This serum restricts the occurrence of early aging signs on the
-                skin and keeps the skin younger, tighter, and healthier. It
-                reduces the wrinkles and loosening of skin. This cream nourishes
-                the skin and brings back the glow that had lost in the run of
-                hectic years.
-              </p>
-              <p>
-                The most essential ingredient that makes hydroderm so effective
-                is Vyo-Serum, which is a product of natural selected proteins.
-                This concentrate works actively in bringing about the natural
-                youthful glow of the skin. It tightens the skin along with its
-                moisturizing effect on the skin. The other important ingredient,
-                making hydroderm so effective is “marine collagen” which along
-                with Vyo-Serum helps revitalize the skin.
-              </p>
-
-              <p>
-                Vyo-Serum along with tightening the skin also reduces the fine
-                lines indicating aging of skin. Problems like dark circles,
-                puffiness, and crow’s feet can be controlled from the strong
-                effects of this serum.
-              </p>
-              <p>
-                Hydroderm is a multi-functional product that helps in reducing
-                the cellulite and giving the body a toned shape, also helps in
-                cleansing the skin from the root and not letting the pores clog,
-                nevertheless also lets sweeps out the wrinkles and all signs of
-                aging from the sensitive near the eyes.
-              </p>
+             {blog?.description}
             </div>
 
             {/* Author and Tags */}
-            <div className="flex justify-between items-center border-t-2 pt-8 mt-10">
+            {/* <div className="flex justify-between items-center border-t-2 pt-8 mt-10">
               <div className="flex items-center">
                 <img
                   src={blogAuthor}
@@ -163,7 +96,7 @@ const BlogDetail: React.FC = () => {
                   #2020
                 </Link>
               </div>
-            </div>
+            </div> */}
 
             {/* Navigation */}
             {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-8">
@@ -193,7 +126,7 @@ const BlogDetail: React.FC = () => {
             </div> */}
 
             {/* Comment Form */}
-            <div className="mt-12">
+            {/* <div className="mt-12">
               <h4 className="text-center text-2xl font-semibold text-gray-800 mb-10">
                 Leave A Comment
               </h4>
@@ -223,7 +156,7 @@ const BlogDetail: React.FC = () => {
                   Post Comment
                 </Button>
               </form>
-            </div>
+            </div> */}
           </div>
         </div>
       </section>

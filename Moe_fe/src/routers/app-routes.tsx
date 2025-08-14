@@ -50,20 +50,84 @@ const AppRoutes = () => {
           <Route
             path="home"
             element={
-              //<KeepAlive id="home">
-              <Home />
-              //  </KeepAlive>
+              <KeepAlive id="client-home">
+                <Home />
+              </KeepAlive>
             }
           />
-          <Route path="shop" element={<Shop />} />
-          <Route path="shop-detail" element={<ShopDetail />} />
-          <Route path="wishlist" element={<Wishlist />} />
-          <Route path="shopping-cart" element={<ShoppingCart />} />
-          <Route path="check-out" element={<CheckOut />} />
-          <Route path="about" element={<About />} />
-          <Route path="contact" element={<Contact />} />
-          <Route path="blog" element={<Blog />} />
-          <Route path="blog-detail" element={<BlogDetail />} />
+          <Route
+            path="shop"
+            element={
+              <KeepAlive id="client-shop">
+                <Shop />
+              </KeepAlive>
+            }
+          />
+          <Route
+            path="shop-detail"
+            element={
+              <KeepAlive id="client-shop-detail">
+                <ShopDetail />
+              </KeepAlive>
+            }
+          />
+          <Route
+            path="wishlist"
+            element={
+              <KeepAlive id="client-wishlist">
+                <Wishlist />
+              </KeepAlive>
+            }
+          />
+          <Route
+            path="shopping-cart"
+            element={
+              <KeepAlive id="client-shopping-cart">
+                <ShoppingCart />
+              </KeepAlive>
+            }
+          />
+          <Route
+            path="check-out"
+            element={
+              <KeepAlive id="client-check-out">
+                <CheckOut />
+              </KeepAlive>
+            }
+          />
+          <Route
+            path="about"
+            element={
+              <KeepAlive id="client-about">
+                <About />
+              </KeepAlive>
+            }
+          />
+          <Route
+            path="contact"
+            element={
+              <KeepAlive id="client-contact">
+                <Contact />
+              </KeepAlive>
+            }
+          />
+          <Route
+            path="blog"
+            element={
+              <KeepAlive id="client-blog">
+                <Blog />
+              </KeepAlive>
+            }
+          />
+          <Route
+            path="blog-detail"
+            element={
+              <KeepAlive id="client-blog-detail">
+                <BlogDetail />
+              </KeepAlive>
+            }
+          />
+
           <Route path="*" element={<NotFound />} />
         </Route>
 
@@ -164,8 +228,7 @@ const AppRoutes = () => {
             }
           />
 
-
-            <Route
+          <Route
             path="order"
             element={
               <KeepAlive id="order">
@@ -173,7 +236,7 @@ const AppRoutes = () => {
               </KeepAlive>
             }
           />
-            <Route
+          <Route
             path="setting"
             element={
               <KeepAlive id="setting">

@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -160,6 +159,33 @@ public class ProductServiceImpl implements IProductService {
                     pro.setRating(rating != null ? rating : 0.0);
                     // Set liked status only if user is logged in
                     pro.setLiked(user != null && wishListProductCodes.contains(product.getCode()));
+
+                    List<Discount> discounts = discountJpa.findByProductCode(product.getCode(), null);
+
+                    if (!discounts.isEmpty()) {
+                        for (Discount discount : discounts) {
+                            if (isValid(discount.getStartDate(), discount.getEndDate())) {
+                                pro.setIsDiscount(true);
+                                pro.setDiscountValue(discount.getDiscountValue().toString());
+                                // Tính số tiền giảm
+                                BigDecimal discountPrice = product.getPrice()
+                                        .multiply(discount.getDiscountValue())
+                                        .divide(BigDecimal.valueOf(100));
+
+                                // Giới hạn số tiền giảm
+                                if (discount.getMaxDiscount() != null &&
+                                        discountPrice.compareTo(discount.getMaxDiscount()) > 0) {
+                                    discountPrice = discount.getMaxDiscount();
+                                }
+
+                                // Cập nhật giá sau giảm
+                                BigDecimal finalPrice = product.getPrice().subtract(discountPrice);
+                                pro.setDiscountPrice(finalPrice);
+                                break; // Nếu chỉ áp dụng 1 discount hợp lệ thì thoát luôn
+                            }
+                        }
+                    }
+
                     return pro;
                 })
                 .collect(Collectors.toList());
@@ -193,7 +219,10 @@ public class ProductServiceImpl implements IProductService {
                 0.0,
                 colorOne,
                 colorTwo,
-                colorThree);
+                colorThree,
+                false,
+                "",
+                BigDecimal.ZERO);
     }
 
     public PageDto<ProductAllBasicDto> getProductAllBasic(String query, int page, int size, String sort) {

@@ -24,4 +24,8 @@ public class ClientProductDto {
     private String colorOne;
     private String colorTwo;
     private String colorThree;
+
+    private Boolean isDiscount;
+    private String discountValue;
+    private BigDecimal discountPrice; // giá sau khi giảm
 }

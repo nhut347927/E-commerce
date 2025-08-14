@@ -2,6 +2,7 @@ import React, { useState, FormEvent } from 'react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import emailjs from 'emailjs-com'; // npm install emailjs-com
 
 interface FormData {
   name: string;
@@ -23,6 +24,7 @@ const Contact: React.FC = () => {
   });
 
   const [errors, setErrors] = useState<Errors>({});
+  const [loading, setLoading] = useState(false);
 
   const validateForm = (): boolean => {
     const newErrors: Errors = {};
@@ -50,15 +52,40 @@ const Contact: React.FC = () => {
     }
   };
 
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) return;
 
+    setLoading(true);
+    try {
+      // Gửi email qua EmailJS
+      await emailjs.send(
+        'service_xxx', // Service ID từ EmailJS
+        'template_xxx', // Template ID từ EmailJS
+        {
+          from_name: formData.name,
+          from_email: formData.email,
+          message: formData.message,
+        },
+        'public_key_xxx' // Public key từ EmailJS
+      );
+
+      alert('Your message has been sent successfully!');
+      setFormData({ name: '', email: '', message: '' });
+    } catch (err) {
+      console.error(err);
+      alert('Failed to send the message. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div>
-    
       {/* Map Section */}
       <div className="w-full h-[500px] mb-20">
         <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d111551.9926412813!2d-90.27317134641879!3d38.606612219170856!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x54eab584e432360b%3A0x1c3bb99243deb742!2sUnited%20States!5e0!3m2!1sen!2sbd!4v1597926938024!5m2!1sen!2sbd"
+          src="https://www.google.com/maps/embed?pb=!1m18..."
           className="w-full h-full border-0"
           allowFullScreen
           aria-hidden="false"
@@ -75,7 +102,7 @@ const Contact: React.FC = () => {
               <span className="text-sm text-red-600 uppercase tracking-widest">Information</span>
               <h2 className="text-4xl font-bold text-gray-800 my-6">Contact Us</h2>
               <p className="text-sm text-gray-600 leading-loose">
-                As you might expect of a company that began as a high-end interiors contractor, we pay strict attention.
+                We’re always here to help. Fill out the form and we’ll get back to you as soon as possible.
               </p>
             </div>
             <ul className="mt-6 space-y-6 ">
@@ -96,7 +123,7 @@ const Contact: React.FC = () => {
 
           {/* Contact Form */}
           <div>
-            <form  className="space-y-8">
+            <form onSubmit={handleSubmit} className="space-y-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                 <div>
                   <Input
@@ -140,9 +167,10 @@ const Contact: React.FC = () => {
               </div>
               <Button
                 type="submit"
+                disabled={loading}
                 className="h-12 w-full bg-black hover:bg-black/70 uppercase tracking-widest text-white rounded-none"
               >
-                Send Message
+                {loading ? 'Sending...' : 'Send Message'}
               </Button>
             </form>
           </div>
