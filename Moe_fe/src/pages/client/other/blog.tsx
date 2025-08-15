@@ -29,7 +29,7 @@ const Blog: React.FC = () => {
   const {
     data: blogs,
   } = useGetApi<Page<BlogAll>>({
-    endpoint: "/blog/all",
+    endpoint: "/blog/client/all",
     params: {
       q: filters.q,
       page: filters.page,

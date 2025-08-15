@@ -197,8 +197,6 @@ export interface KeywordSearch {
   createdAt: string;
 }
 
-
-
 export interface ChatMessage {
   code: string;
   content: string;
@@ -215,7 +213,6 @@ export interface Contact {
   lastMessageTime: string; // ISO date string
 }
 
-
 export interface Message {
   content: string;
   to: string;
@@ -224,8 +221,6 @@ export interface Message {
 export interface SeenMessage {
   fromUserCode: string;
 }
-
-
 
 // types.ts
 export interface ProductFilterParams {
@@ -258,4 +253,15 @@ export type ClientProduct = {
   isDiscount: boolean;
   discountValue: number;
   discountPrice: number; // BigDecimal -> number
+
+  shortDescription?: string;
+  fullDescription?: string;
+
+  listVersion?: Version[];
+  images: string[];
 };
+export interface Version {
+  code: string;
+  color: string;
+  size: string;
+}

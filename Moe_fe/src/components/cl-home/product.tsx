@@ -1,5 +1,6 @@
 import { formatVnPrice } from "@/common/lib/utils";
 import { ArrowRightLeft, Heart, Search } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface ProductCardProps {
   code: string;
@@ -21,11 +22,13 @@ const ProductCard = (prop: ProductCardProps) => {
   return (
     <div className="group w-full">
       <div className="relative overflow-hidden">
-        <img
-          src={`https://res.cloudinary.com/dazttnakn/image/upload/${prop.img}`}
-          alt={prop.name}
-          className="aspect-square w-full object-cover group-hover:scale-105 transition duration-300"
-        />
+        <Link to={`/shop-detail?code=${prop?.code}`}>
+          <img
+            src={`https://res.cloudinary.com/dazttnakn/image/upload/${prop.img}`}
+            alt={prop.name}
+            className="aspect-square w-full object-cover group-hover:scale-105 transition duration-300"
+          />
+        </Link>
         {prop.isDiscount && (
           <span className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 text-xs font-semibold text-center">
             SALE <br />

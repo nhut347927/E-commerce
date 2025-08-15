@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.socket.EnableWebSocketSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -16,7 +15,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  */
 @Configuration
 @EnableWebSecurity
-@EnableWebSocketSecurity
 public class SecurityConfig {
 
     @Autowired
@@ -43,7 +41,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/logs/**").hasAuthority("LOG_VIEW")
                         .requestMatchers("/api/user/**").hasAuthority("USER_VIEW")
                         .requestMatchers("/api/role-permission/**").hasAuthority("LOG_VIEW")
-                           .requestMatchers("/ws/**").permitAll() // Allow WebSocket 
+        
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

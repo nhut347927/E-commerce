@@ -77,6 +77,102 @@ public class ProductServiceImpl implements IProductService {
         this.wishListJpa = wishListJpa;
     }
 
+    public ClientProductDto getClientProduct(User user, CodeDto codeDto) {
+
+        UUID productCode = UUID.fromString(codeDto.getCode());
+        // Fetch filtered products
+        Product product = productJpa.findByCode(productCode)
+                .orElseThrow(() -> new AppException("product not found", HttpStatus.NOT_FOUND.value()));
+
+        // Fetch user's wishlist for efficient lookup
+        List<WishList> wishLists = Collections.emptyList();
+        if (user != null) {
+            wishLists = wishListJpa.findByUserCode(user.getCode());
+        }
+
+        Set<UUID> wishListProductCodes = wishLists.stream()
+                .map(wishList -> wishList.getProduct().getCode())
+                .collect(Collectors.toSet());
+
+        // Map products to DTOs and enhance with rating and wishlist status
+        ClientProductDto pro = mapToProductPlusDTO(product);
+
+        // Set average rating
+        Double rating = ratingJpa.getAverageRatingByProductCode(product.getCode());
+        pro.setRating(rating != null ? rating : 0.0);
+        // Set liked status only if user is logged in
+        pro.setLiked(user != null && wishListProductCodes.contains(product.getCode()));
+
+        List<Discount> discounts = discountJpa.findByProductCode(product.getCode(), null);
+
+        if (!discounts.isEmpty()) {
+            for (Discount discount : discounts) {
+                if (isValid(discount.getStartDate(), discount.getEndDate())) {
+                    pro.setIsDiscount(true);
+                    pro.setDiscountValue(discount.getDiscountValue().toString());
+                    // Tính số tiền giảm
+                    BigDecimal discountPrice = product.getPrice()
+                            .multiply(discount.getDiscountValue())
+                            .divide(BigDecimal.valueOf(100));
+
+                    // Giới hạn số tiền giảm
+                    if (discount.getMaxDiscount() != null &&
+                            discountPrice.compareTo(discount.getMaxDiscount()) > 0) {
+                        discountPrice = discount.getMaxDiscount();
+                    }
+
+                    // Cập nhật giá sau giảm
+                    BigDecimal finalPrice = product.getPrice().subtract(discountPrice);
+                    pro.setDiscountPrice(finalPrice);
+                    break; // Nếu chỉ áp dụng 1 discount hợp lệ thì thoát luôn
+                }
+            }
+        }
+
+        return pro;
+    }
+
+    private ClientProductDto mapToProductPlusDTO(Product product) {
+
+        List<ProductVersion> list = productVersionJpa.findByProductCode(product.getCode());
+
+        String colorOne = list.size() > 0 && list.get(0) != null ? list.get(0).getColor().getName() : null;
+        String colorTwo = list.size() > 1 && list.get(1) != null ? list.get(1).getColor().getName() : null;
+        String colorThree = list.size() > 2 && list.get(2) != null ? list.get(2).getColor().getName() : null;
+
+        List<ClientProductDto.VersionDto> dtoList = list.stream()
+                .map(p -> new ClientProductDto.VersionDto(
+                        p.getCode().toString(),
+                        p.getColor().getName(),
+                        p.getSize().getName()))
+                .collect(Collectors.toList());
+
+        List<String> listImage = new ArrayList<>();
+        listImage.add(product.getImage());
+
+        listImage.addAll(
+                list.stream()
+                        .map(ProductVersion::getImage)
+                        .collect(Collectors.toList()));
+
+        return new ClientProductDto(product.getCode().toString(),
+                product.getName(),
+                product.getPrice(),
+                product.getImage(),
+                false,
+                0.0,
+                colorOne,
+                colorTwo,
+                colorThree,
+                false,
+                "",
+                BigDecimal.ZERO,
+                product.getShortDescription(),
+                product.getFullDescription(),
+                dtoList,
+                listImage);
+    }
+
     public PageDto<ClientProductDto> getClientProductAll(User user, ClientProductFilterDto dto) {
         // Validate and parse sort direction
         Sort.Direction direction = "asc".equalsIgnoreCase(dto.getSort()) ? Sort.Direction.ASC : Sort.Direction.DESC;
@@ -222,7 +318,11 @@ public class ProductServiceImpl implements IProductService {
                 colorThree,
                 false,
                 "",
-                BigDecimal.ZERO);
+                BigDecimal.ZERO,
+                null,
+                null,
+                null,
+                null);
     }
 
     public PageDto<ProductAllBasicDto> getProductAllBasic(String query, int page, int size, String sort) {

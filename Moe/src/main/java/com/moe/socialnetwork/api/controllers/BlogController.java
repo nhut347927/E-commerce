@@ -50,7 +50,24 @@ public class BlogController {
 
         return ResponseEntity.ok(response);
     }
+  @GetMapping("/client/all")
+    public ResponseEntity<ResponseAPI<PageDto<BlogAllDto>>> getAllBlogClient(
+            @Valid @ModelAttribute FilterPageDto request,
+            @AuthenticationPrincipal User user) {
 
+        PageDto<BlogAllDto> data = blogService.getBlogAll(
+                request.getQ(),
+                request.getPage(),
+                request.getSize(),
+                request.getSort());
+
+        ResponseAPI<PageDto<BlogAllDto>> response = new ResponseAPI<>();
+        response.setCode(200);
+        response.setMessage("Success");
+        response.setData(data);
+
+        return ResponseEntity.ok(response);
+    }
     @GetMapping("/all")
     public ResponseEntity<ResponseAPI<PageDto<BlogAllDto>>> getAllBlog(
             @Valid @ModelAttribute FilterPageDto request,

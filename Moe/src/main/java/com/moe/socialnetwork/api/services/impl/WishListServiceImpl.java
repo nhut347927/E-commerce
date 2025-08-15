@@ -162,7 +162,11 @@ public class WishListServiceImpl implements IWishListService {
                 colorThree,
                 false,
                 "",
-                BigDecimal.ZERO);
+                BigDecimal.ZERO,
+                null,
+                null,
+                null,
+                null);
     }
 
  public void toggleWishList(User user, CodeDto codeDto) {

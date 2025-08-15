@@ -9,7 +9,7 @@ const Blog = () => {
   const {
     data: blogs,
   } = useGetApi<Page<BlogAll>>({
-    endpoint: "/blog/all",
+    endpoint: "/blog/client/all",
     params: {
       page: 0,
       size: 3,

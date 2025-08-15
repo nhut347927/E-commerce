@@ -1,8 +1,12 @@
 package com.moe.socialnetwork.api.services;
+
+import com.moe.socialnetwork.exception.AppException;
+
 /**
  * Author: nhutnm379
  */
 public interface IEmailService {
+    void sendContactFormEmail(String name, String email, String message);
 
     /**
      * Send a password reset email with HTML content to the user.

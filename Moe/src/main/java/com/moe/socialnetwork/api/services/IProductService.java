@@ -16,6 +16,7 @@ import com.moe.socialnetwork.api.dtos.common.PageDto;
 import com.moe.socialnetwork.models.User;
 
 public interface IProductService {
+    ClientProductDto getClientProduct(User user, CodeDto codeDto);
 
     PageDto<ClientProductDto> getClientProductAll(User user, ClientProductFilterDto dto);
 

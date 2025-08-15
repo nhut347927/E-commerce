@@ -216,7 +216,7 @@ const ShoppingCart = () => {
                 <span>${subtotal.toFixed(2)}</span>
               </li>
             </ul>
-            <Link to="/checkout">
+            <Link to="/check-out">
               <Button className="h-12 w-full uppercase bg-black hover:bg-black/70 text-white rounded-none">
                 Proceed to Checkout
               </Button>

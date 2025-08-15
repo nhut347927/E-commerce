@@ -2,7 +2,8 @@ import React, { useState, FormEvent } from 'react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import emailjs from 'emailjs-com'; // npm install emailjs-com
+import { useToast } from '@/common/hooks/use-toast';
+import axiosInstance from '@/services/axios/axios-instance';
 
 interface FormData {
   name: string;
@@ -17,12 +18,12 @@ interface Errors {
 }
 
 const Contact: React.FC = () => {
+  const { toast } = useToast();
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
     message: '',
   });
-
   const [errors, setErrors] = useState<Errors>({});
   const [loading, setLoading] = useState(false);
 
@@ -58,23 +59,21 @@ const Contact: React.FC = () => {
 
     setLoading(true);
     try {
-      // Gửi email qua EmailJS
-      await emailjs.send(
-        'service_xxx', // Service ID từ EmailJS
-        'template_xxx', // Template ID từ EmailJS
-        {
-          from_name: formData.name,
-          from_email: formData.email,
-          message: formData.message,
-        },
-        'public_key_xxx' // Public key từ EmailJS
-      );
+      await axiosInstance.post('/email/contact', formData);
 
-      alert('Your message has been sent successfully!');
+      toast({
+        title: 'Success',
+        description: 'Your message has been sent successfully!',
+        variant: 'default',
+      });
       setFormData({ name: '', email: '', message: '' });
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert('Failed to send the message. Please try again later.');
+      toast({
+        title: 'Error',
+        description: err.response?.data || 'Failed to send the message. Please try again later.',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -105,7 +104,7 @@ const Contact: React.FC = () => {
                 We’re always here to help. Fill out the form and we’ll get back to you as soon as possible.
               </p>
             </div>
-            <ul className="mt-6 space-y-6 ">
+            <ul className="mt-6 space-y-6">
               <li>
                 <h4 className="text-xl font-semibold text-gray-800">America</h4>
                 <p className="text-sm text-gray-600 leading-loose">

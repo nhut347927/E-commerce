@@ -42,7 +42,23 @@ public class ProductController {
     public ProductController(IProductService productService) {
         this.productService = productService;
     }
+
     // ########################Client########################################
+    @GetMapping("/client")
+    public ResponseEntity<ResponseAPI<ClientProductDto>> getAllProductPlus(
+            @Valid @ModelAttribute CodeDto request,
+            @AuthenticationPrincipal User user) {
+
+        ClientProductDto data = productService.getClientProduct(
+                user, request);
+
+        ResponseAPI<ClientProductDto> response = new ResponseAPI<>();
+        response.setCode(200);
+        response.setMessage("Success");
+        response.setData(data);
+
+        return ResponseEntity.ok(response);
+    }
 
     @GetMapping("/client/all")
     public ResponseEntity<ResponseAPI<PageDto<ClientProductDto>>> getAllProductBasic(
