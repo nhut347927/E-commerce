@@ -1,6 +1,8 @@
 package com.moe.socialnetwork.api.dtos;
 
 
+import java.math.BigDecimal;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,5 +28,4 @@ public class ProductVersionAllDto {
     private String updateAt;
     private String userUpdateCode;
     private String userUpdateDisplayName;
-
 }

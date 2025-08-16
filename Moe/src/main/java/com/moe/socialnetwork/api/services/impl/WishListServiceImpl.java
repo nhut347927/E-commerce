@@ -166,6 +166,7 @@ public class WishListServiceImpl implements IWishListService {
                 null,
                 null,
                 null,
+                null,
                 null);
     }
 

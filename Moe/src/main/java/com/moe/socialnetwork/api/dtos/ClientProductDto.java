@@ -34,13 +34,15 @@ public class ClientProductDto {
     private String fullDescription;
 
     private List<VersionDto> listVersion;
-    private List<String> images;
-
+    private String category;
+private List<String> tags;
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
     public static class VersionDto {
         private String code;
+        private String image;
+        private String stock;
         private String color;
         private String size;
     }

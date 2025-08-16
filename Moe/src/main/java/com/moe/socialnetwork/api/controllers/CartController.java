@@ -6,7 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import com.moe.socialnetwork.api.dtos.ProductVersionAllDto;
+import com.moe.socialnetwork.api.dtos.ClientCartAllDto;
+import com.moe.socialnetwork.api.dtos.ClientCartDto;
+import com.moe.socialnetwork.api.dtos.ClientUpdateCartQuantityDto;
 import com.moe.socialnetwork.api.dtos.common.CodeDto;
 import com.moe.socialnetwork.api.services.ICartService;
 import com.moe.socialnetwork.models.User;
@@ -24,15 +26,30 @@ public class CartController {
         this.cartService = cartService;
     }
 
+    @PutMapping("update-quantity")
+    public ResponseEntity<ResponseAPI<String>> updateCartQuantity(
+            @Valid @RequestBody ClientUpdateCartQuantityDto request,
+            @AuthenticationPrincipal User user) {
+
+        cartService.updateQuantity(user, request.getCode(), request.getQuantity());
+
+        ResponseAPI<String> response = new ResponseAPI<>();
+        response.setCode(200);
+        response.setMessage("Success");
+        response.setData(null);
+
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/all")
-    public ResponseEntity<ResponseAPI<List<ProductVersionAllDto>>> getCartProductVersions(
+    public ResponseEntity<ResponseAPI<List<ClientCartAllDto>>> getCartProductVersions(
 
             @AuthenticationPrincipal User user) {
 
-        List<ProductVersionAllDto> data = cartService.getCartProductVersions(
+        List<ClientCartAllDto> data = cartService.getCartProductVersions(
                 user);
 
-        ResponseAPI<List<ProductVersionAllDto>> response = new ResponseAPI<>();
+        ResponseAPI<List<ClientCartAllDto>> response = new ResponseAPI<>();
         response.setCode(200);
         response.setMessage("Success");
         response.setData(data);
@@ -42,7 +59,7 @@ public class CartController {
 
     @PostMapping("/add")
     public ResponseEntity<ResponseAPI<String>> addToWishList(
-            @Valid @RequestBody CodeDto request,
+            @Valid @RequestBody ClientCartDto request,
             @AuthenticationPrincipal User user) {
 
         cartService.addToCart(user, request);

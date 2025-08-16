@@ -2,14 +2,17 @@ package com.moe.socialnetwork.api.services;
 
 import java.util.List;
 
-import com.moe.socialnetwork.api.dtos.ProductVersionAllDto;
+import com.moe.socialnetwork.api.dtos.ClientCartAllDto;
+import com.moe.socialnetwork.api.dtos.ClientCartDto;
 import com.moe.socialnetwork.api.dtos.common.CodeDto;
 import com.moe.socialnetwork.models.User;
 
 public interface ICartService {
-    List<ProductVersionAllDto> getCartProductVersions(User user);
+    void updateQuantity(User user, String pvCode, int quantity);
 
-    void addToCart(User user, CodeDto codeDto);
+    List<ClientCartAllDto> getCartProductVersions(User user);
+
+    void addToCart(User user, ClientCartDto codeDto);
 
     void deleteFromCart(User user, CodeDto codeDto);
 }

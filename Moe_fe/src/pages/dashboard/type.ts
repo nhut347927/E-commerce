@@ -188,6 +188,7 @@ export interface ProductVersionAll {
   updateAt: string;
   userUpdateCode: string;
   userUpdateDisplayName: string;
+  price:number;
 }
 
 export interface ProductVersionCreate {

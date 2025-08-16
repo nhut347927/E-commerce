@@ -258,10 +258,27 @@ export type ClientProduct = {
   fullDescription?: string;
 
   listVersion?: Version[];
-  images: string[];
+  category: string;
+  tags: string[];
 };
 export interface Version {
   code: string;
+  image:string;
+  stock:string;
   color: string;
   size: string;
 }
+
+
+
+
+export type ClientCartAllDto = {
+  code: string;
+  name: string;
+
+  quantity: number;
+  image: string;
+  size: string;
+  color: string;
+  price: number; // BigDecimal -> number (JS không có BigDecimal)
+};

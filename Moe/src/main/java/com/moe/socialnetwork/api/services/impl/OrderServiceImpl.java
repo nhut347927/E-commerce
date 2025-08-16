@@ -123,12 +123,17 @@ public class OrderServiceImpl implements IOrderService {
             // 3. Tìm order item
             OrderItem item = orderItemJpa.findByOrderIdAndProductId(order.getId(), productVersion.getId())
                     .map(existingItem -> {
-                        // Nếu đã tồn tại thì cộng số lượng
-                        existingItem.setQuantity(existingItem.getQuantity() + orderUpdateDto.getQuantity());
+                        int newQuantity = existingItem.getQuantity() + orderUpdateDto.getQuantity();
+                        if (newQuantity > productVersion.getQuantity()) {
+                            throw new AppException("Quantity exceeds available stock", HttpStatus.BAD_REQUEST.value());
+                        }
+                        existingItem.setQuantity(newQuantity);
                         return existingItem;
                     })
                     .orElseGet(() -> {
-                        // Nếu chưa tồn tại thì tạo mới
+                        if (orderUpdateDto.getQuantity() > productVersion.getQuantity()) {
+                            throw new AppException("Quantity exceeds available stock", HttpStatus.BAD_REQUEST.value());
+                        }
                         OrderItem newItem = new OrderItem();
                         newItem.setOrder(order);
                         newItem.setProductVersion(productVersion);
@@ -145,8 +150,7 @@ public class OrderServiceImpl implements IOrderService {
             recalculateOrderTotals(order);
 
         } catch (AppException e) {
-            // Ném lại AppException để không bị gói vào Exception chung
-            throw e;
+            throw e; // ném lại để client nhận lỗi
         } catch (Exception e) {
             throw new AppException(
                     "An error occurred while updating order: " + e.getMessage(),
@@ -210,7 +214,8 @@ public class OrderServiceImpl implements IOrderService {
         order.setPrice(tongGiaSanPham);
 
         BigDecimal giaGiam = BigDecimal.ZERO;
-        if (order.getDiscount() != null && order.getDiscount().getDiscountValue() != null&&isValid(order.getDiscount().getStartDate(), order.getDiscount().getEndDate())) {
+        if (order.getDiscount() != null && order.getDiscount().getDiscountValue() != null
+                && isValid(order.getDiscount().getStartDate(), order.getDiscount().getEndDate())) {
             BigDecimal discountValue = order.getDiscount().getDiscountValue();
             if (discountValue.compareTo(BigDecimal.ZERO) >= 0
                     && discountValue.compareTo(BigDecimal.valueOf(100)) <= 0) {

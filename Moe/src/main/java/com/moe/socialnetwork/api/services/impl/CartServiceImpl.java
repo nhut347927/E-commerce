@@ -1,12 +1,15 @@
 package com.moe.socialnetwork.api.services.impl;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import com.moe.socialnetwork.api.dtos.ClientCartAllDto;
+import com.moe.socialnetwork.api.dtos.ClientCartDto;
 import com.moe.socialnetwork.api.dtos.ProductVersionAllDto;
 import com.moe.socialnetwork.api.dtos.common.CodeDto;
 import com.moe.socialnetwork.api.services.ICartService;
@@ -27,29 +30,75 @@ public class CartServiceImpl implements ICartService {
         this.productVersionJpa = productVersionJpa;
     }
 
-    public void addToCart(User user, CodeDto codeDto) {
+    public void updateQuantity(User user, String pvCode, int quantity) {
         try {
-            UUID productVersionCode = UUID.fromString(codeDto.getCode());
+            UUID productVersionCode = UUID.fromString(pvCode);
 
             ProductVersion pv = productVersionJpa.findByCode(productVersionCode)
                     .orElseThrow(() -> new AppException("Product version not found", 404));
 
-            boolean exists = cartJpa.existsByUserIdAndProductVersionId(user.getId(), pv.getId());
-            if (exists) {
-                throw new AppException("Product version already in cart", 400);
+            Cart cart = cartJpa.findByUserCodeAndProductVersionCode(user.getCode(), pv.getCode())
+                    .orElseThrow(() -> new AppException("Cart item not found", 404));
+
+            // Kiểm tra số lượng hợp lệ
+            if (quantity <= 0) {
+                throw new AppException("Quantity must be greater than 0", 400);
             }
 
-            Cart cart = new Cart();
-            cart.setUserCreate(user);
-            cart.setProductVersion(pv);
-            cart.setQuantity(1);
+            if (quantity > pv.getQuantity()) {
+                throw new AppException("Quantity exceeds available stock", 400);
+            }
 
+            // Cập nhật số lượng
+            cart.setQuantity(quantity);
             cartJpa.save(cart);
+        } catch (IllegalArgumentException e) {
+            throw new AppException("Invalid product code format", HttpStatus.BAD_REQUEST.value());
+        } catch (AppException e) {
+            throw e; // ném lại để thông báo lỗi đến client
+        } catch (Exception e) {
+            throw new AppException("An error occurred while updating cart: " + e.getMessage(), 500);
+        }
+    }
+
+    public void addToCart(User user, ClientCartDto request) {
+        try {
+            UUID productVersionCode = UUID.fromString(request.getCode());
+
+            ProductVersion pv = productVersionJpa.findByCode(productVersionCode)
+                    .orElseThrow(() -> new AppException("Product version not found", 404));
+
+            Optional<Cart> existingCartOpt = cartJpa.findByUserCodeAndProductVersionCode(user.getCode(), pv.getCode());
+
+            if (existingCartOpt.isPresent()) {
+                Cart existingCart = existingCartOpt.get();
+                int newQuantity = existingCart.getQuantity() + request.getQuantity();
+
+                if (newQuantity > pv.getQuantity()) {
+                    throw new AppException("Quantity exceeds available stock", 400);
+                }
+
+                existingCart.setQuantity(newQuantity);
+                cartJpa.save(existingCart);
+            } else {
+                int quantity = request.getQuantity();
+                if (quantity > pv.getQuantity()) {
+                    throw new AppException("Quantity exceeds available stock", 400);
+                }
+
+                Cart newCart = new Cart();
+                newCart.setUserCreate(user);
+                newCart.setProductVersion(pv);
+                newCart.setQuantity(quantity);
+                cartJpa.save(newCart);
+            }
 
         } catch (IllegalArgumentException e) {
-            throw new AppException("Invalid Color code format", HttpStatus.BAD_REQUEST.value());
+            throw new AppException("Invalid product code format", HttpStatus.BAD_REQUEST.value());
+        } catch (AppException e) {
+            throw e; // ném lại để thông báo lỗi đến client
         } catch (Exception e) {
-            throw new AppException("An error occurred while updating Color: " + e.getMessage(), 500);
+            throw new AppException("An error occurred while updating cart: " + e.getMessage(), 500);
         }
     }
 
@@ -68,29 +117,23 @@ public class CartServiceImpl implements ICartService {
         }
     }
 
-    public List<ProductVersionAllDto> getCartProductVersions(User user) {
+    public List<ClientCartAllDto> getCartProductVersions(User user) {
         List<ProductVersion> productVersions = cartJpa.findProductVersionsByUserId(user.getId());
         return productVersions.stream()
                 .map(this::mapToDTO) // dùng this nếu mapToDTO là method instance
                 .collect(Collectors.toList());
     }
 
-    private ProductVersionAllDto mapToDTO(ProductVersion product) {
+    private ClientCartAllDto mapToDTO(ProductVersion product) {
 
-        return new ProductVersionAllDto(product.getCode().toString(),
+        return new ClientCartAllDto(product.getCode().toString(),
                 product.getProduct().getName() + " (" + product.getName() + ")",
 
                 product.getQuantity(),
                 product.getImage(),
-                product.getSize().getCode().toString(),
-                product.getColor().getCode().toString(),
-                product.getProduct().getCode().toString(),
+                product.getSize().getName(),
+                product.getColor().getName(),
+                product.getProduct().getPrice());
 
-                "",
-                "",
-                "",
-                "",
-                "",
-                "");
     }
 }

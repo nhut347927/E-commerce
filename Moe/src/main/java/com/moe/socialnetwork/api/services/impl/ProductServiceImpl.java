@@ -103,6 +103,10 @@ public class ProductServiceImpl implements IProductService {
         // Set liked status only if user is logged in
         pro.setLiked(user != null && wishListProductCodes.contains(product.getCode()));
 
+        List<Tag> tags = productTagJpa.findTagsByProductCode(product.getCode());
+
+        List<String> listTags = tags.stream().map(t -> t.getName()).collect(Collectors.toList());
+        pro.setTags(listTags);
         List<Discount> discounts = discountJpa.findByProductCode(product.getCode(), null);
 
         if (!discounts.isEmpty()) {
@@ -140,20 +144,26 @@ public class ProductServiceImpl implements IProductService {
         String colorTwo = list.size() > 1 && list.get(1) != null ? list.get(1).getColor().getName() : null;
         String colorThree = list.size() > 2 && list.get(2) != null ? list.get(2).getColor().getName() : null;
 
-        List<ClientProductDto.VersionDto> dtoList = list.stream()
+        List<ClientProductDto.VersionDto> dtoList = new ArrayList<>();
+
+        // Thêm version mặc định từ product
+        ClientProductDto.VersionDto cp = new ClientProductDto.VersionDto();
+        cp.setCode(null);
+        cp.setImage(product.getImage());
+        dtoList.add(cp);
+
+        // Thêm các version từ list
+        List<ClientProductDto.VersionDto> versions = list.stream()
                 .map(p -> new ClientProductDto.VersionDto(
                         p.getCode().toString(),
+                        p.getImage(),
+                        String.valueOf(p.getQuantity()),
                         p.getColor().getName(),
                         p.getSize().getName()))
                 .collect(Collectors.toList());
 
-        List<String> listImage = new ArrayList<>();
-        listImage.add(product.getImage());
-
-        listImage.addAll(
-                list.stream()
-                        .map(ProductVersion::getImage)
-                        .collect(Collectors.toList()));
+        // Nối vào danh sách chính
+        dtoList.addAll(versions);
 
         return new ClientProductDto(product.getCode().toString(),
                 product.getName(),
@@ -170,7 +180,8 @@ public class ProductServiceImpl implements IProductService {
                 product.getShortDescription(),
                 product.getFullDescription(),
                 dtoList,
-                listImage);
+                product.getCategory().getName(),
+                null);
     }
 
     public PageDto<ClientProductDto> getClientProductAll(User user, ClientProductFilterDto dto) {
@@ -322,7 +333,7 @@ public class ProductServiceImpl implements IProductService {
                 null,
                 null,
                 null,
-                null);
+                null, null);
     }
 
     public PageDto<ProductAllBasicDto> getProductAllBasic(String query, int page, int size, String sort) {

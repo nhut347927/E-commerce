@@ -1,35 +1,72 @@
 import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Heart, RefreshCcw } from "lucide-react";
 import ProductCard from "@/components/cl-home/product";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn, formatVnPrice } from "@/common/lib/utils";
-import { ClientProduct, ProductFilterParams } from "../types";
+import { ClientProduct } from "../types";
 import { useGetApi } from "@/common/hooks/use-get-api";
 import { useToast } from "@/common/hooks/use-toast";
 import { Page } from "@/common/hooks/type";
 import axiosInstance from "@/services/axios/axios-instance";
 import payment from "../../../assets/img/shop-details/details-payment.png";
+
 const ShopDetail = () => {
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const code = searchParams.get("code");
   const [activeTab, setActiveTab] = useState("0"); // Index for images
   const [quantity, setQuantity] = useState(1);
+
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
+
   const [productList, setProductList] = useState<ClientProduct[]>([]);
 
-  const [filters] = useState<ProductFilterParams>({
-    page: 0,
-    size: 6,
-    sort: "desc",
-  });
+  const [sizeStore, setSizeStore] = useState<string[]>([]);
+  const [colorStore, setColorStore] = useState<string[]>([]);
+  const [versionCode, setVersionCode] = useState<string | null>("");
+
+  const processSize = (size: string) => {
+    if (product?.listVersion) {
+      setSelectedSize(size);
+
+      // Lấy ra tất cả màu có size khớp
+      const colors = [
+        ...new Set(
+          product.listVersion.filter((p) => p.size === size).map((p) => p.color)
+        ),
+      ];
+      setColorStore(colors);
+
+      // Nếu selectedColor không còn khớp với size mới, reset selectedColor
+      if (selectedColor && !colors.includes(selectedColor)) {
+        setSelectedColor(null);
+      }
+    }
+  };
+
+  const processColor = (color: string) => {
+    if (product?.listVersion) {
+      setSelectedColor(color);
+
+      // // Lấy ra tất cả size có color khớp
+      // const sizes = [...new Set(
+      //   product.listVersion
+      //     .filter((p) => p.color === color)
+      //     .map((p) => p.size)
+      // )];
+      // setSizeStore(sizes);
+
+      // Nếu selectedSize không còn khớp với color mới, reset selectedSize
+      // if (selectedSize && !sizes.includes(selectedSize)) {
+      //   setSelectedSize(null);
+      // }
+    }
+  };
 
   const {
     data: product,
@@ -47,16 +84,14 @@ const ShopDetail = () => {
       }),
   });
 
-  const {
-    loading: isLoading,
-    error: productsError,
-  } = useGetApi<Page<ClientProduct>>({
+  const { loading: isLoading, error: productsError } = useGetApi<
+    Page<ClientProduct>
+  >({
     endpoint: "/product/client/all",
     params: {
-      q: filters.q,
-      page: filters.page,
-      size: filters.size,
-      sort: filters.sort,
+      page: 0,
+      size: 6,
+      sort: "desc",
     },
     onSuccess: (res) => {
       if (res?.contents) {
@@ -72,41 +107,46 @@ const ShopDetail = () => {
       }),
   });
 
-  // Get unique colors from colorOne, colorTwo, colorThree, and listVersion
-  const getAvailableColors = () => {
-    const colors = new Set<string>();
-    if (product) {
-      [product.colorOne, product.colorTwo, product.colorThree]
-        .filter((color) => color)
-        .forEach((color) => colors.add(color));
-      product.listVersion?.forEach((version) => {
-        if (version.color) colors.add(version.color);
-      });
-    }
-    return Array.from(colors);
-  };
-
-  // Get unique sizes from listVersion
-  const getAvailableSizes = () => {
-    const sizes = new Set<string>();
-    if (product) {
-      product.listVersion?.forEach((version) => {
-        if (version.size) sizes.add(version.size);
-      });
-    }
-    return Array.from(sizes);
-  };
-
-  // Set default size and color on product load
+  // Set default size and color stores on product load
   useEffect(() => {
-    if (product) {
-      const sizes = getAvailableSizes();
-      const colors = getAvailableColors();
-      setSelectedSize(sizes[0] || null);
-      setSelectedColor(colors[0] || null);
+    if (product?.listVersion) {
+      const uniqueSizes = [
+        ...new Set(
+          product.listVersion
+            .filter((p) => p.code) // chỉ lấy version có code
+            .map((p) => p.size)
+        ),
+      ];
+      setSizeStore(uniqueSizes);
+
+      const uniqueColors = [
+        ...new Set(
+          product.listVersion
+            .filter((p) => p.code) // chỉ lấy version có code
+            .map((p) => p.color)
+        ),
+      ];
+      setColorStore(uniqueColors);
+
       setActiveTab("0");
     }
   }, [product]);
+
+  useEffect(() => {
+    if (!product) return;
+    const version = product?.listVersion?.find(
+      (p) => p.color === selectedColor && p.size === selectedSize
+    );
+    setVersionCode(version?.code ?? null);
+
+    const versionIndex = product?.listVersion?.findIndex(
+      (p) => p.code === version?.code
+    );
+    console.log(versionIndex);
+    if (product?.listVersion && versionIndex && versionIndex >= 0) {
+      setActiveTab(Number(versionIndex).toString());
+    }
+  }, [selectedColor, selectedSize, product]);
 
   const toggleWishlist = async (
     productCode: string,
@@ -119,12 +159,11 @@ const ShopDetail = () => {
       if (response.data.code === 200) {
         toast({
           title: "Success",
-          description: `Product ${
-            response.data.data.liked ? "added to" : "removed from"
-          } wishlist.`,
         });
         if (isMainProduct) {
-          product?.liked && (product.liked = !product.liked);
+          if (product) {
+            product.liked = !product.liked;
+          }
         } else {
           setProductList((prev) =>
             prev.map((p) =>
@@ -144,6 +183,34 @@ const ShopDetail = () => {
         title: "Error",
         description:
           err.response?.data?.message || "Failed to toggle wishlist.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const addToCart = async (code: string, quantity: number = 1) => {
+    try {
+      const response = await axiosInstance.post("/cart/add", {
+        code,
+        quantity,
+      });
+
+      if (response.data.code === 200) {
+        toast({
+          title: "Success",
+          description: "Product added to cart successfully.",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: response.data.message,
+          variant: "destructive",
+        });
+      }
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.response?.data?.message || "Failed to add to cart.",
         variant: "destructive",
       });
     }
@@ -196,7 +263,7 @@ const ShopDetail = () => {
           {!loading && !error && product && (
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
               <ScrollArea className="max-h-[80vh] md:col-span-3 flex flex-col mb-16">
-                {product.images.map((image, index) => (
+                {product.listVersion?.map((image, index) => (
                   <div
                     key={index}
                     onClick={() => setActiveTab(index.toString())}
@@ -207,7 +274,7 @@ const ShopDetail = () => {
                     } hover:border-red-500 transition-all duration-200`}
                   >
                     <img
-                      src={`https://res.cloudinary.com/dazttnakn/image/upload/${image}`}
+                      src={`https://res.cloudinary.com/dazttnakn/image/upload/${image.image}`}
                       alt="thumbnail"
                       className="aspect-[4/5] w-36 object-cover mx-auto"
                     />
@@ -217,10 +284,19 @@ const ShopDetail = () => {
               <div className="md:col-span-9">
                 <div className="relative overflow-hidden">
                   <img
-                    src={`https://res.cloudinary.com/dazttnakn/image/upload/${product.images[parseInt(activeTab)] || product.image}`}
-                    alt={product.name}
+                    src={`https://res.cloudinary.com/dazttnakn/image/upload/${
+                      product?.listVersion?.[parseInt(activeTab)]?.image ??
+                      product?.image
+                    }`}
+                    alt={product?.name}
                     className="max-h-[80vh] h-[80vh] object-cover mx-auto"
                   />
+                  {product?.listVersion?.[parseInt(activeTab)]?.stock !=
+                    null && (
+                    <p className="text-center mt-5">
+                      Stock: {product.listVersion[parseInt(activeTab)].stock}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -271,7 +347,7 @@ const ShopDetail = () => {
             </div>
 
             {/* Price */}
-            <div className="flex justify-center gap-2 mt-4">
+            <div className="flex justify-center items-center gap-2 mt-4">
               <span className="text-3xl font-semibold text-zinc-900">
                 $
                 {product.isDiscount && product.discountPrice
@@ -279,8 +355,17 @@ const ShopDetail = () => {
                   : formatVnPrice(product.price)}
               </span>
               {product.isDiscount && product.discountPrice && (
-                <span className="text-sm text-zinc-400 line-through mt-3.5">
+                <span className="text-sm text-zinc-400 line-through mt-3">
                   {formatVnPrice(product.price)}
+                </span>
+              )}
+              {product.isDiscount && product.discountPrice && (
+                <span className=" bg-red-500 text-white px-2 py-2 text-xs font-semibold text-center">
+                  SALE <br />
+                  {product.discountValue
+                    ? parseFloat(product.discountValue.toString()).toFixed(0)
+                    : ""}
+                  %
                 </span>
               )}
             </div>
@@ -293,58 +378,45 @@ const ShopDetail = () => {
             {/* Size Selector */}
             <div className="my-6 flex flex-col items-center">
               <h4 className="text-lg font-medium text-zinc-700 mb-6">Size:</h4>
-              <RadioGroup
-                value={selectedSize || ""}
-                onValueChange={setSelectedSize}
-                className="flex flex-wrap gap-5 mt-2"
-              >
-                {getAvailableSizes().map((size) => (
-                  <div key={size}>
-                    <RadioGroupItem
-                      value={size}
-                      id={size}
-                      className="sr-only"
-                    />
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "text-base px-8 py-5 rounded-none text-zinc-700 border-zinc-300 hover:bg-zinc-900 hover:text-white transition",
-                        selectedSize === size ? "bg-zinc-900 text-white" : ""
-                      )}
-                    >
-                      {size}
-                    </Button>
-                  </div>
+              <div className="flex flex-wrap gap-5 mt-2">
+                {sizeStore.map((sz) => (
+                  <Button
+                    key={sz}
+                    variant="outline"
+                    onClick={() => processSize(sz)}
+                    className={cn(
+                      "text-base px-8 py-5 rounded-none text-zinc-700 border-zinc-300 hover:bg-zinc-900 hover:text-white transition",
+                      selectedSize === sz ? "bg-zinc-900 text-white" : ""
+                    )}
+                  >
+                    {sz}
+                  </Button>
                 ))}
-              </RadioGroup>
+              </div>
             </div>
 
             {/* Color Selector */}
             <div className="my-6 flex flex-col items-center">
               <h4 className="text-lg font-medium text-zinc-700 mb-6">Color:</h4>
-              <RadioGroup
-                value={selectedColor || ""}
-                onValueChange={setSelectedColor}
-                className="flex flex-wrap gap-5 mt-2"
-              >
-                {getAvailableColors().map((color, index) => (
+              <div className="flex flex-wrap gap-5 mt-2">
+                {colorStore.map((col) => (
                   <div
-                    key={index}
-                    className="flex items-center justify-center mb-2"
+                    key={col}
+                    onClick={() => processColor(col)}
+                    className={cn(
+                      "relative w-8 h-8 rounded-full ring-2 ring-zinc-300 transition-all duration-200 cursor-pointer",
+                      selectedColor === col ? "ring-zinc-900 ring-4" : ""
+                    )}
+                    style={{ backgroundColor: col }}
                   >
-                    <RadioGroupItem
-                      value={color}
-                      id={`color-${index}`}
-                      className="sr-only"
-                    />
-                    <Label
-                      htmlFor={`color-${index}`}
-                      className="w-8 h-8 rounded-full cursor-pointer ring-zinc-300 ring-2 hover:ring-4 transition-all duration-200"
-                      style={{ backgroundColor: color }}
-                    />
+                    {/* {selectedColor === col && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="w-[2px] h-full bg-zinc-500 rotate-45" />
+                      </div>
+                    )} */}
                   </div>
                 ))}
-              </RadioGroup>
+              </div>
             </div>
 
             {/* Quantity + Add to Cart */}
@@ -375,7 +447,21 @@ const ShopDetail = () => {
                   +
                 </Button>
               </div>
-              <Button className="h-16 w-44 bg-black hover:bg-black/70 text-white px-6 rounded-none">
+              <Button
+                onClick={() => {
+                  if (versionCode) {
+                    addToCart(versionCode, quantity);
+                  } else {
+                    toast({
+                      title: "Error",
+                      description: "Please select a product version first.",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+                disabled={!versionCode}
+                className="h-16 w-44 bg-black hover:bg-black/70 text-white px-6 rounded-none"
+              >
                 Add to Cart
               </Button>
             </div>
@@ -412,14 +498,12 @@ const ShopDetail = () => {
                 <li>
                   SKU: <strong>{product.code}</strong>
                 </li>
-                {/* <li>
-                  Categories:{" "}
-                  <strong>{product.categoryCode || "Clothes"}</strong>
+                <li>
+                  Categories: <strong>{product.category}</strong>
                 </li>
                 <li>
-                  Tags:{" "}
-                  <strong>{product.tagCode || "Clothes, Skin, Body"}</strong>
-                </li> */}
+                  Tags: <strong>{product.tags.join(", ")}</strong>
+                </li>
               </ul>
             </div>
           </div>
@@ -435,7 +519,7 @@ const ShopDetail = () => {
               >
                 Description
               </TabsTrigger>
-              <TabsTrigger
+              {/* <TabsTrigger
                 value="reviews"
                 className="rounded-none text-xl font-medium text-zinc-300 data-[state=active]:text-zinc-400 data-[state=active]:border-b-2 data-[state=active]:border-red-500 px-4 pb-2"
               >
@@ -447,7 +531,7 @@ const ShopDetail = () => {
                 className="rounded-none text-xl font-medium text-zinc-300 data-[state=active]:text-zinc-400 data-[state=active]:border-b-2 data-[state=active]:border-red-500 px-4 pb-2"
               >
                 Additional Info
-              </TabsTrigger>
+              </TabsTrigger> */}
             </TabsList>
 
             <TabsContent
@@ -459,28 +543,9 @@ const ShopDetail = () => {
                   product?.shortDescription ||
                   "No description available."}
               </p>
-              <div>
-                <h5 className="text-lg font-semibold text-zinc-800">
-                  Product Information
-                </h5>
-                <p className="mt-2">
-                  {product?.shortDescription ||
-                    "No additional information available."}
-                </p>
-              </div>
-              <div>
-                <h5 className="text-lg font-semibold text-zinc-800 mt-4">
-                  Materials Used
-                </h5>
-                <p className="mt-2">
-                  {product?.fullDescription?.includes("material")
-                    ? product.fullDescription
-                    : "Materials information not provided."}
-                </p>
-              </div>
             </TabsContent>
 
-            <TabsContent
+            {/* <TabsContent
               value="reviews"
               className="mt-28 sm:mt-6 text-zinc-600 leading-relaxed"
             >
@@ -492,7 +557,7 @@ const ShopDetail = () => {
               className="mt-28 sm:mt-6 text-zinc-600 leading-relaxed"
             >
               <p>Additional product info will be displayed here.</p>
-            </TabsContent>
+            </TabsContent> */}
           </Tabs>
         </div>
       </section>

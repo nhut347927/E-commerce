@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.moe.socialnetwork.models.ProductTag;
+import com.moe.socialnetwork.models.Tag;
 
 /**
  * Author: nhutnm379
@@ -15,4 +16,7 @@ import com.moe.socialnetwork.models.ProductTag;
 public interface ProductTagJpa extends JpaRepository<ProductTag, Long> {
     @Query(" SELECT p FROM ProductTag p WHERE p.tag.isDeleted = false AND p.product.code = :productCode")
     List<ProductTag> findByProductCode(@Param("productCode") UUID productCode);
+
+    @Query("SELECT pt.tag FROM ProductTag pt WHERE pt.product.code = :productCode AND pt.tag.isDeleted = false")
+    List<Tag> findTagsByProductCode(@Param("productCode") UUID productCode);
 }
