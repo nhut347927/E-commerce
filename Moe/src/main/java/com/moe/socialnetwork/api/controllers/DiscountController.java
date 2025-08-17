@@ -35,6 +35,20 @@ public class DiscountController {
         this.discountService = discountService;
     }
 
+    @GetMapping("/client/valid-discount")
+    public ResponseEntity<ResponseAPI<DiscountAllDto>> validDiscount(@Valid @ModelAttribute CodeDto request) {
+
+        DiscountAllDto data = discountService.validDiscount(
+                request);
+
+        ResponseAPI<DiscountAllDto> response = new ResponseAPI<>();
+        response.setCode(200);
+        response.setMessage("Success");
+        response.setData(data);
+
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/all")
     public ResponseEntity<ResponseAPI<PageDto<DiscountAllDto>>> getAllDiscount(
             @Valid @ModelAttribute FilterPageDto request,

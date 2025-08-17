@@ -29,4 +29,14 @@ public interface DiscountJpa extends JpaRepository<Discount, Long> {
   @Query("SELECT d FROM Discount d WHERE d.isDeleted = false AND d.product.code = :code AND (:discountCode IS NULL OR d.code != :discountCode)")
   List<Discount> findByProductCode(@Param("code") UUID code, @Param("discountCode") UUID discountCode);
 
+  @Query("""
+          SELECT d
+          FROM Discount d
+          WHERE d.isDeleted = false
+            AND d.isActive = true
+            AND d.discountCode = :code
+            AND d.usageLimit > 0
+      """)
+  Optional<Discount> findValidDiscountByCode(@Param("code") String code);
+
 }

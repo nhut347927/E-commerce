@@ -8,6 +8,7 @@ import com.moe.socialnetwork.models.User;
 import java.time.LocalDateTime;
 
 public interface IDiscountService {
+    DiscountAllDto validDiscount(CodeDto dto);
 
     PageDto<DiscountAllDto> getDiscountAll(String query, int page, int size, String sort);
 

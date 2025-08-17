@@ -1,8 +1,6 @@
 package com.moe.socialnetwork.api.dtos;
 
 
-import java.math.BigDecimal;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -38,6 +38,24 @@ public class DiscountServiceImpl implements IDiscountService {
         this.productJpa = productJpa;
     }
 
+    public DiscountAllDto validDiscount(CodeDto dto) {
+        String m = TextNormalizer.removeVietnameseAccents(dto.getCode());
+        String s = TextNormalizer.removeWhitespace(m);
+        Discount discount = discountJpa.findValidDiscountByCode(s.trim())
+                .orElseThrow(
+                        () -> new AppException("Discount code not found or has expired", HttpStatus.NOT_FOUND.value()));
+        if (!isValid(discount.getStartDate(), discount.getEndDate())) {
+            throw new AppException("Discount code has expired", 400);
+        }
+        DiscountAllDto d = new DiscountAllDto();
+        d.setDiscountValue(discount.getDiscountValue());
+        d.setMaxDiscount(discount.getMaxDiscount());
+        d.setStartDate(discount.getStartDate().toString());
+        d.setEndDate(discount.getEndDate().toString());
+
+        return d;
+    }
+
     public PageDto<DiscountAllDto> getDiscountAll(String query, int page, int size, String sort) {
 
         Pageable pageable = PaginationUtils.buildPageable(page, size, sort);

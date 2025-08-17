@@ -1,6 +1,9 @@
 package com.moe.socialnetwork.api.services.impl;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -10,13 +13,14 @@ import org.springframework.stereotype.Service;
 
 import com.moe.socialnetwork.api.dtos.ClientCartAllDto;
 import com.moe.socialnetwork.api.dtos.ClientCartDto;
-import com.moe.socialnetwork.api.dtos.ProductVersionAllDto;
 import com.moe.socialnetwork.api.dtos.common.CodeDto;
 import com.moe.socialnetwork.api.services.ICartService;
 import com.moe.socialnetwork.exception.AppException;
 import com.moe.socialnetwork.jpa.CartJpa;
+import com.moe.socialnetwork.jpa.DiscountJpa;
 import com.moe.socialnetwork.jpa.ProductVersionJpa;
 import com.moe.socialnetwork.models.Cart;
+import com.moe.socialnetwork.models.Discount;
 import com.moe.socialnetwork.models.ProductVersion;
 import com.moe.socialnetwork.models.User;
 
@@ -24,10 +28,12 @@ import com.moe.socialnetwork.models.User;
 public class CartServiceImpl implements ICartService {
     private final CartJpa cartJpa;
     private final ProductVersionJpa productVersionJpa;
+    private final DiscountJpa discountJpa;
 
-    public CartServiceImpl(CartJpa cartJpa, ProductVersionJpa productVersionJpa) {
+    public CartServiceImpl(CartJpa cartJpa, ProductVersionJpa productVersionJpa, DiscountJpa discountJpa) {
         this.cartJpa = cartJpa;
         this.productVersionJpa = productVersionJpa;
+        this.discountJpa = discountJpa;
     }
 
     public void updateQuantity(User user, String pvCode, int quantity) {
@@ -119,21 +125,80 @@ public class CartServiceImpl implements ICartService {
 
     public List<ClientCartAllDto> getCartProductVersions(User user) {
         List<ProductVersion> productVersions = cartJpa.findProductVersionsByUserId(user.getId());
-        return productVersions.stream()
-                .map(this::mapToDTO) // dùng this nếu mapToDTO là method instance
+        List<Cart> carts = cartJpa.findCartByUserId(user.getId());
+
+        // Tạo map để tra cứu quantity từ carts dựa trên productVersion code
+        Map<String, Integer> cartQuantityMap = carts.stream()
+                .collect(Collectors.toMap(
+                        cart -> cart.getProductVersion().getCode().toString(), // Lấy code từ ProductVersion
+                        cart -> cart.getQuantity(), // Lấy quantity từ Cart
+                        (existing, replacement) -> existing // Trong trường hợp trùng lặp, giữ giá trị đầu tiên
+                ));
+
+        // Map productVersions sang ClientCartAllDto và đắp quantity từ cartQuantityMap
+        List<ClientCartAllDto> cartAllDtos = productVersions.stream()
+                .map(productVersion -> {
+                    ClientCartAllDto dto = mapToDTO(productVersion);
+                    // Đắp quantity từ cartQuantityMap, mặc định là 1 nếu không tìm thấy
+                    dto.setQuantity(cartQuantityMap.getOrDefault(productVersion.getCode().toString(), 1));
+                    return dto;
+                })
                 .collect(Collectors.toList());
+
+        return cartAllDtos;
     }
 
-    private ClientCartAllDto mapToDTO(ProductVersion product) {
+    private ClientCartAllDto mapToDTO(ProductVersion productVersion) {
+        BigDecimal price = productVersion.getProduct().getPrice();
+        List<Discount> discounts = discountJpa.findByProductCode(productVersion.getProduct().getCode(), null);
 
-        return new ClientCartAllDto(product.getCode().toString(),
-                product.getProduct().getName() + " (" + product.getName() + ")",
+        if (!discounts.isEmpty()) {
+            for (Discount discount : discounts) {
+                if (isValid(discount.getStartDate(), discount.getEndDate())) {
+                    // Tính số tiền giảm
+                    BigDecimal discountPrice = productVersion.getProduct().getPrice()
+                            .multiply(discount.getDiscountValue())
+                            .divide(BigDecimal.valueOf(100));
 
-                product.getQuantity(),
-                product.getImage(),
-                product.getSize().getName(),
-                product.getColor().getName(),
-                product.getProduct().getPrice());
+                    // Giới hạn số tiền giảm
+                    if (discount.getMaxDiscount() != null &&
+                            discountPrice.compareTo(discount.getMaxDiscount()) > 0) {
+                        discountPrice = discount.getMaxDiscount();
+                    }
+
+                    // Cập nhật giá sau giảm
+                    BigDecimal finalPrice = productVersion.getProduct().getPrice().subtract(discountPrice);
+                    price = finalPrice;
+                    break; // Nếu chỉ áp dụng 1 discount hợp lệ thì thoát luôn
+                }
+            }
+        }
+        return new ClientCartAllDto(productVersion.getCode().toString(),
+                productVersion.getProduct().getName() + " (" + productVersion.getName() + ")",
+
+                0,
+                productVersion.getImage(),
+                productVersion.getSize().getName(),
+                productVersion.getColor().getName(),
+                price);
 
     }
+
+    public boolean isValid(LocalDateTime startDate, LocalDateTime endDate) {
+        LocalDateTime now = LocalDateTime.now();
+
+        // Nếu startDate sau thời điểm hiện tại => chưa có hiệu lực
+        if (startDate.isAfter(now)) {
+            return false;
+        }
+
+        // Nếu endDate null => không có hạn kết thúc => luôn hợp lệ sau startDate
+        if (endDate == null) {
+            return true;
+        }
+
+        // Nếu endDate >= hiện tại => còn hạn
+        return !endDate.isBefore(now);
+    }
+
 }
