@@ -188,7 +188,7 @@ export interface ProductVersionAll {
   updateAt: string;
   userUpdateCode: string;
   userUpdateDisplayName: string;
-  price:number;
+  price: number;
 }
 
 export interface ProductVersionCreate {
@@ -294,7 +294,9 @@ export interface OrderAll {
   paymentMethod: string;
   reason?: string; // lý do khi hủy
   discount?: string;
-   deliveryStatus:
+  deliveryStatus:
+    | "PAYMENT_PENDING"
+    | "PAYMENT_CANCELED"
     | "PENDING"
     | "PACKED"
     | "SHIPPED"
@@ -321,8 +323,8 @@ export interface OrderItemAdd {
 export interface OrderItemAll {
   code: string;
   productName: string;
-  size:string;
-  color:string;
+  size: string;
+  color: string;
   image: string;
   quantity: number;
   price: number;
@@ -342,6 +344,8 @@ export interface OrderUpdate {
   email: string;
   paymentMethod: string;
   deliveryStatus:
+    | "PAYMENT_PENDING"
+    | "PAYMENT_CANCELED"
     | "PENDING"
     | "PACKED"
     | "SHIPPED"
@@ -352,7 +356,6 @@ export interface OrderUpdate {
     | "CANCELED"
     | "RETURNED"; // Enum tương ứng
 }
-
 
 //-------------------Analytic----------------------
 
@@ -365,9 +368,9 @@ export interface Limit {
 }
 
 export interface AnalyticCancelledOrdersRate {
-  totalOrders: number;     // long -> number
+  totalOrders: number; // long -> number
   cancelledOrders: number; // long -> number
-  cancelRate: number;      // double -> number
+  cancelRate: number; // double -> number
 }
 
 export interface AnalyticGrossProfit {
@@ -386,6 +389,8 @@ export interface AnalyticNewCustomersOverTime {
 }
 
 export type DeliveryStatus =
+  | "PAYMENT_PENDING"
+  | "PAYMENT_CANCELED"
   | "PENDING"
   | "PACKED"
   | "SHIPPED"
@@ -406,7 +411,7 @@ export interface AnalyticOrdersPerDay {
 }
 
 export interface AnalyticRevenueOverTime {
-  dateTime: string;  // LocalDate -> string
+  dateTime: string; // LocalDate -> string
   orderCount: number;
 }
 

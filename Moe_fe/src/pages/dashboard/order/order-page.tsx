@@ -336,6 +336,10 @@ const OrderPage: React.FC = () => {
   //   orderItems?.reduce((sum, item) => sum + calculateSubtotal(item), 0) || 0;
   function getStatusClass(status: string) {
     switch (status) {
+      case "PAYMENT_PENDING":
+        return "bg-yellow-200 text-yellow-900"; // màu vàng đậm hơn
+      case "PAYMENT_CANCELED":
+        return "bg-red-200 text-red-900"; // màu đỏ nhạt hơn FAILED
       case "PENDING":
         return "bg-yellow-100 text-yellow-800"; // màu vàng nhạt
       case "PACKED":
@@ -888,6 +892,8 @@ const OrderPage: React.FC = () => {
                     setUpdateFormData({
                       ...updateFormData,
                       deliveryStatus: value as
+                        | "PAYMENT_PENDING"
+                        | "PAYMENT_CANCELED"
                         | "PENDING"
                         | "PACKED"
                         | "SHIPPED"

@@ -69,6 +69,9 @@ public class Order {
     @Column(name = "town_city", nullable = false, length = 150)
     private String townCity;
 
+    @Column(name = "state", nullable = false, length = 150)
+    private String state;
+
     @Column(nullable = false, length = 150)
     private String phone;
 
@@ -140,6 +143,8 @@ public class Order {
     }
 
     public enum DeliveryStatus {
+        PAYMENT_PENDING, // Đã tạo đơn nhưng chưa xác nhận thanh toán
+        PAYMENT_CANCELED,
         PENDING, // Đang chờ xử lý
         PACKED, // Đã đóng gói
         SHIPPED, // Đã gửi hàng

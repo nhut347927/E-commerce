@@ -39,9 +39,9 @@ public class DiscountServiceImpl implements IDiscountService {
     }
 
     public DiscountAllDto validDiscount(CodeDto dto) {
-        String m = TextNormalizer.removeVietnameseAccents(dto.getCode());
-        String s = TextNormalizer.removeWhitespace(m);
-        Discount discount = discountJpa.findValidDiscountByCode(s.trim())
+        // String m = TextNormalizer.removeVietnameseAccents(dto.getCode());
+        // String s = TextNormalizer.removeWhitespace(m);
+        Discount discount = discountJpa.findValidDiscountByCode(dto.getCode())
                 .orElseThrow(
                         () -> new AppException("Discount code not found or has expired", HttpStatus.NOT_FOUND.value()));
         if (!isValid(discount.getStartDate(), discount.getEndDate())) {

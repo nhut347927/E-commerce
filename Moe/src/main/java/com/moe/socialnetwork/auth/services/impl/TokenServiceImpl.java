@@ -106,24 +106,24 @@ public class TokenServiceImpl implements ITokenService {
                 .compact();
     }
 
-    /**
-     * Generate an access token from a refresh token.
-     *
-     * @param refreshToken Refresh token
-     * @return New access token
-     */
-    public String generateAccessTokenFromRefreshToken(String refreshToken) {
-        if (refreshToken == null || refreshToken.isBlank()) {
-            throw new AppException("Refresh token must not be null or empty", HttpStatus.BAD_REQUEST.value());
-        }
-        if (isTokenExpired(refreshToken)) {
-            throw new AppException("Refresh token is expired", HttpStatus.UNAUTHORIZED.value());
-        }
-        String email = parseClaims(refreshToken).getSubject();
-        User user = userJPA.findByEmail(email)
-                .orElseThrow(() -> new AppException("User not found for email: " + email,400));
-        return generateJwtToken(user);
-    }
+    // /**
+    //  * Generate an access token from a refresh token.
+    //  *
+    //  * @param refreshToken Refresh token
+    //  * @return New access token
+    //  */
+    // public String generateAccessTokenFromRefreshToken(String refreshToken) {
+    //     if (refreshToken == null || refreshToken.isBlank()) {
+    //         throw new AppException("Refresh token must not be null or empty", HttpStatus.BAD_REQUEST.value());
+    //     }
+    //     if (isTokenExpired(refreshToken)) {
+    //         throw new AppException("Refresh token is expired", HttpStatus.UNAUTHORIZED.value());
+    //     }
+    //     String email = parseClaims(refreshToken).getSubject();
+    //     User user = userJPA.findByEmail(email)
+    //             .orElseThrow(() -> new AppException("User not found for email: " + email,400));
+    //     return generateJwtToken(user);
+    // }
 
     /**
      * Validate a JWT token.

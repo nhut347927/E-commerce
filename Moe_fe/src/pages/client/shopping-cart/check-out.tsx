@@ -1,169 +1,247 @@
-import React, { useState, FormEvent } from 'react';
-import { Link } from 'react-router-dom';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Tag } from 'lucide-react';
-import { useToast } from '@/common/hooks/use-toast';
-import { title } from 'process';
-import { Description } from '@radix-ui/react-toast';
-import { Checkbox } from '@/components/ui/checkbox';
+import React, { useState, useEffect, useMemo, FormEvent } from "react";
+import { useSearchParams } from "react-router-dom";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/common/hooks/use-toast";
+import { useGetApi } from "@/common/hooks/use-get-api";
+import axiosInstance from "@/services/axios/axios-instance";
+import { ClientCartAllDto } from "../types";
+import { formatVnPrice } from "@/common/lib/utils";
+
+interface DiscountAll {
+  discountCode: string;
+  discountValue: number;
+  maxDiscount: number;
+}
 
 interface FormData {
   firstName: string;
   lastName: string;
   country: string;
-  streetAddress: string;
-  apartment: string;
+  address: string;
   city: string;
   state: string;
-  postcode: string;
   phone: string;
   email: string;
-  createAccount: boolean;
-  accountPassword: string;
-  orderNotes: boolean;
   notes: string;
-  paymentMethod: string;
+  orderNotes: boolean;
+  discountCode: string;
 }
 
-interface Errors {
+interface FormErrors {
   firstName?: string;
   lastName?: string;
   country?: string;
-  streetAddress?: string;
+  address?: string;
   city?: string;
   state?: string;
-  postcode?: string;
   phone?: string;
   email?: string;
-  accountPassword?: string;
   notes?: string;
-  paymentMethod?: string;
-  couponCode?: string;
 }
 
 const CheckOut: React.FC = () => {
-    const toast = useToast();
+  const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const code = searchParams.get("discountCode");
+  const [discount, setDiscount] = useState<DiscountAll | null>(null);
   const [formData, setFormData] = useState<FormData>({
-    firstName: '',
-    lastName: '',
-    country: '',
-    streetAddress: '',
-    apartment: '',
-    city: '',
-    state: '',
-    postcode: '',
-    phone: '',
-    email: '',
-    createAccount: false,
-    accountPassword: '',
+    firstName: "",
+    lastName: "",
+    country: "",
+    address: "",
+    city: "",
+    state: "",
+    phone: "",
+    email: "",
+    notes: "",
     orderNotes: false,
-    notes: '',
-    paymentMethod: '',
+    discountCode: code || "",
+  });
+  const [errors, setErrors] = useState<FormErrors>({});
+
+  const { data: cartItems = [], loading } = useGetApi<ClientCartAllDto[]>({
+    endpoint: "/cart/all",
+    enabled: true,
+    onError: (err) => {
+      toast({
+        title: "Error",
+        description: err.message || "Failed to load cart items",
+        variant: "destructive",
+      });
+    },
   });
 
-  const [errors, setErrors] = useState<Errors>({});
-  const [couponVisible, setCouponVisible] = useState<boolean>(false);
-  const [couponCode, setCouponCode] = useState<string>('');
+  useEffect(() => {
+    if (code) {
+      const handleValidDiscount = async () => {
+        try {
+          const response = await axiosInstance.get(
+            "/discount/client/valid-discount",
+            {
+              params: { code },
+            }
+          );
 
-  const validateForm = (): boolean => {
-    const newErrors: Errors = {};
-    const requiredFields: (keyof FormData)[] = [
-      'firstName',
-      'lastName',
-      'country',
-      'streetAddress',
-      'city',
-      'state',
-      'postcode',
-      'phone',
-      'email',
-    ];
+          if (response.data.code === 200 && response.data.data) {
+            const discount: DiscountAll = response.data.data;
+            toast({
+              title: "Discount Applied",
+              description: `Discount code "${
+                discount.discountCode
+              }" is valid. You saved ${discount.discountValue.toFixed(0)}%!`,
+            });
+            setDiscount(discount);
+          } else {
+            toast({
+              title: "Invalid Discount",
+              description:
+                response.data.message || "This discount code is not valid.",
+              variant: "destructive",
+            });
+            setDiscount(null);
+          }
+        } catch (err: any) {
+          toast({
+            title: "Error",
+            description:
+              err.response?.data?.message || "Failed to validate discount",
+            variant: "destructive",
+          });
+          setDiscount(null);
+        }
+      };
+      handleValidDiscount();
+    }
+  }, [code, toast]);
 
+  // Calculate subtotal, discount, and final total
+  const { subtotal, discountAmount, finalTotal } = useMemo(() => {
+    const subtotal = cartItems?.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+    let discountAmount = 0;
+    let finalTotal = subtotal;
 
-    if (formData.createAccount && !formData.accountPassword.trim()) {
-      newErrors.accountPassword = 'This field cannot be empty';
+    if (discount) {
+      discountAmount = (Number(subtotal) * discount.discountValue) / 100;
+      if (discount.maxDiscount > 0) {
+        discountAmount = Math.min(discountAmount, discount.maxDiscount);
+      }
+      finalTotal = Number(subtotal) - discountAmount;
     }
 
-    if (formData.orderNotes && !formData.notes.trim()) {
-      newErrors.notes = 'This field cannot be empty';
-    }
+    return { subtotal, discountAmount, finalTotal };
+  }, [cartItems, discount]);
 
-    if (!formData.paymentMethod) {
-      newErrors.paymentMethod = 'Please select a payment method';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
+  // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name as keyof Errors]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  // Handle checkbox change
+  const handleCheckboxChange = (field: string, checked: boolean) => {
+    setFormData((prev) => ({ ...prev, [field]: checked }));
+    if (field === "orderNotes" && !checked) {
+      setFormData((prev) => ({ ...prev, notes: "" }));
+      setErrors((prev) => ({ ...prev, notes: "" }));
     }
   };
 
-  const handleCheckboxChange = (name: keyof FormData, checked: boolean) => {
-    setFormData((prev) => ({ ...prev, [name]: checked }));
-    if (name === 'paymentMethod' && errors.paymentMethod) {
-      setErrors((prev) => ({ ...prev, paymentMethod: '' }));
+  // Form validation
+  const validateForm = (): FormErrors => {
+    const newErrors: FormErrors = {};
+    if (!formData.firstName)
+      newErrors.firstName = "First name must not be blank";
+    if (!formData.lastName) newErrors.lastName = "Last name must not be blank";
+    if (!formData.country) newErrors.country = "Country must not be blank";
+    if (!formData.address) newErrors.address = "Address must not be blank";
+    if (!formData.city) newErrors.city = "City must not be blank";
+    if (!formData.state) newErrors.state = "State must not be blank";
+    if (!formData.phone) {
+      newErrors.phone = "Phone must not be blank";
+    } else if (!/^(\+84|0)\d{9,10}$/.test(formData.phone)) {
+      newErrors.phone = "Phone number is invalid";
     }
+    if (!formData.email) {
+      newErrors.email = "Email must not be blank";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Email is invalid";
+    }
+    if (formData.orderNotes && !formData.notes) {
+      newErrors.notes = "Order notes must not be blank if enabled";
+    }
+    return newErrors;
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  // Handle form submission
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
-    //   toast({
-    //     title: 'Order Placed',
-    //     Description: 'Your order has been successfully submitted.',
-    //   });
-    } else {
-    //   toast({
-    //     title: 'Form Error',
-    //     description: 'Please fill out all required fields.',
-    //     variant: 'destructive',
-    //   });
+    const newErrors = validateForm();
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields correctly.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Giả định gọi API để lưu order
+      const orderData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        country: formData.country,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        phone: formData.phone,
+        email: formData.email,
+        notes: formData.notes,
+        discountCode: formData.discountCode,
+        cartItems: cartItems?.map((item) => ({
+          code: item.code,
+          name: item.name,
+          quantity: item.quantity,
+          image: item.image,
+          size: item.size,
+          color: item.color,
+          price: item.price,
+        })),
+        total: finalTotal,
+      };
+
+      const response = await axiosInstance.post("/api/orders", orderData);
+      if (response.data.code === 200) {
+        toast({
+          title: "Success",
+          description: "Your order has been placed successfully!",
+        });
+      } else {
+        throw new Error(response.data.message || "Failed to place order");
+      }
+    } catch (error: any) {
+      console.error("Error:", error);
+      toast({
+        title: "Error",
+        description:
+          error.message || "An error occurred while placing the order.",
+        variant: "destructive",
+      });
     }
   };
-
-  const handleApplyCoupon = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (couponCode) {
-    //   toast({
-    //     title: 'Coupon Applied',
-    //     description: `Coupon code "${couponCode}" applied successfully.`,
-    //   });
-      setCouponCode('');
-    } else {
-    //   toast({
-    //     title: 'Coupon Error',
-    //     description: 'Please enter a coupon code.',
-    //     variant: 'destructive',
-    //   });
-    }
-  };
-
-  interface OrderItem {
-    name: string;
-    total: number;
-  }
-
-  const orderItems: OrderItem[] = [
-    { name: 'Vanilla salted caramel', total: 300.0 },
-    { name: 'German chocolate', total: 170.0 },
-    { name: 'Sweet autumn', total: 170.0 },
-    { name: 'Cluten free mini dozen', total: 110.0 },
-  ];
-
-  const subtotal = orderItems.reduce((sum, item) => sum + item.total, 0);
 
   return (
     <div>
       {/* Breadcrumb Section */}
-     <div className="py-8 bg-gray-100 mb-32">
+      <div className="py-8 bg-gray-100 mb-32">
         <div className="max-w-7xl w-full mx-auto px-3 sm:px-16">
           <div className="flex flex-col items-start">
             <h4 className="text-2xl font-semibold text-gray-800">Check Out</h4>
@@ -180,13 +258,17 @@ const CheckOut: React.FC = () => {
 
       {/* Checkout Section */}
       <div className="max-w-7xl w-full mx-auto px-3 sm:px-16 mb-20">
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 lg:grid-cols-12 gap-8"
+        >
           {/* Billing Details */}
           <div className="lg:col-span-8">
-            
-            <h6 className="text-black font-semibold text-base uppercase border-b-2 pb-6 mb-4">Billing Details</h6>
+            <h6 className="text-black font-semibold text-base uppercase border-b-2 pb-6 mb-4">
+              Billing Details
+            </h6>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className='space-y-3'>
+              <div className="space-y-3">
                 <Label className="text-sm text-gray-600">
                   First Name<span className="text-red-500">*</span>
                 </Label>
@@ -195,15 +277,18 @@ const CheckOut: React.FC = () => {
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleInputChange}
+                  placeholder="Enter your first name"
                   className={`h-12 mt-1 border-gray-300 rounded-none text-gray-700 focus:ring-red-500 ${
-                    errors.firstName ? 'border-red-500' : ''
+                    errors.firstName ? "border-red-500" : ""
                   }`}
                 />
                 {errors.firstName && (
-                  <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.firstName}
+                  </p>
                 )}
               </div>
-              <div className='space-y-3'>
+              <div className="space-y-3">
                 <Label className="text-sm text-gray-600">
                   Last Name<span className="text-red-500">*</span>
                 </Label>
@@ -212,8 +297,9 @@ const CheckOut: React.FC = () => {
                   name="lastName"
                   value={formData.lastName}
                   onChange={handleInputChange}
+                  placeholder="Enter your last name"
                   className={`h-12 mt-1 border-gray-300 rounded-none text-gray-700 focus:ring-red-500 ${
-                    errors.lastName ? 'border-red-500' : ''
+                    errors.lastName ? "border-red-500" : ""
                   }`}
                 />
                 {errors.lastName && (
@@ -230,8 +316,9 @@ const CheckOut: React.FC = () => {
                 name="country"
                 value={formData.country}
                 onChange={handleInputChange}
+                placeholder="Enter your country"
                 className={`h-12 mt-1 border-gray-300 rounded-none text-gray-700 focus:ring-red-500 ${
-                  errors.country ? 'border-red-500' : ''
+                  errors.country ? "border-red-500" : ""
                 }`}
               />
               {errors.country && (
@@ -244,18 +331,17 @@ const CheckOut: React.FC = () => {
               </Label>
               <Input
                 type="text"
-                name="streetAddress"
-                value={formData.streetAddress}
+                name="address"
+                value={formData.address}
                 onChange={handleInputChange}
-                placeholder="Street Address"
+                placeholder="Enter your street address"
                 className={`h-12 mt-1 border-gray-300 rounded-none text-gray-700 focus:ring-red-500 ${
-                  errors.streetAddress ? 'border-red-500' : ''
+                  errors.address ? "border-red-500" : ""
                 }`}
               />
-              {errors.streetAddress && (
-                <p className="text-red-500 text-xs mt-1">{errors.streetAddress}</p>
+              {errors.address && (
+                <p className="text-red-500 text-xs mt-1">{errors.address}</p>
               )}
-             
             </div>
             <div className="mt-6 space-y-3">
               <Label className="text-sm text-gray-600">
@@ -266,11 +352,14 @@ const CheckOut: React.FC = () => {
                 name="city"
                 value={formData.city}
                 onChange={handleInputChange}
+                placeholder="Enter your city"
                 className={`h-12 mt-1 border-gray-300 rounded-none text-gray-700 focus:ring-red-500 ${
-                  errors.city ? 'border-red-500' : ''
+                  errors.city ? "border-red-500" : ""
                 }`}
               />
-              {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
+              {errors.city && (
+                <p className="text-red-500 text-xs mt-1">{errors.city}</p>
+              )}
             </div>
             <div className="mt-6 space-y-3">
               <Label className="text-sm text-gray-600">
@@ -281,15 +370,17 @@ const CheckOut: React.FC = () => {
                 name="state"
                 value={formData.state}
                 onChange={handleInputChange}
+                placeholder="Enter your state or region"
                 className={`h-12 mt-1 border-gray-300 rounded-none text-gray-700 focus:ring-red-500 ${
-                  errors.state ? 'border-red-500' : ''
+                  errors.state ? "border-red-500" : ""
                 }`}
               />
-              {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
+              {errors.state && (
+                <p className="text-red-500 text-xs mt-1">{errors.state}</p>
+              )}
             </div>
-          
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-              <div className='space-y-3'>
+              <div className="space-y-3">
                 <Label className="text-sm text-gray-600">
                   Phone<span className="text-red-500">*</span>
                 </Label>
@@ -298,13 +389,16 @@ const CheckOut: React.FC = () => {
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
+                  placeholder="Enter your phone number (e.g. +84912345678)"
                   className={`h-12 mt-1 border-gray-300 rounded-none text-gray-700 focus:ring-red-500 ${
-                    errors.phone ? 'border-red-500' : ''
+                    errors.phone ? "border-red-500" : ""
                   }`}
                 />
-                {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+                {errors.phone && (
+                  <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+                )}
               </div>
-              <div className='space-y-3'>
+              <div className="space-y-3">
                 <Label className="text-sm text-gray-600">
                   Email<span className="text-red-500">*</span>
                 </Label>
@@ -313,11 +407,14 @@ const CheckOut: React.FC = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
+                  placeholder="Enter your email address"
                   className={`h-12 mt-1 border-gray-300 rounded-none text-gray-700 focus:ring-red-500 ${
-                    errors.email ? 'border-red-500' : ''
+                    errors.email ? "border-red-500" : ""
                   }`}
                 />
-                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                {errors.email && (
+                  <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                )}
               </div>
             </div>
             <div className="mt-6 flex items-center space-x-4">
@@ -325,7 +422,7 @@ const CheckOut: React.FC = () => {
                 id="orderNotes"
                 checked={formData.orderNotes}
                 onCheckedChange={(checked: boolean) =>
-                  handleCheckboxChange('orderNotes', checked)
+                  handleCheckboxChange("orderNotes", checked)
                 }
               />
               <Label htmlFor="orderNotes" className="text-sm text-gray-600">
@@ -334,17 +431,15 @@ const CheckOut: React.FC = () => {
             </div>
             {formData.orderNotes && (
               <div className="mt-6 space-y-3">
-                <Label className="text-sm text-gray-600">
-                  Order Notes<span className="text-red-500">*</span>
-                </Label>
+                <Label className="text-sm text-gray-600">Order Notes</Label>
                 <Input
                   type="text"
                   name="notes"
                   value={formData.notes}
                   onChange={handleInputChange}
-                  placeholder="Notes about your order, e.g. special notes for delivery"
+                  placeholder="Enter notes about your order"
                   className={`h-12 mt-1 border-gray-300 rounded-none text-gray-700 focus:ring-red-500 ${
-                    errors.notes ? 'border-red-500' : ''
+                    errors.notes ? "border-red-500" : ""
                   }`}
                 />
                 {errors.notes && (
@@ -356,69 +451,61 @@ const CheckOut: React.FC = () => {
 
           {/* Order Summary */}
           <div className="lg:col-span-4 h-auto">
-          <div className='bg-gray-100 p-8'>
-              <h4 className="text-black font-semibold text-xl uppercase border-b-2 pb-6 mb-6">Your Order</h4>
-            <div className="flex justify-between text-base  text-gray-800 mb-4">
-              <span>Product</span>
-              <span>Total</span>
-            </div>
-            <ul className="text-base text-gray-600 space-y-4">
-              {orderItems.map((item, index) => (
-                <li key={index} className="flex justify-between">
-                  <span>{`0${index + 1}. ${item.name}`}</span>
-                  <span>${item.total.toFixed(1)}</span>
-                </li>
-              ))}
-            </ul>
-            <ul className="text-base text-gray-600 space-y-2 mt-6 border-t pt-6">
-              <li className="flex justify-between text-gray-800">
-                <span>Subtotal</span>
-                <span className='font-bold'>${subtotal.toFixed(2)}</span>
-              </li>
-              <li className="flex justify-between  text-gray-800">
+            <div className="bg-gray-100 p-8">
+              <h4 className="text-black font-semibold text-xl uppercase border-b-2 pb-6 mb-6">
+                Your Order
+              </h4>
+              <div className="flex justify-between text-base text-gray-800 mb-4">
+                <span>Product</span>
                 <span>Total</span>
-                <span className='font-bold'>${subtotal.toFixed(2)}</span>
-              </li>
-            </ul>
-            <div className="mt-6">
-              <p className="text-sm text-gray-600 leading-loose mb-6">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-                incididunt ut labore et dolore magna aliqua.
-              </p>
-              <div className="flex items-center space-x-2 mb-2">
-                <Checkbox
-                  id="checkPayment"
-                  checked={formData.paymentMethod === 'check'}
-                
-                />
-                <Label
-                  htmlFor="checkPayment"
-                  className="text-sm text-gray-700 cursor-pointer"
-                >
-                  Check Payment
-                </Label>
               </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="paypal"
-                  checked={formData.paymentMethod === 'paypal'}
-                 
-                />
-                <Label htmlFor="paypal" className="text-sm text-gray-700 cursor-pointer">
-                  Paypal
-                </Label>
+              <ul className="text-base text-gray-600 space-y-4">
+                {cartItems?.map((item, index) => (
+                  <li key={index} className="flex justify-between">
+                    <span>{`0${index + 1}. ${item.name} x${
+                      item.quantity
+                    }`}</span>
+                    <span>{formatVnPrice(item.price * item.quantity)}</span>
+                  </li>
+                ))}
+              </ul>
+              <ul className="text-base text-gray-600 space-y-2 mt-6 border-t pt-6">
+                <li className="flex justify-between text-gray-800">
+                  <span>Subtotal</span>
+                  <span className="font-bold">
+                    {formatVnPrice(Number(subtotal))}
+                  </span>
+                </li>
+                {discount && (
+                  <li className="flex justify-between text-gray-800">
+                    <span>Discount</span>
+                    <span className="font-bold">
+                      -{formatVnPrice(discountAmount)}
+                    </span>
+                  </li>
+                )}
+                <li className="flex justify-between text-gray-800">
+                  <span>Total</span>
+                  <span className="font-bold">
+                    {formatVnPrice(Number(finalTotal))}
+                  </span>
+                </li>
+              </ul>
+              <div className="mt-6">
+                <p className="text-sm text-gray-600 leading-loose mb-6">
+                  Your personal data will be used to process your order, support
+                  your experience throughout this website, and for other
+                  purposes described in our privacy policy.
+                </p>
               </div>
-              {errors.paymentMethod && (
-                <p className="text-red-500 text-xs mt-1">{errors.paymentMethod}</p>
-              )}
+              <Button
+                type="submit"
+                className="w-full h-12 mt-8 bg-black hover:bg-black/70 text-white rounded-none uppercase"
+                disabled={loading}
+              >
+                {loading ? "Processing..." : "Place Order"}
+              </Button>
             </div>
-            <Button
-              type="submit"
-              className="w-full h-12 mt-8 bg-black hover:bg-black/70 text-white rounded-none uppercase"
-            >
-              Place Order
-            </Button>
-          </div>
           </div>
         </form>
       </div>

@@ -37,7 +37,7 @@ public interface ITokenService {
      * @return New access token
      * @throws AppException if refresh token is invalid or expired
      */
-    String generateAccessTokenFromRefreshToken(String refreshToken) throws AppException;
+    //String generateAccessTokenFromRefreshToken(String refreshToken) throws AppException;
 
     /**
      * Validate a JWT token.

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -396,7 +396,7 @@ const ShoppingCart = () => {
                 <span>{formatVnPrice(finalTotal)}</span>
               </li>
             </ul>
-            <Link to="/check-out">
+            <Link to={`/check-out?discountCode=${couponCode || ""}`}>
               <Button className="h-12 w-full uppercase bg-black hover:bg-black/70 text-white rounded-none">
                 Proceed to Checkout
               </Button>
