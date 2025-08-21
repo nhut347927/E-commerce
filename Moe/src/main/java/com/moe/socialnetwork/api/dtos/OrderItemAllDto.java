@@ -27,4 +27,6 @@ public class OrderItemAllDto {
     private String createAt;
     private String userCreateCode;
     private String userCreateDisplayName;
+
+    private Boolean rating; // đã đánh giá hay chưa
 }

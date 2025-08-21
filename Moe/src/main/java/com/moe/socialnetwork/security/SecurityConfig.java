@@ -36,7 +36,7 @@ public class SecurityConfig {
                                 "/api/auth/change-password", "/api/auth/password-reset-request",
                                 "/api/auth/password-reset", "/api/auth/refresh-token", // "/api/auth/logout",
                                 "api/file/upload-image", "api/file/upload-video", "/api/file/upload-audio",
-                                "/api/file/upload-any")
+                                "/api/file/upload-any","/api/payment/ipn")
                         .permitAll()
                         .requestMatchers("/api/logs/**").hasAuthority("LOG_VIEW")
                         .requestMatchers("/api/user/**").hasAuthority("USER_VIEW")

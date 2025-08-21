@@ -149,7 +149,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 path.startsWith("/api/file/upload-video") ||
                 path.startsWith("/api/file/upload-audio") ||
                 path.startsWith("/api/file/upload-any") ||
-                path.startsWith("/ws/");
+                path.startsWith("/api/payment/ipn");
     }
 
     private void sendErrorResponse(HttpServletResponse response, String message, int statusCode) throws IOException {

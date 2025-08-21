@@ -335,6 +335,14 @@ const ShoppingCart = () => {
                 Continue Shopping
               </Button>
             </Link>
+             <Link to="/view-orders">
+              <Button
+                variant="outline"
+                className="h-12 px-8 rounded-none text-black font-semibold text-sm uppercase"
+              >
+                View Orders
+              </Button>
+            </Link>
             <Button
               variant="default"
               className="h-12 w-52 rounded-none text-white font-semibold text-sm uppercase"

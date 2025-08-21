@@ -194,7 +194,6 @@ const CheckOut: React.FC = () => {
     }
 
     try {
-      // Giả định gọi API để lưu order
       const orderData = {
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -206,24 +205,12 @@ const CheckOut: React.FC = () => {
         email: formData.email,
         notes: formData.notes,
         discountCode: formData.discountCode,
-        cartItems: cartItems?.map((item) => ({
-          code: item.code,
-          name: item.name,
-          quantity: item.quantity,
-          image: item.image,
-          size: item.size,
-          color: item.color,
-          price: item.price,
-        })),
-        total: finalTotal,
       };
 
-      const response = await axiosInstance.post("/api/orders", orderData);
+      const response = await axiosInstance.post("/payment/create", orderData);
       if (response.data.code === 200) {
-        toast({
-          title: "Success",
-          description: "Your order has been placed successfully!",
-        });
+        console.log("Order placed successfully:", response.data);
+        window.location.href = response.data.data.paymentUrl; // chuyển hẳn sang VNPAY
       } else {
         throw new Error(response.data.message || "Failed to place order");
       }
@@ -485,9 +472,13 @@ const CheckOut: React.FC = () => {
                   </li>
                 )}
                 <li className="flex justify-between text-gray-800">
+                  <span>Shipping fee</span>
+                  <span className="font-bold">+{formatVnPrice(30000)}</span>
+                </li>
+                <li className="flex justify-between text-gray-800">
                   <span>Total</span>
                   <span className="font-bold">
-                    {formatVnPrice(Number(finalTotal))}
+                    {formatVnPrice(Number(finalTotal) + 30000)}
                   </span>
                 </li>
               </ul>
@@ -498,6 +489,21 @@ const CheckOut: React.FC = () => {
                   purposes described in our privacy policy.
                 </p>
               </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  id="vnpayCheckbox"
+                  type="checkbox"
+                  className="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                  defaultChecked
+                />
+                <label
+                  htmlFor="vnpayCheckbox"
+                  className="text-gray-700 text-sm select-none"
+                >
+                  Pay with VNPAY
+                </label>
+              </div>
+
               <Button
                 type="submit"
                 className="w-full h-12 mt-8 bg-black hover:bg-black/70 text-white rounded-none uppercase"

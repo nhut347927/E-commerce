@@ -32,6 +32,40 @@ public class OrderController {
         this.orderService = orderService;
     }
 
+       @GetMapping("/client/all")
+    public ResponseEntity<ResponseAPI<PageDto<OrderAllDto>>> getAllOrdersClient(
+            @Valid @ModelAttribute FilterPageDto request
+            , @AuthenticationPrincipal User user) {
+
+        PageDto<OrderAllDto> data = orderService.getOrderAllClient(
+                user,
+                request.getQ(),
+                request.getPage(),
+                request.getSize(),
+                request.getSort());
+
+        ResponseAPI<PageDto<OrderAllDto>> response = new ResponseAPI<>();
+        response.setCode(200);
+        response.setMessage("Success");
+        response.setData(data);
+
+        return ResponseEntity.ok(response);
+    }  
+    
+    @GetMapping("/client/item/all")
+    public ResponseEntity<ResponseAPI<List<OrderItemAllDto>>> getAllOrderItemsClient(
+            @Valid @ModelAttribute CodeDto request) {
+
+        List<OrderItemAllDto> data = orderService.getOrderItemByOrderCode(request);
+
+        ResponseAPI<List<OrderItemAllDto>> response = new ResponseAPI<>();
+        response.setCode(200);
+        response.setMessage("Success");
+        response.setData(data);
+
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/delivery-status/all")
     public ResponseEntity<ResponseAPI<List<String>>> getAllDeliveryStatuses() {
         List<String> data = orderService.getDeliveryStatuses();

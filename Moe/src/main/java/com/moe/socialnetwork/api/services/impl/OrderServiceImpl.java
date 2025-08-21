@@ -50,6 +50,28 @@ public class OrderServiceImpl implements IOrderService {
         this.discountJpa = discountJpa;
     }
 
+    public List<OrderItemAllDto> getOrderItemByOrderCode(CodeDto dto) {
+        UUID code = UUID.fromString(dto.getCode());
+        List<OrderItem> orderItems = orderItemJpa.findByOrderCode(code);
+        List<OrderItemAllDto> contents = orderItems.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+        return contents;
+    }
+
+    public PageDto<OrderAllDto> getOrderAllClient(User user, String query, int page, int size, String sort) {
+
+        Pageable pageable = PaginationUtils.buildPageable(page, size, sort);
+        Page<Order> orders = orderJpa.searchByNameAndUserId(user.getId(), query, pageable);
+
+        List<OrderAllDto> contents = orders.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+
+        return PaginationUtils.buildPageDTO(orders, contents);
+
+    }
+
     public List<String> getDeliveryStatuses() {
         return Arrays.stream(DeliveryStatus.values())
                 .map(Enum::name)
@@ -285,7 +307,8 @@ public class OrderServiceImpl implements IOrderService {
                 order.getPrice(),
                 order.getCreatedAt().toString(),
                 order.getUserCreate() != null ? order.getUserCreate().getCode().toString() : null,
-                order.getUserCreate() != null ? order.getUserCreate().getDisplayName() : null);
+                order.getUserCreate() != null ? order.getUserCreate().getDisplayName() : null,
+                order.getRating() != null ? order.getRating() : false);
     }
 
     private boolean isValid(LocalDateTime startDate, LocalDateTime endDate) {

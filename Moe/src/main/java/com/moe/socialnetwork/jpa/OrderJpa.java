@@ -64,4 +64,25 @@ public interface OrderJpa extends JpaRepository<Order, Long> {
 
   @Query("SELECT COUNT(DISTINCT o.userCreate.id) FROM Order o WHERE o.isDeleted = false")
   long countDistinctUserCreateByIsDeletedFalse();
+
+
+  @Query("""
+          SELECT o FROM Order o
+          WHERE o.isDeleted = false
+            AND o.userCreate.id = :userId
+            AND (
+              :query IS NULL OR :query = ''
+              OR LOWER(o.firstName) LIKE LOWER(CONCAT('%', :query, '%'))
+              OR LOWER(o.lastName) LIKE LOWER(CONCAT('%', :query, '%'))
+              OR LOWER(o.country) LIKE LOWER(CONCAT('%', :query, '%'))
+              OR LOWER(o.address) LIKE LOWER(CONCAT('%', :query, '%'))
+              OR LOWER(o.townCity) LIKE LOWER(CONCAT('%', :query, '%'))
+              OR LOWER(o.phone) LIKE LOWER(CONCAT('%', :query, '%'))
+              OR LOWER(o.email) LIKE LOWER(CONCAT('%', :query, '%'))
+              OR LOWER(o.notes) LIKE LOWER(CONCAT('%', :query, '%'))
+              OR LOWER(o.paymentMethod) LIKE LOWER(CONCAT('%', :query, '%'))
+              OR LOWER(CAST(o.deliveryStatus AS string)) LIKE LOWER(CONCAT('%', :query, '%'))
+            )
+      """)
+  Page<Order> searchByNameAndUserId(@Param("userId") Long userId, @Param("query") String query, Pageable pageable);
 }

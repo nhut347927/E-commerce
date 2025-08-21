@@ -50,6 +50,9 @@ public class OrderItem {
     @Column(nullable = false)
     private BigDecimal price; // giá lúc mua
 
+    @Column(name = "is_rating", columnDefinition = "boolean default false")
+    private Boolean rating = false;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

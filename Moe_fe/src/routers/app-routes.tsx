@@ -35,6 +35,8 @@ import ProductDetail from "@/pages/dashboard/product/product-detail";
 import DiscountPage from "@/pages/dashboard/discount/discount-page";
 import OrderPage from "@/pages/dashboard/order/order-page";
 import SettingPage from "@/pages/dashboard/setting/setting-page";
+import PaymentReturn from "@/pages/client/other/return";
+import ViewOrders from "@/pages/client/shopping-cart/order";
 // Lazy load layouts
 const ClientLayout = React.lazy(() => import("./client-layout"));
 const AuthLayout = React.lazy(() => import("./auth-layout"));
@@ -127,7 +129,16 @@ const AppRoutes = () => {
               </KeepAlive>
             }
           />
-
+          <Route path="payment-return" element={<PaymentReturn />} />
+          
+          <Route
+            path="view-orders"
+            element={
+              <KeepAlive id="client-view-orders">
+                <ViewOrders />
+              </KeepAlive>
+            }
+          />
           <Route path="*" element={<NotFound />} />
         </Route>
 

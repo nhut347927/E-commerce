@@ -89,7 +89,7 @@ public class Order {
     private String reason;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "discount_id", nullable = false)
+    @JoinColumn(name = "discount_id")
     @JsonBackReference
     private Discount discount;
 

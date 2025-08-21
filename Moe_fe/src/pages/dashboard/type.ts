@@ -331,6 +331,7 @@ export interface OrderItemAll {
   createAt: string;
   userCreateCode: string;
   userCreateDisplayName: string;
+  rating:boolean; // true/false
 }
 
 export interface OrderUpdate {

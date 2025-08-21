@@ -12,6 +12,10 @@ import com.moe.socialnetwork.models.Order;
 import com.moe.socialnetwork.models.User;
 
 public interface IOrderService {
+    List<OrderItemAllDto> getOrderItemByOrderCode(CodeDto dto);
+
+    PageDto<OrderAllDto> getOrderAllClient(User user, String query, int page, int size, String sort);
+
     List<String> getDeliveryStatuses();
 
     PageDto<OrderAllDto> getOrderAll(String query, int page, int size, String sort);
