@@ -32,6 +32,21 @@ public class OrderController {
         this.orderService = orderService;
     }
 
+    @PostMapping("/client/cancel")
+    public ResponseEntity<ResponseAPI<String>> cancelOrderClient(
+            @Valid @RequestBody CodeDto request,
+            @AuthenticationPrincipal User user) {
+
+        orderService.cancelOrder(user, request);
+
+        ResponseAPI<String> response = new ResponseAPI<>();
+        response.setCode(200);
+        response.setMessage("Success");
+        response.setData(null);
+
+        return ResponseEntity.ok(response); 
+    }
+
        @GetMapping("/client/all")
     public ResponseEntity<ResponseAPI<PageDto<OrderAllDto>>> getAllOrdersClient(
             @Valid @ModelAttribute FilterPageDto request

@@ -50,6 +50,34 @@ public class OrderServiceImpl implements IOrderService {
         this.discountJpa = discountJpa;
     }
 
+    public void cancelOrder(User user, CodeDto dto) {
+        try {
+            UUID orderCode = UUID.fromString(dto.getCode());
+            Order order = orderJpa.findByCode(orderCode)
+                    .orElseThrow(() -> new AppException("Order not found", HttpStatus.NOT_FOUND.value()));
+
+            if (order.getDeliveryStatus() == DeliveryStatus.CANCELED) {
+                throw new AppException("Order is already canceled", HttpStatus.BAD_REQUEST.value());
+            }
+
+            if (order.getDeliveryStatus() == DeliveryStatus.PAYMENT_REFUND) {
+                throw new AppException("Order is already refunded", HttpStatus.BAD_REQUEST.value());
+            }
+
+            if (order.getDeliveryStatus() != DeliveryStatus.PENDING) {
+                throw new AppException("Only orders with status PENDING can be canceled",
+                        HttpStatus.BAD_REQUEST.value());
+            }
+
+            order.setDeliveryStatus(DeliveryStatus.CANCELED);
+            orderJpa.save(order);
+        } catch (IllegalArgumentException e) {
+            throw new AppException("Invalid size code format", HttpStatus.BAD_REQUEST.value());
+        } catch (Exception e) {
+            throw new AppException("An error occurred while updating order: " + e.getMessage(), 500);
+        }
+    };
+
     public List<OrderItemAllDto> getOrderItemByOrderCode(CodeDto dto) {
         UUID code = UUID.fromString(dto.getCode());
         List<OrderItem> orderItems = orderItemJpa.findByOrderCode(code);

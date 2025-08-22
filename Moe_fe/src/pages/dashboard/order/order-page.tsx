@@ -340,6 +340,8 @@ const OrderPage: React.FC = () => {
         return "bg-yellow-200 text-yellow-900"; // màu vàng đậm hơn
       case "PAYMENT_CANCELED":
         return "bg-red-200 text-red-900"; // màu đỏ nhạt hơn FAILED
+      case "PAYMENT_REFUND":
+        return "bg-orange-200 text-orange-900"; // màu cam nhạt (hoàn tiền)
       case "PENDING":
         return "bg-yellow-100 text-yellow-800"; // màu vàng nhạt
       case "PACKED":
@@ -894,6 +896,7 @@ const OrderPage: React.FC = () => {
                       deliveryStatus: value as
                         | "PAYMENT_PENDING"
                         | "PAYMENT_CANCELED"
+                        | "PAYMENT_REFUND"
                         | "PENDING"
                         | "PACKED"
                         | "SHIPPED"

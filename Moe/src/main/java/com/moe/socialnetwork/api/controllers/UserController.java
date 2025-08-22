@@ -30,6 +30,16 @@ public class UserController {
         this.userService = userService;
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<ResponseAPI<String>> getMe(
+            @AuthenticationPrincipal User user) {
+        ResponseAPI<String> response = new ResponseAPI<>();
+        response.setCode(200);
+        response.setMessage("Success");
+        response.setData(user.getUsername());
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping
     public ResponseEntity<ResponseAPI<PageDto<UsersDto>>> getUserComments(
             @Valid @ModelAttribute FilterPageDto request,

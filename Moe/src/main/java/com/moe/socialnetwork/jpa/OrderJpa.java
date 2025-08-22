@@ -42,7 +42,7 @@ public interface OrderJpa extends JpaRepository<Order, Long> {
   Optional<Order> findByCode(@Param("code") UUID code);
 
   // ######################################################################
-  @Query("SELECT o FROM Order o WHERE o.createdAt >= :startDate AND o.createdAt <= CURRENT_TIMESTAMP")
+  @Query("SELECT o FROM Order o WHERE o.createdAt >= :startDate AND o.deliveryStatus = 'DELIVERED' AND o.isDeleted = false")
   List<Order> findOrdersFromStartDate(@Param("startDate") LocalDateTime startDate);
 
   @Query("SELECT new com.moe.socialnetwork.api.dtos.AnalyticOrdersByStatusDto(o.deliveryStatus, COUNT(o)) " +

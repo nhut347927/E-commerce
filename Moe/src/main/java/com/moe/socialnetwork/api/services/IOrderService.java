@@ -12,6 +12,8 @@ import com.moe.socialnetwork.models.Order;
 import com.moe.socialnetwork.models.User;
 
 public interface IOrderService {
+    void cancelOrder(User user, CodeDto dto);
+
     List<OrderItemAllDto> getOrderItemByOrderCode(CodeDto dto);
 
     PageDto<OrderAllDto> getOrderAllClient(User user, String query, int page, int size, String sort);

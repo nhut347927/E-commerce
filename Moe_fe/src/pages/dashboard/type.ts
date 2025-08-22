@@ -297,6 +297,7 @@ export interface OrderAll {
   deliveryStatus:
     | "PAYMENT_PENDING"
     | "PAYMENT_CANCELED"
+    | "PAYMENT_REFUND"
     | "PENDING"
     | "PACKED"
     | "SHIPPED"
@@ -347,6 +348,7 @@ export interface OrderUpdate {
   deliveryStatus:
     | "PAYMENT_PENDING"
     | "PAYMENT_CANCELED"
+    | "PAYMENT_REFUND"
     | "PENDING"
     | "PACKED"
     | "SHIPPED"
@@ -392,6 +394,7 @@ export interface AnalyticNewCustomersOverTime {
 export type DeliveryStatus =
   | "PAYMENT_PENDING"
   | "PAYMENT_CANCELED"
+  | "PAYMENT_REFUND"
   | "PENDING"
   | "PACKED"
   | "SHIPPED"

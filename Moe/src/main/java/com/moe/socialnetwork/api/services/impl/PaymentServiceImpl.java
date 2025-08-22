@@ -27,6 +27,7 @@ import com.moe.socialnetwork.jpa.CartJpa;
 import com.moe.socialnetwork.jpa.DiscountJpa;
 import com.moe.socialnetwork.jpa.OrderItemJpa;
 import com.moe.socialnetwork.jpa.OrderJpa;
+import com.moe.socialnetwork.jpa.ProductVersionJpa;
 import com.moe.socialnetwork.models.Cart;
 import com.moe.socialnetwork.models.Discount;
 import com.moe.socialnetwork.models.Order;
@@ -47,6 +48,7 @@ public class PaymentServiceImpl implements IPaymentService {
     private final OrderJpa orderJpa;
     private final OrderItemJpa orderItemJpa;
     private final DiscountJpa discountJpa;
+    private final ProductVersionJpa productVersionJpa;
     private final int fee = 30000;
 
     @Value("${cors.allowed.origin}")
@@ -56,12 +58,13 @@ public class PaymentServiceImpl implements IPaymentService {
     private String urlDomainBe;
 
     public PaymentServiceImpl(VnpayConfig vnpayConfig, CartJpa cartJpa, OrderJpa orderJpa,
-            OrderItemJpa orderItemJpa, DiscountJpa discountJpa) {
+            OrderItemJpa orderItemJpa, DiscountJpa discountJpa, ProductVersionJpa productVersionJpa) {
         this.vnpayConfig = vnpayConfig;
         this.cartJpa = cartJpa;
         this.orderJpa = orderJpa;
         this.orderItemJpa = orderItemJpa;
         this.discountJpa = discountJpa;
+        this.productVersionJpa = productVersionJpa;
     }
 
     @Transactional
@@ -82,38 +85,55 @@ public class PaymentServiceImpl implements IPaymentService {
 
             // Lấy chữ ký VNPAY
             String vnp_SecureHash = fields.remove("vnp_SecureHash");
-
-            // Tạo hash từ các field còn lại
             String signValue = hashFields(fields, vnpayConfig.getVnpayHashSecret());
 
             if (!signValue.equals(vnp_SecureHash)) {
-                // Sai chữ ký
                 response.put("RspCode", "97");
                 response.put("Message", "Invalid Signature");
                 return response;
             }
 
             // Lấy thông tin từ params
-            String orderCode = fields.get("vnp_TxnRef"); // mã đơn hàng hệ thống
-            String responseCode = fields.get("vnp_ResponseCode"); // mã phản hồi từ VNPAY
-            String transactionStatus = fields.get("vnp_TransactionStatus"); // trạng thái GD
+            String orderCode = fields.get("vnp_TxnRef");
+            String responseCode = fields.get("vnp_ResponseCode");
+            String transactionStatus = fields.get("vnp_TransactionStatus");
 
-            // Chuyển orderCode về UUID
             UUID orderUuid = UUID.fromString(orderCode);
             Order order = orderJpa.findByCode(orderUuid)
                     .orElseThrow(() -> new AppException("Order not found with code: " + orderCode, 404));
 
             if ("00".equals(responseCode) && "00".equals(transactionStatus)) {
-                // Thanh toán thành công
-                order.setDeliveryStatus(DeliveryStatus.PENDING);
+                List<OrderItem> orderItems = orderItemJpa.findByOrderCode(order.getCode());
 
-                // Xóa giỏ hàng
-                List<Cart> cart = cartJpa.findCartByUserId(order.getUserCreate().getId());
-                if (cart != null && !cart.isEmpty()) {
-                    cartJpa.deleteAll(cart);
+                // Kiểm tra tồn kho trước
+                boolean enoughStock = true;
+                for (OrderItem item : orderItems) {
+                    ProductVersion pv = item.getProductVersion();
+                    if (pv != null && pv.getQuantity() < item.getQuantity()) {
+                        enoughStock = false;
+                        break;
+                    }
+                }
+
+                if (enoughStock) {
+                    // Trừ kho thật sự
+                    for (OrderItem item : orderItems) {
+                        ProductVersion pv = item.getProductVersion();
+                        pv.setQuantity(pv.getQuantity() - item.getQuantity());
+                        productVersionJpa.save(pv);
+                    }
+
+                    order.setDeliveryStatus(DeliveryStatus.PENDING);
+
+                    // Xóa giỏ hàng
+                    List<Cart> cart = cartJpa.findCartByUserId(order.getUserCreate().getId());
+                    if (cart != null && !cart.isEmpty()) {
+                        cartJpa.deleteAll(cart);
+                    }
+                } else {
+                    order.setDeliveryStatus(DeliveryStatus.PAYMENT_REFUND);
                 }
             } else {
-                // Thanh toán thất bại / hủy
                 order.setDeliveryStatus(DeliveryStatus.PAYMENT_CANCELED);
             }
 

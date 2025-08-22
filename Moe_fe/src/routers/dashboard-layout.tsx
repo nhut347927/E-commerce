@@ -8,6 +8,7 @@ import {
   Cloud,
   FileClock,
   Home,
+  LogOut,
   Menu,
   MessageSquare,
   Package2,
@@ -35,6 +36,9 @@ import {
 import { cn } from "@/common/lib/utils";
 import logo from "../assets/images/logo.png";
 import { Toaster } from "@/components/ui/toaster";
+import { useGetApi } from "@/common/hooks/use-get-api";
+import axiosInstance from "@/services/axios/axios-instance";
+import { useToast } from "@/common/hooks/use-toast";
 
 const AdminLayout = () => {
   const [notifications] = useState(5);
@@ -42,7 +46,7 @@ const AdminLayout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-
+  const { toast } = useToast();
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
     {}
   );
@@ -140,6 +144,38 @@ const AdminLayout = () => {
 
     return false;
   };
+
+  
+    const { data: UserName } = useGetApi<String>({
+      endpoint: "/user/me",
+      enabled: true,
+      onError: (err) => {
+        toast({
+          title: "Error",
+          description: err.message || "Failed to load order items",
+          variant: "destructive",
+        });
+      },
+    });
+  
+    const handleLogout = async () => {
+      try {
+        const res = await axiosInstance.post("auth/logout");
+        const message = res.data?.message;
+        toast({
+          title: "Success",
+          description: message || "Logged out successfully.",
+        });
+        navigate("/home");
+      } catch (error: any) {
+        toast({
+          variant: "destructive",
+          title: "Logout failed",
+          description:
+            error.response?.data?.message || "An unknown error occurred.",
+        });
+      }
+    };
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
       {/* Animated gradient background */}
@@ -300,9 +336,9 @@ const AdminLayout = () => {
                       src="/placeholder.svg?height=32&width=32"
                       alt="User"
                     />
-                    <AvatarFallback>JD</AvatarFallback>
+                    <AvatarFallback>{UserName?.charAt(0)}</AvatarFallback>
                   </Avatar>
-                  <span>John Doe</span>
+                  <span>{UserName}</span>
                 </div>
                 <Badge variant="outline" className="ml-auto">
                   Pro
@@ -438,9 +474,9 @@ const AdminLayout = () => {
                       src="/placeholder.svg?height=32&width=32"
                       alt="User"
                     />
-                    <AvatarFallback>JD</AvatarFallback>
+                    <AvatarFallback>{UserName?.charAt(0)}</AvatarFallback>
                   </Avatar>
-                  <span>John Doe</span>
+                  <span>{UserName}</span>
                 </div>
                 <Badge variant="outline" className="ml-auto">
                   Pro
@@ -478,7 +514,7 @@ const AdminLayout = () => {
           <div className="flex flex-1 items-center justify-between">
             <h1 className="text-xl font-semibold">MOE Creative</h1>
             <div className="flex items-center gap-3">
-              <TooltipProvider>
+              {/* <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button variant="ghost" size="icon" className="rounded-2xl">
@@ -518,14 +554,22 @@ const AdminLayout = () => {
                   </TooltipTrigger>
                   <TooltipContent>Notifications</TooltipContent>
                 </Tooltip>
-              </TooltipProvider>
-
+              </TooltipProvider> */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-2xl"
+                onClick={handleLogout}
+              >
+                <LogOut className="h-5 w-5" />
+              </Button>
+              <span>{UserName}</span>
               <Avatar className="h-9 w-9 border-2 border-primary">
                 <AvatarImage
                   src="/placeholder.svg?height=40&width=40"
                   alt="User"
                 />
-                <AvatarFallback>JD</AvatarFallback>
+                <AvatarFallback>{UserName?.charAt(0)}</AvatarFallback>
               </Avatar>
             </div>
           </div>

@@ -145,6 +145,7 @@ public class Order {
     public enum DeliveryStatus {
         PAYMENT_PENDING, // Đã tạo đơn nhưng chưa xác nhận thanh toán
         PAYMENT_CANCELED,
+        PAYMENT_REFUND, // Thanh toán thành công nhưng không đủ hàng → hoàn tiền
         PENDING, // Đang chờ xử lý
         PACKED, // Đã đóng gói
         SHIPPED, // Đã gửi hàng
