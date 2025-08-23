@@ -5,16 +5,20 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.moe.socialnetwork.api.dtos.ListRolePerDto;
 import com.moe.socialnetwork.api.dtos.RolePermissionDto;
 import com.moe.socialnetwork.api.dtos.common.CodeDto;
 import com.moe.socialnetwork.api.services.IRolePermissionService;
+import com.moe.socialnetwork.models.User;
 import com.moe.socialnetwork.response.ResponseAPI;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * Author: nhutnm379
@@ -26,11 +30,25 @@ public class RolePermissionController {
 
     private final IRolePermissionService rolePermissionService;
 
+    @GetMapping("/client/list-permissions")
+    public ResponseEntity<ResponseAPI<List<String>>> getAllPermissions(@AuthenticationPrincipal User user) {
+
+        List<String> permissions = rolePermissionService.getAllPermissions(user);
+
+        ResponseAPI<List<String>> response = new ResponseAPI<>();
+        response.setCode(HttpStatus.OK.value());
+        response.setMessage("Success");
+        response.setData(permissions);
+
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/user")
     public ResponseEntity<ResponseAPI<List<RolePermissionDto>>> getPermissionsByUser(
             @ModelAttribute CodeDto request) {
 
-        List<RolePermissionDto> permissions = rolePermissionService.getPermissionsByUser(UUID.fromString(request.getCode()));
+        List<RolePermissionDto> permissions = rolePermissionService
+                .getPermissionsByUser(UUID.fromString(request.getCode()));
 
         ResponseAPI<List<RolePermissionDto>> response = new ResponseAPI<>();
         response.setCode(HttpStatus.OK.value());
@@ -42,23 +60,10 @@ public class RolePermissionController {
 
     @PostMapping
     public ResponseEntity<ResponseAPI<String>> createOrUpdatePermissions(
-            @RequestBody @Valid ListRolePerDto dto) {
+            @RequestBody @Valid ListRolePerDto dto,
+            @AuthenticationPrincipal User user) {
 
-        rolePermissionService.createOrUpdatePermission(dto.getRolePermissions());
-
-        ResponseAPI<String> response = new ResponseAPI<>();
-        response.setCode(HttpStatus.OK.value());
-        response.setMessage("Success");
-        response.setData("OK");
-
-        return ResponseEntity.ok(response);
-    }
-
-    @DeleteMapping
-    public ResponseEntity<ResponseAPI<String>> deletePermission(
-            @RequestBody @Valid CodeDto code) {
-
-        rolePermissionService.deletePermission(code.getCode());
+        rolePermissionService.createOrUpdatePermission(user, dto.getRolePermissions());
 
         ResponseAPI<String> response = new ResponseAPI<>();
         response.setCode(HttpStatus.OK.value());
@@ -67,4 +72,18 @@ public class RolePermissionController {
 
         return ResponseEntity.ok(response);
     }
+
+    // @DeleteMapping
+    // public ResponseEntity<ResponseAPI<String>> deletePermission(
+    // @RequestBody @Valid CodeDto code) {
+
+    // rolePermissionService.deletePermission(code.getCode());
+
+    // ResponseAPI<String> response = new ResponseAPI<>();
+    // response.setCode(HttpStatus.OK.value());
+    // response.setMessage("Success");
+    // response.setData("OK");
+
+    // return ResponseEntity.ok(response);
+    // }
 }

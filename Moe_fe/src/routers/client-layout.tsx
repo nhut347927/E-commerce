@@ -34,13 +34,6 @@ const ClientLayout = () => {
   const { data: UserName } = useGetApi<String>({
     endpoint: "/user/me",
     enabled: true,
-    onError: (err) => {
-      toast({
-        title: "Error",
-        description: err.message || "Failed to load order items",
-        variant: "destructive",
-      });
-    },
   });
 
   const handleLogout = async () => {

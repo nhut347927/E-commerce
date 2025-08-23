@@ -17,7 +17,7 @@ root.render(
   <StrictMode>
     <Provider store={store}>
       <FilterProvider>
-        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
           <AliveScope>
             <App />
           </AliveScope>

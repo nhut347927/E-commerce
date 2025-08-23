@@ -8,7 +8,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.moe.socialnetwork.models.Role;
 import com.moe.socialnetwork.models.RolePermission;
+import com.moe.socialnetwork.models.User;
+
 /**
  * Author: nhutnm379
  */
@@ -23,7 +26,10 @@ public interface RolePermissionJpa extends JpaRepository<RolePermission, Long> {
 	@Query("DeLETE FROM RolePermission rp WHERE rp.user.code = :code")
 	void deleteByUserCode(@Param("code") UUID code);
 
-
 	@Query("SELECT rp FROM RolePermission rp  WHERE rp.code = :roleCode")
-	 Optional<RolePermission> findByCode(@Param("roleCode") UUID roleCode);
+	Optional<RolePermission> findByCode(@Param("roleCode") UUID roleCode);
+
+	@Query("SELECT rp FROM RolePermission rp WHERE rp.user = :user AND rp.role = :role")
+	Optional<RolePermission> findByUserAndRole(@Param("user") User user, @Param("role") Role role);
+
 }

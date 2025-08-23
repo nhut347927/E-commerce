@@ -1,7 +1,6 @@
 package com.moe.socialnetwork.security;
 
 import java.io.IOException;
-
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -10,7 +9,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingRequestWrapper;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moe.socialnetwork.api.services.IActivityLogService;
 import com.moe.socialnetwork.auth.active.UserActivityContextService;
@@ -18,25 +16,22 @@ import com.moe.socialnetwork.auth.services.impl.TokenServiceImpl;
 import com.moe.socialnetwork.models.User;
 import com.moe.socialnetwork.response.ResponseAPI;
 import com.moe.socialnetwork.exception.AppException;
-
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * Author: nhutnm379
- */
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
+    private static final Logger logger = LoggerFactory.getLogger(JwtRequestFilter.class);
+
     private final CustomUserDetailsService userDetailsService;
-
     private final TokenServiceImpl tokenService;
-
     private final IActivityLogService activityLogService;
-
     private final UserActivityContextService userActivityContextService;
 
     public JwtRequestFilter(CustomUserDetailsService userDetailsService, TokenServiceImpl tokenService,
@@ -52,87 +47,82 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             @NonNull FilterChain chain) throws ServletException, IOException {
 
         ContentCachingRequestWrapper wrappedRequest = new ContentCachingRequestWrapper(request);
-
         String jwt = extractToken(wrappedRequest);
         String email = null;
         User user = null;
 
-        // Bỏ qua xác thực cho các endpoint public
-        if (isPublicEndpoint(wrappedRequest)) {
-            chain.doFilter(wrappedRequest, response);
-            return;
-        }
+        // Check if endpoint requires authentication
+        boolean isPublicEndpoint = isPublicEndpoint(wrappedRequest);
 
-        // Debug log
-        //System.out.println("JWT nhận được: " + jwt);
-
-        // Token bị thiếu
-        if (jwt == null) {
+        // Try to authenticate if JWT is present
+        if (jwt != null) {
+            try {
+                if (tokenService.validateJwtToken(jwt)) {
+                    email = tokenService.getEmailFromJwtToken(jwt);
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                    if (userDetails != null) {
+                        user = (User) userDetails;
+                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(wrappedRequest));
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                        logSuccess(user, "Successful authentication for user: " + email, wrappedRequest);
+                    } else {
+                        logFailure(null, "User not found for email: " + email, null, "401", wrappedRequest);
+                        if (!isPublicEndpoint) {
+                            sendErrorResponse(response, "User not found", 401);
+                            return;
+                        }
+                    }
+                } else {
+                    logFailure(null, "Invalid JWT token", null, "401", wrappedRequest);
+                    if (!isPublicEndpoint) {
+                        sendErrorResponse(response, "Invalid JWT token", 401);
+                        return;
+                    }
+                }
+            } catch (ExpiredJwtException e) {
+                logFailure(null, "Expired JWT token", e.getMessage(), "401", wrappedRequest);
+                if (!isPublicEndpoint) {
+                    sendErrorResponse(response, "JWT token has expired. Please log in again.", 401);
+                    return;
+                }
+            } catch (AppException e) {
+                logFailure(null, "Authentication error: AppException", e.getMessage(), "500", wrappedRequest);
+                if (!isPublicEndpoint) {
+                    sendErrorResponse(response, "Application error: " + sanitizeMessage(e.getMessage()), 500);
+                    return;
+                }
+            } catch (Exception e) {
+                logFailure(null, "Invalid JWT token format", e.getMessage(), "401", wrappedRequest);
+                if (!isPublicEndpoint) {
+                    sendErrorResponse(response, "Invalid JWT token format", 401);
+                    return;
+                }
+            }
+        } else if (!isPublicEndpoint) {
             logFailure(null, "Missing JWT token", null, "401", wrappedRequest);
             sendErrorResponse(response, "JWT token is missing", 401);
-            return; // DỪNG luôn
-        }
-
-        try {
-            if (tokenService.validateJwtToken(jwt)) {
-                email = tokenService.getEmailFromJwtToken(jwt);
-            } else {
-                logFailure(null, "Invalid JWT token", null, "401", wrappedRequest);
-                sendErrorResponse(response, "Invalid JWT token", 401);
-                return;
-            }
-        } catch (ExpiredJwtException e) {
-            logFailure(null, "Expired JWT token", e.getMessage(), "401", wrappedRequest);
-            sendErrorResponse(response, "JWT token has expired. Please log in again.", 401);
-            return;
-        } catch (AppException e) {
-            logFailure(null, "Authentication error: AppException", e.getMessage(), "401", wrappedRequest);
-            sendErrorResponse(response, "Application error: " + sanitizeMessage(e.getMessage()), 500);
-            return;
-        } catch (Exception e) {
-            logFailure(null, "Invalid JWT token format", e.getMessage(), "401", wrappedRequest);
-            sendErrorResponse(response, "Invalid JWT token format", 401);
             return;
         }
 
-        // Tạo authentication cho user
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-
-            if (userDetails != null) {
-                user = (User) userDetails;
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(wrappedRequest));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            } else {
-                logFailure(null, "User not found for email", email, "401", wrappedRequest);
-                sendErrorResponse(response, "User not found", 401);
-                return;
-            }
-        }
-
-        // Nếu tới đây thì xác thực OK → Cho request đi tiếp
+        // Proceed with the request
         chain.doFilter(wrappedRequest, response);
 
-        // Chỉ log thành công nếu có user
-        if (user != null) {
-            logSuccess(user, "Successful authentication for user: " + email, wrappedRequest);
+        // Log anonymous access for public endpoints if no user was authenticated
+        if (user == null && isPublicEndpoint) {
+            logSuccess(null, "Anonymous access to public endpoint", wrappedRequest);
         }
     }
 
     private String extractToken(HttpServletRequest request) {
-        // Extract token from cookie
         String jwt = tokenService.extractAccessTokenFromCookie(request);
-
-        // If no token in cookie, try Authorization header
         if (jwt == null) {
             String authHeader = request.getHeader("Authorization");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                jwt = authHeader.substring(7); // Remove "Bearer " prefix
+                jwt = authHeader.substring(7);
             }
         }
-
         return jwt;
     }
 
@@ -149,7 +139,20 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 path.startsWith("/api/file/upload-video") ||
                 path.startsWith("/api/file/upload-audio") ||
                 path.startsWith("/api/file/upload-any") ||
-                path.startsWith("/api/payment/ipn");
+                path.startsWith("/api/payment/ipn") ||
+                path.startsWith("/api/user/me") ||
+                path.startsWith("/api/setting/get") ||
+                path.startsWith("/api/blog/client/all") ||
+                path.startsWith("/api/product/client/all") ||
+                path.startsWith("/api/product/category/all") ||
+                path.startsWith("/api/product/brand/all") ||
+                path.startsWith("/api/product/tag/all") ||
+                path.startsWith("/api/product-version/size/all") ||
+                path.startsWith("/api/product-version/color/all") ||
+                path.startsWith("/api/email/contact") ||
+                path.startsWith("/api/blog") ||
+                path.startsWith("/api/product/client")
+                || path.startsWith("/api/role-permission/client/list-permissions");
     }
 
     private void sendErrorResponse(HttpServletResponse response, String message, int statusCode) throws IOException {
@@ -172,9 +175,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         if (message == null) {
             return null;
         }
-        String sanitized = message.replaceAll("(?i)(password|token|creditCard)\\s*[:=]\\s*[^\\s,\\n]+",
-                "$1: [REDACTED]");
-        return sanitized;
+        return message.replaceAll("(?i)(password|token|creditCard)\\s*[:=]\\s*[^\\s,\\n]+", "$1: [REDACTED]");
     }
 
     private String getRequestBody(ContentCachingRequestWrapper request) {
@@ -203,11 +204,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         }
 
         String fullMessage = String.format("[%s] %s", ip, message);
+        logger.warn(fullMessage);
 
         if (user != null) {
             userActivityContextService.addUserActivity(user.getCode().toString(), user.getDisplayName(), fullMessage);
         } else {
-            // Nếu chưa xác thực được user thì có thể log ẩn danh
             userActivityContextService.addUserActivity("anonymous", "Anonymous", fullMessage);
         }
     }
@@ -225,6 +226,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         }
 
         String fullMessage = String.format("[%s] %s", ip, message);
+        logger.info(fullMessage);
 
         if (user != null) {
             userActivityContextService.addUserActivity(user.getCode().toString(), user.getDisplayName(), fullMessage);
@@ -236,9 +238,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private String getQueryOrBody(HttpServletRequest request) {
         String method = request.getMethod();
         if ("GET".equalsIgnoreCase(method)) {
-            return request.getQueryString();
+            return request.getQueryString() != null ? request.getQueryString() : "";
         }
         return getRequestBody((ContentCachingRequestWrapper) request);
     }
-
 }

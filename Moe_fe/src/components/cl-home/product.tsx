@@ -45,7 +45,7 @@ const ProductCard = (prop: ProductCardProps) => {
           >
             <Heart
               className={`w-5 h-5 mt-1 ${
-                prop.liked ? "fill-red-600 text-red-600" : ""
+                prop?.liked ? "fill-red-600 text-red-600" : ""
               } cursor-pointer hover:opacity-75`}
             />
           </li>

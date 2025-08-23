@@ -62,11 +62,11 @@ axiosInstance.interceptors.response.use(
         // Retry request với token mới
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        window.location.href = "/auth/login";
+       // window.location.href = "/auth/login";
         return Promise.reject(refreshError);
       }
     } else if (error.response.status === 403 || error.response.status === 401) {
-      window.location.href = "/auth/login";
+     // window.location.href = "/auth/login";
     }
 
     // Nếu lỗi không phải 401 hoặc đã retry → reject

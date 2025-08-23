@@ -2,7 +2,9 @@ package com.moe.socialnetwork.api.services.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,7 @@ import com.moe.socialnetwork.jpa.RolePermissionJpa;
 import com.moe.socialnetwork.jpa.UserJpa;
 import com.moe.socialnetwork.models.RolePermission;
 import com.moe.socialnetwork.models.User;
+import com.moe.socialnetwork.util.AuthorityUtil;
 
 import jakarta.transaction.Transactional;
 
@@ -34,17 +37,20 @@ public class RolePermissionServiceImpl implements IRolePermissionService {
         this.roleJpa = roleJpa;
     }
 
+    public List<String> getAllPermissions(User user) {
+        List<RolePermission> rolePermissions = rolePermissionJpa.findByUserCode(user.getCode());
+        return AuthorityUtil.convertToAuthorities(rolePermissions).stream().toList();
+       
+    }
+
     public List<RolePermissionDto> getPermissionsByUser(UUID userCode) {
         List<RolePermission> rolePermissions = rolePermissionJpa.findByUserCode(userCode);
 
-        // Nếu có dữ liệu, chuyển sang DTO và trả về
-        if (!rolePermissions.isEmpty()) {
-            return rolePermissions.stream()
-                    .map(this::toDTO)
-                    .toList();
-        }
+        // Map nhanh để check role nào đã có permission
+        Map<UUID, RolePermission> rolePermissionMap = rolePermissions.stream()
+                .collect(Collectors.toMap(rp -> rp.getRole().getCode(), rp -> rp));
 
-        // Nếu không có, tạo danh sách DTO với role và tất cả quyền là false
+        // Lấy toàn bộ role
         List<Role> allRoles = roleJpa.findAll();
 
         return allRoles.stream()
@@ -53,18 +59,35 @@ public class RolePermissionServiceImpl implements IRolePermissionService {
                     dto.setUserCode(userCode.toString());
                     dto.setRoleCode(role.getCode().toString());
                     dto.setRoleName(role.getRoleName());
-                    dto.setCanView(false);
-                    dto.setCanInsert(false);
-                    dto.setCanUpdate(false);
-                    dto.setCanDelete(false);
-                    dto.setCanRestore(false);
+
+                    RolePermission rp = rolePermissionMap.get(role.getCode());
+                    if (rp != null) {
+                        // Nếu user đã có set quyền cho role này → map từ entity
+                        dto.setCanView(rp.getCanView());
+                        dto.setCanInsert(rp.getCanInsert());
+                        dto.setCanUpdate(rp.getCanUpdate());
+                        dto.setCanDelete(rp.getCanDelete());
+                        dto.setCanRestore(rp.getCanRestore());
+                    } else {
+                        // Nếu user chưa có quyền với role này → default false
+                        dto.setCanView(false);
+                        dto.setCanInsert(false);
+                        dto.setCanUpdate(false);
+                        dto.setCanDelete(false);
+                        dto.setCanRestore(false);
+                    }
                     return dto;
                 })
                 .toList();
     }
 
- @Transactional
-    public void createOrUpdatePermission(List<RolePermissionDto> rolePermissions) {
+    @Transactional
+    public void createOrUpdatePermission(User userNow, List<RolePermissionDto> rolePermissions) {
+
+        if (userNow.getId() != 1) {
+            throw new AppException("Only super admin can grant permissions", 403);
+        }
+
         if (rolePermissions.isEmpty()) {
             throw new AppException("No permissions provided", 400);
         }
@@ -82,19 +105,9 @@ public class RolePermissionServiceImpl implements IRolePermissionService {
                     .findFirst()
                     .orElseThrow(() -> new AppException("Role not found", 404));
 
-            RolePermission entity;
-            if (perDto.getCode() != null && !perDto.getCode().isEmpty()) {
-                try {
-                    UUID code = UUID.fromString(perDto.getCode());
-                    entity = rolePermissionJpa.findByCode(code)
-                            .orElseGet(RolePermission::new);
-                    entity.setCode(code);
-                } catch (IllegalArgumentException ex) {
-                    throw new AppException("Invalid UUID format: " + perDto.getCode(), 400);
-                }
-            } else {
-                entity = new RolePermission();
-            }
+            // 🔑 Luôn tìm theo user + role thay vì chỉ code
+            RolePermission entity = rolePermissionJpa.findByUserAndRole(user, role)
+                    .orElseGet(RolePermission::new);
 
             entity.setUser(user);
             entity.setRole(role);
@@ -103,6 +116,11 @@ public class RolePermissionServiceImpl implements IRolePermissionService {
             entity.setCanUpdate(perDto.getCanUpdate());
             entity.setCanDelete(perDto.getCanDelete());
             entity.setCanRestore(perDto.getCanRestore());
+
+            if (entity.getCode() == null) { // nghĩa là bản ghi mới
+                entity.setUserCreate(userNow);
+            }
+            entity.setUserUpdate(userNow);
 
             result.add(entity);
         }
@@ -114,16 +132,16 @@ public class RolePermissionServiceImpl implements IRolePermissionService {
         rolePermissionJpa.deleteByUserCode(UUID.fromString(code));
     }
 
-    private RolePermissionDto toDTO(RolePermission entity) {
-        return new RolePermissionDto(
-                entity.getCode().toString(),
-                entity.getUser().getCode().toString(),
-                entity.getRole().getCode().toString(),
-                entity.getRole().getRoleName(),
-                entity.getCanView(),
-                entity.getCanInsert(),
-                entity.getCanUpdate(),
-                entity.getCanDelete(),
-                entity.getCanRestore());
-    }
+    // private RolePermissionDto toDTO(RolePermission entity) {
+    // return new RolePermissionDto(
+    // entity.getCode().toString(),
+    // entity.getUser().getCode().toString(),
+    // entity.getRole().getCode().toString(),
+    // entity.getRole().getRoleName(),
+    // entity.getCanView(),
+    // entity.getCanInsert(),
+    // entity.getCanUpdate(),
+    // entity.getCanDelete(),
+    // entity.getCanRestore());
+    // }
 }

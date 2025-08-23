@@ -36,7 +36,7 @@ public class UserController {
         ResponseAPI<String> response = new ResponseAPI<>();
         response.setCode(200);
         response.setMessage("Success");
-        response.setData(user.getUsername());
+        response.setData(user!=null?user.getUsername():null);
         return ResponseEntity.ok(response);
     }
 

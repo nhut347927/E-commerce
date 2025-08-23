@@ -86,15 +86,9 @@ const PermissionsPage = () => {
     }
   };
 
-  // Reset changes
-  const handleReset = () => {
-    setChangedPermissions(permissions);
-    toast({ description: "Changes reset" });
-  };
-
   return (
     <div className="w-full flex-1 flex justify-center">
-      <ScrollArea className="max-w-full overflow-auto">
+      <ScrollArea className="w-full overflow-auto">
         <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">
           Permissions Management {userCode && `for User: ${userCode}`}
         </h1>
@@ -107,7 +101,7 @@ const PermissionsPage = () => {
             className="h-10 px-3 rounded-xl"
             title="Refresh"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className={`w-4 h-4 ${loading?"animate-spin":""}`} />
           </Button>
           <Button
             variant="default"
@@ -117,15 +111,6 @@ const PermissionsPage = () => {
           >
             <Save className="w-4 h-4 mr-2" />
             Save
-          </Button>
-       
-          <Button
-            variant="outline"
-            onClick={handleReset}
-            className="h-10 px-3 rounded-xl"
-            disabled={loading || !changedPermissions.length}
-          >
-            Reset
           </Button>
         </div>
 
