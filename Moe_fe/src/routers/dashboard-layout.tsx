@@ -58,18 +58,21 @@ const AdminLayout = () => {
       icon: <Home />,
       isActive: false,
       path: "/dashboard",
+      role: "DASHBOARD_VIEW",
     },
     {
       title: "Activity Log",
       icon: <FileClock />,
       isActive: false,
       path: "/dashboard/activity-log",
+      role: "LOG_VIEW",
     },
     {
       title: "User",
       icon: <User />,
       isActive: false,
       path: "/dashboard/user",
+      role: "USER_VIEW",
     },
     // {
     //   title: 'Permissions',
@@ -85,16 +88,25 @@ const AdminLayout = () => {
       isActive: false,
       path: "/dashboard/product",
       items: [
-        { title: "All Products", url: "/dashboard/product/all" },
-       
-        { title: "Category", url: "/dashboard/product/category" },
-        { title: "Brand", url: "/dashboard/product/brand" },
-        { title: "Tag", url: "/dashboard/product/tag" },
-        { title: "Color", url: "/dashboard/product/color" },
+        {
+          title: "All Products",
+          url: "/dashboard/product/all",
+          role: "PRODUCT_VIEW",
+        },
+
+        {
+          title: "Category",
+          url: "/dashboard/product/category",
+          role: "CATEGORY_VIEW",
+        },
+        { title: "Brand", url: "/dashboard/product/brand", role: "BRAND_VIEW" },
+        { title: "Tag", url: "/dashboard/product/tag", role: "TAG_VIEW" },
+        { title: "Color", url: "/dashboard/product/color", role: "COLOR_VIEW" },
         {
           title: "Size",
           url: "/dashboard/product/size",
           //badge: "2"
+          role: "SIZE_VIEW",
         },
       ],
     },
@@ -103,24 +115,28 @@ const AdminLayout = () => {
       icon: <ShoppingCart />,
       isActive: false,
       path: "/dashboard/order",
+      role: "ORDER_VIEW",
     },
     {
       title: "Discount",
       icon: <Percent />,
       isActive: false,
       path: "/dashboard/discount",
+      role: "DISCOUNT_VIEW",
     },
     {
       title: "Blog",
       icon: <BookOpen />,
       isActive: false,
       path: "/dashboard/blog",
+      role: "BLOG_VIEW",
     },
     {
       title: "Setting",
       icon: <Settings />,
       isActive: false,
       path: "/dashboard/setting",
+      role: "SETTING_VIEW",
     },
   ];
 
@@ -145,30 +161,67 @@ const AdminLayout = () => {
     return false;
   };
 
-  
-    const { data: UserName } = useGetApi<String>({
-      endpoint: "/user/me",
-      enabled: true,
-    });
-  
-    const handleLogout = async () => {
-      try {
-        const res = await axiosInstance.post("auth/logout");
-        const message = res.data?.message;
-        toast({
-          title: "Success",
-          description: message || "Logged out successfully.",
-        });
-        navigate("/home");
-      } catch (error: any) {
-        toast({
-          variant: "destructive",
-          title: "Logout failed",
-          description:
-            error.response?.data?.message || "An unknown error occurred.",
-        });
-      }
-    };
+  const { data: UserName } = useGetApi<String>({
+    endpoint: "/user/me",
+    enabled: true,
+  });
+
+  const handleLogout = async () => {
+    try {
+      const res = await axiosInstance.post("auth/logout");
+      const message = res.data?.message;
+      toast({
+        title: "Success",
+        description: message || "Logged out successfully.",
+      });
+      navigate("/home");
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Logout failed",
+        description:
+          error.response?.data?.message || "An unknown error occurred.",
+      });
+    }
+  };
+
+  const { data: listPermission } = useGetApi<string[]>({
+    endpoint: "/role-permission/client/list-permissions",
+    enabled: true,
+  });
+
+  type MenuItem = {
+  title: string;
+  icon?: React.ReactNode;
+  path?: string;
+  url?: string;
+  role?: string;
+  items?: MenuItem[];
+};
+
+const hasPermission = (
+  listPermission: string[] | null,
+  item: MenuItem
+): boolean => {
+  if (!listPermission || listPermission.length === 0) {
+    return false;
+  }
+
+  // Nếu có role thì check trực tiếp
+  if (item.role) {
+    return listPermission.includes(item.role);
+  }
+
+  // Nếu có items con thì kiểm tra ít nhất một item con có quyền
+  if (item.items && item.items.length > 0) {
+    return item.items.some((child) => hasPermission(listPermission, child));
+  }
+
+  // Không có role và items -> không có quyền
+  return false;
+};
+const hasPerItem = ( listPermission: string[] | null, permission: string ): boolean => { if (!listPermission || listPermission.length === 0) { return false; } return listPermission.includes(permission); };
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
       {/* Animated gradient background */}
@@ -244,6 +297,9 @@ const AdminLayout = () => {
                       className={cn(
                         "flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm font-medium",
                         active ? "bg-primary/10 text-primary" : "hover:bg-muted"
+                        ,
+                        !hasPermission(listPermission, item) &&
+                          "hidden"
                       )}
                       onClick={() => {
                         if (item.items) {
@@ -294,6 +350,9 @@ const AdminLayout = () => {
                                 subActive
                                   ? "bg-primary/10 text-primary"
                                   : "hover:bg-muted"
+                                  ,
+                                !hasPerItem(listPermission, subItem.role) &&
+                                  "hidden"
                               )}
                             >
                               {subItem.title}
@@ -381,7 +440,11 @@ const AdminLayout = () => {
                     <button
                       className={cn(
                         "flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm font-medium",
-                        active ? "bg-primary/10 text-primary" : "hover:bg-muted"
+                        active
+                          ? "bg-primary/10 text-primary"
+                          : "hover:bg-muted",
+                        !hasPermission(listPermission, item) &&
+                          "hidden"
                       )}
                       onClick={() => {
                         if (item.items) {
@@ -431,7 +494,9 @@ const AdminLayout = () => {
                                 "w-full flex items-center justify-between rounded-2xl px-3 py-2 text-sm",
                                 subActive
                                   ? "bg-primary/10 text-primary"
-                                  : "hover:bg-muted"
+                                  : "hover:bg-muted",
+                                !hasPerItem(listPermission, subItem.role) &&
+                                  "hidden"
                               )}
                             >
                               {subItem.title}

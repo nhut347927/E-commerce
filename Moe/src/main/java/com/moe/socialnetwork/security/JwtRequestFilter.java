@@ -151,8 +151,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 path.startsWith("/api/product-version/color/all") ||
                 path.startsWith("/api/email/contact") ||
                 path.startsWith("/api/blog") ||
-                path.startsWith("/api/product/client")
-                || path.startsWith("/api/role-permission/client/list-permissions");
+                path.startsWith("/api/product/client");
     }
 
     private void sendErrorResponse(HttpServletResponse response, String message, int statusCode) throws IOException {

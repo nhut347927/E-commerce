@@ -48,7 +48,6 @@ public class SecurityConfig {
                                 "/api/product-version/size/all", "/api/product-version/color/all" // product page
                                 , "/api/blog" // blog detail page
                                 , "api/product/client" // product detail page
-                                ,"/api/role-permission/client/list-permissions"
                         ).permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/api/analytic/**", "/api/logs/active-users")
@@ -65,27 +64,27 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/product").hasAuthority("PRODUCT_UPDATE")
                         .requestMatchers(HttpMethod.DELETE, "/api/product").hasAuthority("PRODUCT_DELETE")
 
-                        .requestMatchers(HttpMethod.GET, "/api/category/all").hasAuthority("CATEGORY_VIEW")
+                        .requestMatchers(HttpMethod.GET, "/api/category").hasAuthority("CATEGORY_VIEW")
                         .requestMatchers(HttpMethod.POST, "/api/category").hasAuthority("CATEGORY_INSERT")
                         .requestMatchers(HttpMethod.PUT, "/api/category").hasAuthority("CATEGORY_UPDATE")
                         .requestMatchers(HttpMethod.DELETE, "/api/category").hasAuthority("CATEGORY_DELETE")
 
-                        .requestMatchers(HttpMethod.GET, "/api/brand/all").hasAuthority("BRAND_VIEW")
+                        .requestMatchers(HttpMethod.GET, "/api/brand").hasAuthority("BRAND_VIEW")
                         .requestMatchers(HttpMethod.POST, "/api/brand").hasAuthority("BRAND_INSERT")
                         .requestMatchers(HttpMethod.PUT, "/api/brand").hasAuthority("BRAND_UPDATE")
                         .requestMatchers(HttpMethod.DELETE, "/api/brand").hasAuthority("BRAND_DELETE")
 
-                        .requestMatchers(HttpMethod.GET, "/api/tag/all").hasAuthority("TAG_VIEW")
+                        .requestMatchers(HttpMethod.GET, "/api/tag").hasAuthority("TAG_VIEW")
                         .requestMatchers(HttpMethod.POST, "/api/tag").hasAuthority("TAG_INSERT")
                         .requestMatchers(HttpMethod.PUT, "/api/tag").hasAuthority("TAG_UPDATE")
                         .requestMatchers(HttpMethod.DELETE, "/api/tag").hasAuthority("TAG_DELETE")
 
-                        .requestMatchers(HttpMethod.GET, "/api/color/all").hasAuthority("COLOR_VIEW")
+                        .requestMatchers(HttpMethod.GET, "/api/color").hasAuthority("COLOR_VIEW")
                         .requestMatchers(HttpMethod.POST, "/api/color").hasAuthority("COLOR_INSERT")
                         .requestMatchers(HttpMethod.PUT, "/api/color").hasAuthority("COLOR_UPDATE")
                         .requestMatchers(HttpMethod.DELETE, "/api/color").hasAuthority("COLOR_DELETE")
 
-                        .requestMatchers(HttpMethod.GET, "/api/size/all").hasAuthority("SIZE_VIEW")
+                        .requestMatchers(HttpMethod.GET, "/api/size").hasAuthority("SIZE_VIEW")
                         .requestMatchers(HttpMethod.POST, "/api/size").hasAuthority("SIZE_INSERT")
                         .requestMatchers(HttpMethod.PUT, "/api/size").hasAuthority("SIZE_UPDATE")
                         .requestMatchers(HttpMethod.DELETE, "/api/size").hasAuthority("SIZE_DELETE")

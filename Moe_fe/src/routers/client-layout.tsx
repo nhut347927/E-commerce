@@ -31,7 +31,7 @@ const ClientLayout = () => {
     setIsOpen(!isOpen);
   };
 
-  const { data: UserName } = useGetApi<String>({
+  const { data: UserName,refetch:reMe } = useGetApi<String>({
     endpoint: "/user/me",
     enabled: true,
   });
@@ -39,6 +39,7 @@ const ClientLayout = () => {
   const handleLogout = async () => {
     try {
       const res = await axiosInstance.post("auth/logout");
+      reMe();
       const message = res.data?.message;
       toast({
         title: "Success",
