@@ -2,21 +2,17 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Bell,
   BookOpen,
   ChevronDown,
-  Cloud,
   FileClock,
   Home,
   LogOut,
   Menu,
-  MessageSquare,
   Package2,
   PanelLeft,
   Percent,
   Search,
   Settings,
-  Shield,
   ShoppingCart,
   User,
   X,
@@ -27,12 +23,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { cn } from "@/common/lib/utils";
 import logo from "../assets/images/logo.png";
 import { Toaster } from "@/components/ui/toaster";
@@ -41,7 +31,6 @@ import axiosInstance from "@/services/axios/axios-instance";
 import { useToast } from "@/common/hooks/use-toast";
 
 const AdminLayout = () => {
-  const [notifications] = useState(5);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();

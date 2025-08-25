@@ -1,5 +1,5 @@
+import { cn } from "@/common/lib/utils"
 import type { ReactNode, ButtonHTMLAttributes } from "react"
-import { cn } from "@/common/utils/utils"
 
 interface ActionMenuItemProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   /**

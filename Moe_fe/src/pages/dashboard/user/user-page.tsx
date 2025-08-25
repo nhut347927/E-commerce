@@ -23,7 +23,6 @@ import {
 import {
   RefreshCw,
   Search,
-  ArrowUpDown,
   ArrowRight,
   Eraser,
   Trash2,
