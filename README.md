@@ -1,4 +1,4 @@
-# Moe E-commerce Platform
+# Moe E-commerce
 
 ![Moe Logo](https://via.placeholder.com/150?text=Moe) <!-- Thay bằng logo thực nếu có -->
 
