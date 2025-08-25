@@ -1,6 +1,6 @@
 # Moe E-commerce
 
-![Moe Logo](https://via.placeholder.com/150?text=Moe) <!-- Thay bằng logo thực nếu có -->
+![Moe Logo](./Moe_fe/src/assets/images/logo.png) <!-- Thay bằng logo thực nếu có -->
 
 Moe là một nền tảng thương mại điện tử hiện đại, hỗ trợ bán hàng trực tuyến với giao diện thân thiện cho người dùng và bảng điều khiển quản trị mạnh mẽ. Dự án được phát triển để cung cấp trải nghiệm mua sắm mượt mà, tích hợp thanh toán, quản lý sản phẩm, đơn hàng và phân tích dữ liệu.
 
