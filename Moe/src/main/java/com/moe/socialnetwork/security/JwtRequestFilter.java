@@ -21,13 +21,9 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
-
-    private static final Logger logger = LoggerFactory.getLogger(JwtRequestFilter.class);
 
     private final CustomUserDetailsService userDetailsService;
     private final TokenServiceImpl tokenService;
@@ -203,7 +199,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         }
 
         String fullMessage = String.format("[%s] %s", ip, message);
-        logger.warn(fullMessage);
 
         if (user != null) {
             userActivityContextService.addUserActivity(user.getCode().toString(), user.getDisplayName(), fullMessage);
@@ -225,7 +220,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         }
 
         String fullMessage = String.format("[%s] %s", ip, message);
-        logger.info(fullMessage);
 
         if (user != null) {
             userActivityContextService.addUserActivity(user.getCode().toString(), user.getDisplayName(), fullMessage);

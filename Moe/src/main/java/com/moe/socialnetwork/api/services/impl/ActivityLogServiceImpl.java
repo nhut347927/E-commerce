@@ -4,8 +4,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,7 +26,6 @@ import jakarta.servlet.http.HttpServletRequest;
  */
 @Service
 public class ActivityLogServiceImpl implements IActivityLogService {
-    private static final Logger logger = LoggerFactory.getLogger(ActivityLogServiceImpl.class);
     private static final int MAX_BODY_LENGTH = 3000; // Limit request body size
     private static final String DEFAULT_RESPONSE_CODE = "200"; // Default for successful requests
 
@@ -85,7 +82,7 @@ public class ActivityLogServiceImpl implements IActivityLogService {
             }
 
         } catch (Exception e) {
-            logger.error("Failed to prepare log for Kafka: {}", e.getMessage(), e);
+            System.err.println("Failed to log activity: " + e.getMessage());
         }
     }
 
@@ -111,7 +108,7 @@ public class ActivityLogServiceImpl implements IActivityLogService {
                 }
             }
         } else {
-            logger.debug("Request is not ContentCachingRequestWrapper; cannot capture body");
+            System.err.println("Request is not wrapped with ContentCachingRequestWrapper. Cannot read body.");
         }
 
         // Build full message

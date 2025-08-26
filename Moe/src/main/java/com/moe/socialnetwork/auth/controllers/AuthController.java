@@ -127,7 +127,7 @@ public class AuthController {
                                 .secure(true)
                                 .path("/")
                                 .maxAge(maxAgeAccessToken)
-                                .sameSite("Strict")
+                                .sameSite("None")
                                 .build();
 
                 return ResponseEntity
@@ -150,7 +150,7 @@ public class AuthController {
                                 .httpOnly(true)
                                 .secure(true)
                                 .path("/")
-                                .sameSite("Strict")
+                                .sameSite("None")
                                 .maxAge(0)
                                 .build();
 
@@ -158,7 +158,7 @@ public class AuthController {
                                 .httpOnly(true)
                                 .secure(true)
                                 .path("/")
-                                .sameSite("Strict")
+                                .sameSite("None")
                                 .maxAge(0)
                                 .build();
 
@@ -177,7 +177,7 @@ public class AuthController {
                                 .secure(true)
                                 .path("/")
                                 .maxAge(maxAgeRefreshToken)
-                                .sameSite("Strict")
+                                .sameSite("None")
                                 .build();
 
                 ResponseCookie accessCookie = ResponseCookie.from("access_token", login.getAccessToken())
@@ -185,7 +185,7 @@ public class AuthController {
                                 .secure(true)
                                 .path("/")
                                 .maxAge(maxAgeAccessToken)
-                                .sameSite("Strict")
+                                .sameSite("None")
                                 .build();
 
                 return ResponseEntity.ok()
