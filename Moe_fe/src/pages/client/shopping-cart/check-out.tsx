@@ -209,7 +209,7 @@ const CheckOut: React.FC = () => {
 
       const response = await axiosInstance.post("/payment/create", orderData);
       if (response.data.code === 200) {
-        console.log("Order placed successfully:", response.data);
+        console.log("Order placed successfully:", response.data.data);
         window.location.href = response.data.data.paymentUrl; // chuyển hẳn sang VNPAY
       } else {
         throw new Error(response.data.message || "Failed to place order");

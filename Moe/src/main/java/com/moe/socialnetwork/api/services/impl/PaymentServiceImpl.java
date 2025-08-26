@@ -283,7 +283,7 @@ public class PaymentServiceImpl implements IPaymentService {
             vnp_Params.put("vnp_IpAddr", vnp_IpAddr != null ? vnp_IpAddr : "127.0.0.1");
 
             // Ngày tạo
-            Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
+            Calendar cld = Calendar.getInstance();
             SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
             String vnp_CreateDate = formatter.format(cld.getTime());
             vnp_Params.put("vnp_CreateDate", vnp_CreateDate);

@@ -3,8 +3,6 @@ package com.moe.socialnetwork;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
-
-import io.github.cdimascio.dotenv.Dotenv;
 /**
  * Author: nhutnm379
  */
