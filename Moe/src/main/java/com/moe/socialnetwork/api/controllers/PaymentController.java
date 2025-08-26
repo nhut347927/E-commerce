@@ -37,9 +37,9 @@ public class PaymentController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/ipn")
+    @GetMapping("/ipn")
     public Map<String, String> vnpayIpn(HttpServletRequest request) {
         return paymentService.vnpayIpn(request);
     }
-    
+
 }

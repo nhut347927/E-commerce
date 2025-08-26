@@ -54,9 +54,6 @@ public class PaymentServiceImpl implements IPaymentService {
     @Value("${cors.allowed.origin}")
     private String urlDomainFe;
 
-    @Value("${app.urlDomain}")
-    private String urlDomainBe;
-
     public PaymentServiceImpl(VnpayConfig vnpayConfig, CartJpa cartJpa, OrderJpa orderJpa,
             OrderItemJpa orderItemJpa, DiscountJpa discountJpa, ProductVersionJpa productVersionJpa) {
         this.vnpayConfig = vnpayConfig;
@@ -283,8 +280,17 @@ public class PaymentServiceImpl implements IPaymentService {
             vnp_Params.put("vnp_IpAddr", vnp_IpAddr != null ? vnp_IpAddr : "127.0.0.1");
 
             // Ngày tạo
-            Calendar cld = Calendar.getInstance();
+            // Đặt timezone VN
+            TimeZone tz = TimeZone.getTimeZone("Asia/Ho_Chi_Minh");
+
+            // Calendar với timezone VN
+            Calendar cld = Calendar.getInstance(tz);
+
+            // Formatter với timezone VN
             SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+            formatter.setTimeZone(tz);
+
+            // Ngày tạo
             String vnp_CreateDate = formatter.format(cld.getTime());
             vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
 
