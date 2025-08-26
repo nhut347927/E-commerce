@@ -37,8 +37,7 @@ Moe là một nền tảng thương mại điện tử hiện đại, hỗ trợ
   - Xác thực JWT, bảo mật Spring Security.
   - Lưu trữ hình ảnh với Cloudinary.
   - Gửi email (quên mật khẩu, xác nhận).
-  - Export Excel cho báo cáo.
-  - PWA hỗ trợ offline.
+  - PWA (Progressive Web App).
 
 ## Công Nghệ Sử Dụng
 Dự án Moe bao gồm 2 phần chính: Frontend (FE) và Backend (BE). Mỗi phần sử dụng các công nghệ, thư viện và framework hiện đại để đảm bảo hiệu suất, khả năng mở rộng và trải nghiệm người dùng tốt.
