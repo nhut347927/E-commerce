@@ -8,6 +8,7 @@ COPY target/Moe-0.0.1-SNAPSHOT.war app.war
 # Thiết lập biến môi trường (có thể override khi chạy container hoặc docker-compose)
 ENV SPRING_PROFILES_ACTIVE=prod
 ENV JAVA_OPTS=""
+ENV TZ=Asia/Ho_Chi_Minh
 
 EXPOSE 8080
 
