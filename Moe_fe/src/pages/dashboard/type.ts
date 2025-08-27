@@ -44,7 +44,7 @@ export interface Users {
   dateOfBirth: string; // or Date if you prefer
   gender: string; // or an enum if defined elsewhere
   isVerified?: boolean;
-  isDeleted?: boolean;
+  deleted?: boolean;
   createdAt: string;
   updatedAt: string;
   deletedAt?: string;
