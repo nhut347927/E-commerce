@@ -20,13 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  RefreshCw,
-  Search,
-  ArrowRight,
-  Eraser,
-  Trash2,
-} from "lucide-react";
+import { RefreshCw, Search, ArrowRight, Eraser, Trash2 } from "lucide-react";
 import { Page } from "@/common/hooks/type";
 import { Users } from "../type";
 import { formatDateTime } from "@/common/lib/utils";
@@ -186,7 +180,10 @@ const UserPage: React.FC = () => {
               <TableHead className="w-[100px]">Provider</TableHead>
               <TableHead className="w-[60px]">Verified</TableHead>
               <TableHead className="w-[100px]">Bio</TableHead>
+              <TableHead className="w-[60px]">Deleted</TableHead>
               <TableHead className="w-[160px]">Created At</TableHead>
+              <TableHead className="w-[160px]">Delete At</TableHead>
+              <TableHead className="w-[160px]">User delete</TableHead>
               <TableHead className="w-[100px]">Action</TableHead>
             </TableRow>
           </TableHeader>
@@ -225,7 +222,25 @@ const UserPage: React.FC = () => {
                   <TableCell>{user.provider || "N/A"}</TableCell>
                   <TableCell>{user.isVerified ? "Yes" : "No"}</TableCell>
                   <TableCell className="truncate">{user.bio}</TableCell>
+                  <TableCell>
+                    {user.isDeleted ? (
+                      <span className="px-2 py-1 text-xs font-semibold text-red-700 bg-red-100 rounded-full">
+                        Deleted
+                      </span>
+                    ) : (
+                      <span className="px-2 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">
+                        Active
+                      </span>
+                    )}
+                  </TableCell>
+
                   <TableCell>{formatDateTime(user.createdAt)}</TableCell>
+                  <TableCell>
+                    {user.deletedAt ? formatDateTime(user.deletedAt) : "N/A"}
+                  </TableCell>
+                  <TableCell className="truncate">
+                    {user.userDelete || "N/A"}  
+                  </TableCell>
                   <TableCell className="space-x-3">
                     <Button
                       variant="outline"
