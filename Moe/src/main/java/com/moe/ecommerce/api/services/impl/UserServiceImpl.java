@@ -1,0 +1,91 @@
+package com.moe.ecommerce.api.services.impl;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
+import com.moe.ecommerce.api.dtos.UsersDto;
+import com.moe.ecommerce.api.dtos.common.CodeDto;
+import com.moe.ecommerce.api.dtos.common.PageDto;
+import com.moe.ecommerce.api.services.IUserService;
+import com.moe.ecommerce.exception.AppException;
+import com.moe.ecommerce.jpa.UserJpa;
+import com.moe.ecommerce.models.User;
+import com.moe.ecommerce.util.PaginationUtils;
+
+/**
+ * Author: nhutnm379
+ */
+@Service
+public class UserServiceImpl implements IUserService {
+    private final UserJpa userJPA;
+
+    public UserServiceImpl(UserJpa userJPA) {
+        this.userJPA = userJPA;
+    }
+
+    @Override
+    public PageDto<UsersDto> searchUsers(String query, int page, int size, String sort) {
+        if (query == null || query.trim().isEmpty()) {
+            query = "";
+        }
+        Pageable pageable = PaginationUtils.buildPageable(page, size, sort);
+        Page<User> users = userJPA.searchUsers(query, pageable);
+
+        List<UsersDto> contents = users.stream()
+                .map(this::mapUserToRPUsersDTO)
+                .collect(Collectors.toList());
+
+        return PaginationUtils.buildPageDTO(users, contents);
+    }
+
+    public void deleteUser(User user, CodeDto codeDto) {
+        try {
+            UUID userCodeToDelete = UUID.fromString(codeDto.getCode());
+            User u = userJPA.findByCode(userCodeToDelete)
+                    .orElseThrow(() -> new AppException("User not found", HttpStatus.NOT_FOUND.value()));
+
+            if (user.getCode().equals(u.getCode())) {
+                throw new AppException("You cannot delete yourself", HttpStatus.BAD_REQUEST.value());
+            }
+
+            u.softDelete();
+            u.setUserDelete(user);
+            userJPA.save(u);
+
+        } catch (IllegalArgumentException e) {
+            throw new AppException("Invalid User code format", HttpStatus.BAD_REQUEST.value());
+        } catch (Exception e) {
+            throw new AppException("An error occurred while deleting user: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+    }
+
+    private UsersDto mapUserToRPUsersDTO(User user) {
+        return new UsersDto(
+                user.getCode().toString(),
+                user.getEmail(),
+                user.getUsername(),
+                user.getDisplayName(),
+                user.getBio(),
+                user.getProvider(),
+                user.getAvatar(),
+                user.getDateOfBirth() == null ? null : user.getDateOfBirth().toString(),
+                user.getGender().toString(),
+                user.getIsVerified(),
+                user.getIsDeleted(),
+                user.getCreatedAt() == null ? null : user.getCreatedAt().toString(),
+                user.getUpdatedAt() == null ? null : user.getUpdatedAt().toString(),
+                user.getDeletedAt() == null ? null : user.getDeletedAt().toString(),
+                user.getUserCreate() == null ? null : user.getUserCreate().getCode().toString(),
+                user.getUserUpdate() == null ? null : user.getUserUpdate().getCode().toString(),
+                user.getUserDelete() == null ? null : user.getUserDelete().getCode().toString(),
+                user.getLastLogin() == null ? null : user.getLastLogin().toString());
+    }
+
+}

@@ -1,0 +1,144 @@
+package com.moe.ecommerce.api.controllers;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.moe.ecommerce.api.dtos.DiscountAllDto;
+import com.moe.ecommerce.api.dtos.DiscountCreateCoDto;
+import com.moe.ecommerce.api.dtos.DiscountCreateProDto;
+import com.moe.ecommerce.api.dtos.DiscountUpdateCoDto;
+import com.moe.ecommerce.api.dtos.DiscountUpdateProDto;
+import com.moe.ecommerce.api.dtos.common.CodeDto;
+import com.moe.ecommerce.api.dtos.common.FilterPageDto;
+import com.moe.ecommerce.api.dtos.common.PageDto;
+import com.moe.ecommerce.api.services.IDiscountService;
+import com.moe.ecommerce.models.User;
+import com.moe.ecommerce.response.ResponseAPI;
+
+import jakarta.validation.Valid;
+
+@RestController
+@RequestMapping("/api/discount")
+public class DiscountController {
+
+    private final IDiscountService discountService;
+
+    public DiscountController(IDiscountService discountService) {
+        this.discountService = discountService;
+    }
+
+    @GetMapping("/client/valid-discount")
+    public ResponseEntity<ResponseAPI<DiscountAllDto>> validDiscount(@Valid @ModelAttribute CodeDto request) {
+
+        DiscountAllDto data = discountService.validDiscount(
+                request);
+
+        ResponseAPI<DiscountAllDto> response = new ResponseAPI<>();
+        response.setCode(200);
+        response.setMessage("Success");
+        response.setData(data);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<ResponseAPI<PageDto<DiscountAllDto>>> getAllDiscount(
+            @Valid @ModelAttribute FilterPageDto request,
+            @AuthenticationPrincipal User user) {
+
+        PageDto<DiscountAllDto> data = discountService.getDiscountAll(
+                request.getQ(),
+                request.getPage(),
+                request.getSize(),
+                request.getSort());
+
+        ResponseAPI<PageDto<DiscountAllDto>> response = new ResponseAPI<>();
+        response.setCode(200);
+        response.setMessage("Success");
+        response.setData(data);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/code")
+    public ResponseEntity<ResponseAPI<DiscountAllDto>> createDiscountCo(
+            @Valid @RequestBody DiscountCreateCoDto request,
+            @AuthenticationPrincipal User user) {
+
+        DiscountAllDto data = discountService.createDiscountCo(user, request);
+
+        ResponseAPI<DiscountAllDto> response = new ResponseAPI<>();
+        response.setCode(200);
+        response.setMessage("Success");
+        response.setData(data);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/code")
+    public ResponseEntity<ResponseAPI<DiscountAllDto>> updateDiscountCo(
+            @Valid @RequestBody DiscountUpdateCoDto request,
+            @AuthenticationPrincipal User user) {
+        DiscountAllDto data = discountService.updateDiscountCo(user, request);
+
+        ResponseAPI<DiscountAllDto> response = new ResponseAPI<>();
+        response.setCode(200);
+        response.setMessage("Success");
+        response.setData(data);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/product")
+    public ResponseEntity<ResponseAPI<DiscountAllDto>> createDiscountPro(
+            @Valid @RequestBody DiscountCreateProDto request,
+            @AuthenticationPrincipal User user) {
+
+        DiscountAllDto data = discountService.createDiscountPro(user, request);
+
+        ResponseAPI<DiscountAllDto> response = new ResponseAPI<>();
+        response.setCode(200);
+        response.setMessage("Success");
+        response.setData(data);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/product")
+    public ResponseEntity<ResponseAPI<DiscountAllDto>> updateDiscountPro(
+            @Valid @RequestBody DiscountUpdateProDto request,
+            @AuthenticationPrincipal User user) {
+
+        DiscountAllDto data = discountService.updateDiscountPro(user, request);
+
+        ResponseAPI<DiscountAllDto> response = new ResponseAPI<>();
+        response.setCode(200);
+        response.setMessage("Success");
+        response.setData(data);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping
+    public ResponseEntity<ResponseAPI<String>> deleteDiscount(
+            @Valid @RequestBody CodeDto request,
+            @AuthenticationPrincipal User user) {
+
+        discountService.deleteDiscount(user, request);
+
+        ResponseAPI<String> response = new ResponseAPI<>();
+        response.setCode(200);
+        response.setMessage("Success");
+        response.setData(null);
+
+        return ResponseEntity.ok(response);
+    }
+}
