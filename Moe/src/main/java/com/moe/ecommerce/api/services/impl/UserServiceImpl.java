@@ -54,6 +54,14 @@ public class UserServiceImpl implements IUserService {
                 throw new AppException("You cannot delete yourself", HttpStatus.BAD_REQUEST.value());
             }
 
+            if (u.getIsDeleted()) {
+                throw new AppException("User is already deleted", HttpStatus.BAD_REQUEST.value());
+            }
+
+            if(u.getId() == 1){
+                throw new AppException("You cannot delete the main super admin account", HttpStatus.BAD_REQUEST.value());
+            }
+
             u.softDelete();
             u.setUserDelete(user);
             userJPA.save(u);

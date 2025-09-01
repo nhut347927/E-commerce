@@ -61,12 +61,23 @@ public class ProductVersionServiceImpl implements IProductVersionService {
 
     public List<ColorAllDto> getColorAll() {
         List<Color> color = colorJpa.findAll();
+        for(Color c : color){
+           if(c.getIsDeleted()){
+            color.remove(c);
+           }
+        }
+
         return color.stream().map(this::mapToDTO).collect(Collectors.toList());
 
     }
 
     public List<SizeAllDto> getSizeAll() {
         List<Size> size = sizeJpa.findAll();
+        for(Size s : size){
+            if(s.getIsDeleted()){
+                size.remove(s);
+               }
+        }
         return size.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 

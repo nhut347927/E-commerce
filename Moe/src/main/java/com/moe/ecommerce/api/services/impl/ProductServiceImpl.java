@@ -351,17 +351,32 @@ public class ProductServiceImpl implements IProductService {
 
     public List<CategoryAllDto> getCategoryAll() {
         List<Category> categories = categoryJpa.findAll();
+        for(Category c : categories){
+            if(c.getIsDeleted()){
+             categories.remove(c);
+            }
+         }
         return categories.stream().map(this::mapToDTO).collect(Collectors.toList());
 
     }
 
     public List<BrandAllDto> getBrandAll() {
         List<Brand> brand = brandJpa.findAll();
+        for(Brand b : brand){
+            if(b.getIsDeleted()){
+             brand.remove(b);
+            }
+         }
         return brand.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
     public List<TagAllDto> getTagAll() {
         List<Tag> tags = tagJpa.findAll();
+        for(Tag t : tags){
+            if(t.getIsDeleted()){
+             tags.remove(t);
+            }
+         }
         return tags.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
