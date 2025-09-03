@@ -43,6 +43,9 @@ public interface OrderJpa extends JpaRepository<Order, Long> {
 
   // ######################################################################
   @Query("SELECT o FROM Order o WHERE o.createdAt >= :startDate AND o.deliveryStatus = 'DELIVERED' AND o.isDeleted = false")
+  List<Order> findOrdersFromStartDateWithDeliveryStatusIsDelivered(@Param("startDate") LocalDateTime startDate);
+
+   @Query("SELECT o FROM Order o WHERE o.createdAt >= :startDate AND o.isDeleted = false")
   List<Order> findOrdersFromStartDate(@Param("startDate") LocalDateTime startDate);
 
   @Query("SELECT new com.moe.ecommerce.api.dtos.AnalyticOrdersByStatusDto(o.deliveryStatus, COUNT(o)) " +

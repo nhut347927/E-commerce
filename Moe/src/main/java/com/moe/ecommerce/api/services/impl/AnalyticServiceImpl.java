@@ -67,7 +67,7 @@ public class AnalyticServiceImpl implements IAnalyticService {
     }
 
     public AnalyticGrossProfitDto getAnalyticGrossProfit(DateTimeDto dateTimeDto) {
-        List<Order> orders = orderJpa.findOrdersFromStartDate(dateTimeDto.getStartDate());
+        List<Order> orders = orderJpa.findOrdersFromStartDateWithDeliveryStatusIsDelivered(dateTimeDto.getStartDate());
 
         BigDecimal totalGrossProfit = orders.stream()
                 .map(order -> order.getTotal() != null ? order.getTotal() : BigDecimal.ZERO)
