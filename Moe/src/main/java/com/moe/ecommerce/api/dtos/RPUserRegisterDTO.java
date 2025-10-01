@@ -1,4 +1,4 @@
-package com.moe.ecommerce.auth.dtos;
+package com.moe.ecommerce.api.dtos;
 
 import java.util.Set;
 

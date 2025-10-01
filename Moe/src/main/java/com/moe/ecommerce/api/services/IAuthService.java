@@ -1,9 +1,9 @@
-package com.moe.ecommerce.auth.services;
+package com.moe.ecommerce.api.services;
 
-import com.moe.ecommerce.auth.dtos.RPLoginDTO;
-import com.moe.ecommerce.auth.dtos.RPUserRegisterDTO;
-import com.moe.ecommerce.auth.dtos.RQLoginDTO;
-import com.moe.ecommerce.auth.dtos.RQRegisterDTO;
+import com.moe.ecommerce.api.dtos.RPLoginDTO;
+import com.moe.ecommerce.api.dtos.RPUserRegisterDTO;
+import com.moe.ecommerce.api.dtos.RQLoginDTO;
+import com.moe.ecommerce.api.dtos.RQRegisterDTO;
 import com.moe.ecommerce.models.User;
 /**
  * Author: nhutnm379

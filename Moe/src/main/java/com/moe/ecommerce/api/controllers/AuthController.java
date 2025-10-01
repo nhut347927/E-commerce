@@ -1,4 +1,4 @@
-package com.moe.ecommerce.auth.controllers;
+package com.moe.ecommerce.api.controllers;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -12,17 +12,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.moe.ecommerce.api.dtos.RPLoginDTO;
+import com.moe.ecommerce.api.dtos.RPUserRegisterDTO;
+import com.moe.ecommerce.api.dtos.RQChangePasswordDTO;
+import com.moe.ecommerce.api.dtos.RQLoginDTO;
+import com.moe.ecommerce.api.dtos.RQLoginWithGoogleDTO;
+import com.moe.ecommerce.api.dtos.RQPasswordResetDTO;
+import com.moe.ecommerce.api.dtos.RQPasswordResetRequestDTO;
+import com.moe.ecommerce.api.dtos.RQRegisterDTO;
+import com.moe.ecommerce.api.services.IAuthService;
 import com.moe.ecommerce.api.services.IEmailService;
-import com.moe.ecommerce.auth.dtos.RPLoginDTO;
-import com.moe.ecommerce.auth.dtos.RPUserRegisterDTO;
-import com.moe.ecommerce.auth.dtos.RQChangePasswordDTO;
-import com.moe.ecommerce.auth.dtos.RQLoginDTO;
-import com.moe.ecommerce.auth.dtos.RQLoginWithGoogleDTO;
-import com.moe.ecommerce.auth.dtos.RQPasswordResetDTO;
-import com.moe.ecommerce.auth.dtos.RQPasswordResetRequestDTO;
-import com.moe.ecommerce.auth.dtos.RQRegisterDTO;
-import com.moe.ecommerce.auth.services.IAuthService;
-import com.moe.ecommerce.auth.services.ITokenService;
+import com.moe.ecommerce.api.services.ITokenService;
 import com.moe.ecommerce.models.User;
 import com.moe.ecommerce.response.ResponseAPI;
 

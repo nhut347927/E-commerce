@@ -1,4 +1,4 @@
-package com.moe.ecommerce.auth.services.impl;
+package com.moe.ecommerce.api.services.impl;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.moe.ecommerce.auth.services.ITokenService;
+import com.moe.ecommerce.api.services.ITokenService;
 import com.moe.ecommerce.exception.AppException;
 import com.moe.ecommerce.jpa.UserJpa;
 import com.moe.ecommerce.models.User;

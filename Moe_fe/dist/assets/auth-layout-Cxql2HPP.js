@@ -1,1 +1,0 @@
-import{j as s,O as t}from"./index-B0uysNOy.js";import{T as r}from"./toaster-xMGObHY6.js";const o=()=>s.jsxs("div",{className:"w-full h-screen",children:[s.jsx(t,{})," ",s.jsx(r,{})]});export{o as default};

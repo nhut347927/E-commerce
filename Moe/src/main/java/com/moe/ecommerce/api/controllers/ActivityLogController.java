@@ -8,12 +8,12 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.moe.ecommerce.active.UserActivity;
+import com.moe.ecommerce.active.UserActivityContextService;
 import com.moe.ecommerce.api.dtos.ActivityLogDto;
 import com.moe.ecommerce.api.dtos.common.FilterPageDto;
 import com.moe.ecommerce.api.dtos.common.PageDto;
 import com.moe.ecommerce.api.services.IActivityLogService;
-import com.moe.ecommerce.auth.active.UserActivity;
-import com.moe.ecommerce.auth.active.UserActivityContextService;
 import com.moe.ecommerce.models.User;
 import com.moe.ecommerce.response.ResponseAPI;
 

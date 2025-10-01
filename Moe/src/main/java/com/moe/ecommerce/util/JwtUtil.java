@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.moe.ecommerce.auth.services.impl.TokenServiceImpl;
+import com.moe.ecommerce.api.services.impl.TokenServiceImpl;
 import com.moe.ecommerce.jpa.UserJpa;
 
 import io.jsonwebtoken.Claims;

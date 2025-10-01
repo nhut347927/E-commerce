@@ -1,4 +1,4 @@
-package com.moe.ecommerce.auth.active;
+package com.moe.ecommerce.active;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

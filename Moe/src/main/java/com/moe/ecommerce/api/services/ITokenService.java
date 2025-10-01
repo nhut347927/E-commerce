@@ -1,4 +1,4 @@
-package com.moe.ecommerce.auth.services;
+package com.moe.ecommerce.api.services;
 
 import java.time.LocalDateTime;
 

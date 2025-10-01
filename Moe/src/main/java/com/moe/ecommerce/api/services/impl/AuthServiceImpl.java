@@ -1,4 +1,4 @@
-package com.moe.ecommerce.auth.services.impl;
+package com.moe.ecommerce.api.services.impl;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -16,12 +16,12 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
-import com.moe.ecommerce.auth.dtos.RPLoginDTO;
-import com.moe.ecommerce.auth.dtos.RPUserRegisterDTO;
-import com.moe.ecommerce.auth.dtos.RQLoginDTO;
-import com.moe.ecommerce.auth.dtos.RQRegisterDTO;
-import com.moe.ecommerce.auth.services.IAuthService;
-import com.moe.ecommerce.auth.services.ITokenService;
+import com.moe.ecommerce.api.dtos.RPLoginDTO;
+import com.moe.ecommerce.api.dtos.RPUserRegisterDTO;
+import com.moe.ecommerce.api.dtos.RQLoginDTO;
+import com.moe.ecommerce.api.dtos.RQRegisterDTO;
+import com.moe.ecommerce.api.services.IAuthService;
+import com.moe.ecommerce.api.services.ITokenService;
 import com.moe.ecommerce.exception.AppException;
 import com.moe.ecommerce.jpa.UserJpa;
 import com.moe.ecommerce.models.User;

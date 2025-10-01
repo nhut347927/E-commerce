@@ -1,4 +1,4 @@
-package com.moe.ecommerce.auth.dtos;
+package com.moe.ecommerce.api.dtos;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RQLoginWithGoogleDTO {
-	@NotBlank(message = "Token is required.")
-	private String token;
+public class RQRefreshAccessTokenDTO {
+  @NotBlank(message = "Refresh token must not be empty")
+   private String refreshToken;
 }
